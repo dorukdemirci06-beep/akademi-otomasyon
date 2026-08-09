@@ -1,0 +1,1343 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Wallet, PlusCircle, CheckCircle, CreditCard, ArrowDownRight, ArrowUpDown, 
+  Calendar, BookOpen, AlertTriangle, ChevronRight, ChevronDown, Info, Clock, Trash2, X, FileText, Check, Edit, RotateCcw, Search, Sparkles 
+} from 'lucide-react';
+import { getOgrenciler, createOdeme, getOgrenciSiniflar, getOdemeler, odemeTahsilEt, updateOdeme, deleteOdeme, odemeGeriAl } from '../services/api';
+import CustomDatePicker from '../components/CustomDatePicker';
+import ConfirmModal from '../components/ConfirmModal';
+import { formatTL } from '../utils/formatters';
+
+const Finans = () => {
+  const [ogrenciler, setOgrenciler] = useState([]);
+  const [odemeler, setOdemeler] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [sortOption, setSortOption] = useState('odeme_tarihi_desc');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState(false);
+  const [formStudentSearchQuery, setFormStudentSearchQuery] = useState('');
+  const studentDropdownRef = useRef(null);
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'danger',
+    confirmText: 'Evet',
+    onConfirm: () => {}
+  });
+
+  const openConfirm = ({ title, message, type = 'danger', confirmText = 'Evet, Onayla', onConfirm }) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      type,
+      confirmText,
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        await onConfirm();
+      }
+    });
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (studentDropdownRef.current && !studentDropdownRef.current.contains(e.target)) {
+        setIsStudentDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  const [activeMainTab, setActiveMainTab] = useState('ogrenciler'); // 'ogrenciler' | 'bekleyen_taksitler' | 'gecmis_odemeler'
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
+  };
+
+  // Seçilen öğrencinin dersleri
+  const [ogrenciSiniflari, setOgrenciSiniflari] = useState([]);
+  const [sinifLoading, setSinifLoading] = useState(false);
+
+  // Öğrenci Detay Modalı State
+  const [selectedOgrenci, setSelectedOgrenci] = useState(null);
+  const [modalTab, setModalTab] = useState('bekleyenler'); // 'bekleyenler' | 'odenenler'
+  
+  // Modal içi hızlı tahsilat dialog state
+  const [tahsilatModalOdeme, setTahsilatModalOdeme] = useState(null);
+  const [tahsilatYontemi, setTahsilatYontemi] = useState('Nakit');
+  const [tahsilatTarihi, setTahsilatTarihi] = useState(new Date().toISOString().split('T')[0]);
+  const [tahsilatAciklama, setTahsilatAciklama] = useState('');
+
+  // Ödeme Düzenleme Modal State
+  const [editingOdeme, setEditingOdeme] = useState(null);
+
+  const getTodayString = () => new Date().toISOString().split('T')[0];
+
+  // Odeme Form State
+  const [odemeData, setOdemeData] = useState({
+    ogrenci_id: '',
+    sinif_adi: '',
+    eklenecek_ders_hakki: 0,
+    tutar: '',
+    odeme_periyodu: 'Aylık',
+    taksit_sayisi: 1,
+    tarih: getTodayString(),
+    odeme_yontemi: 'Nakit',
+    durum: 'Ödendi',
+  });
+
+  // Taksit Tarihleri State
+  const [taksitTarihleri, setTaksitTarihleri] = useState([getTodayString()]);
+
+  useEffect(() => {
+    fetchOgrencilerVeOdemeler();
+  }, []);
+
+  // Taksit sayısı veya başlangıç tarihi değiştiğinde taksit tarihlerini otomatik hesapla
+  useEffect(() => {
+    const count = parseInt(odemeData.taksit_sayisi) || 1;
+    const baseDateStr = odemeData.tarih || getTodayString();
+    const baseDate = new Date(baseDateStr);
+
+    const dates = [];
+    for (let i = 0; i < count; i++) {
+      if (i === 0) {
+        dates.push(baseDateStr);
+      } else {
+        const nextDate = new Date(baseDate);
+        nextDate.setMonth(nextDate.getMonth() + i);
+        dates.push(nextDate.toISOString().split('T')[0]);
+      }
+    }
+    setTaksitTarihleri(dates);
+  }, [odemeData.taksit_sayisi, odemeData.tarih]);
+
+  const fetchOgrencilerVeOdemeler = async (autoOpenStudentId = null) => {
+    try {
+      setLoading(true);
+      const [ogrenciRes, odemeRes] = await Promise.all([
+        getOgrenciler(),
+        getOdemeler().catch(() => ({ data: [] }))
+      ]);
+      const rawOgrenciler = ogrenciRes.data || [];
+      const odemelerList = odemeRes.data || [];
+      setOdemeler(odemelerList);
+
+      const now = new Date();
+      now.setHours(23, 59, 59, 999);
+
+      const enrichedOgrenciler = rawOgrenciler.map((o) => {
+        const studentOdemeler = odemelerList.filter((p) => Number(p.ogrenci_id) === Number(o.id));
+        
+        // Son ödeme tarihi (Ödendi durumundakilerden en sonuncusu)
+        const odenenler = studentOdemeler.filter((p) => p.durum === 'Ödendi');
+        odenenler.sort((a, b) => new Date(b.tarih || 0) - new Date(a.tarih || 0));
+        const sonOdeme = odenenler.length > 0 ? odenenler[0].tarih : o.son_odeme_tarihi;
+
+        // Vadesi gelmiş / gecikmiş ödeme kontrolü
+        const hasOverdue = studentOdemeler.some((p) => {
+          if (p.durum === 'Bekliyor' || p.durum === 'Gecikti') {
+            if (!p.tarih) return true;
+            return new Date(p.tarih) <= now;
+          }
+          return false;
+        });
+
+        // En yakın bekleyen vade tarihi
+        const bekleyenler = studentOdemeler.filter((p) => p.durum === 'Bekliyor' || p.durum === 'Gecikti');
+        bekleyenler.sort((a, b) => new Date(a.tarih || 0) - new Date(b.tarih || 0));
+        const enYakinVade = bekleyenler.length > 0 ? bekleyenler[0].tarih : null;
+
+        return { 
+          ...o, 
+          son_odeme_tarihi: sonOdeme,
+          gecikmis_odeme_var_mi: hasOverdue,
+          en_yakin_vade_tarihi: enYakinVade,
+          bekleyen_odeme_sayisi: bekleyenler.length
+        };
+      });
+
+      setOgrenciler(enrichedOgrenciler);
+
+      const targetId = autoOpenStudentId || (selectedOgrenci ? selectedOgrenci.id : null);
+      if (targetId) {
+        const updatedSelected = enrichedOgrenciler.find(s => Number(s.id) === Number(targetId));
+        if (updatedSelected) {
+          setSelectedOgrenci(updatedSelected);
+        }
+      }
+    } catch (err) {
+      console.error('Veriler getirilemedi:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOgrenciChange = async (e) => {
+    const selectedId = e.target.value;
+    setOdemeData((prev) => ({
+      ...prev,
+      ogrenci_id: selectedId,
+      sinif_adi: '',
+      eklenecek_ders_hakki: 0,
+    }));
+    setOgrenciSiniflari([]);
+
+    if (selectedId) {
+      try {
+        setSinifLoading(true);
+        const res = await getOgrenciSiniflar(selectedId);
+        setOgrenciSiniflari(res.data || []);
+      } catch (err) {
+        console.error('Öğrenci dersleri getirilemedi:', err);
+      } finally {
+        setSinifLoading(false);
+      }
+    }
+  };
+
+  const handleTaksitTarihChange = (index, newDate) => {
+    const updated = [...taksitTarihleri];
+    updated[index] = newDate;
+    setTaksitTarihleri(updated);
+  };
+
+  const handleOdemeSubmit = async (e) => {
+    e.preventDefault();
+    if (!odemeData.ogrenci_id || !odemeData.tutar) {
+      showToast('⚠️ Lütfen öğrenci ve tutar giriniz.');
+      return;
+    }
+    const targetStudentId = Number(odemeData.ogrenci_id);
+    try {
+      await createOdeme({
+        ogrenci_id: targetStudentId,
+        tutar: Number(odemeData.tutar),
+        odeme_periyodu: odemeData.odeme_periyodu,
+        taksit_sayisi: Number(odemeData.taksit_sayisi),
+        tarih: odemeData.tarih,
+        odeme_yontemi: odemeData.odeme_yontemi,
+        durum: odemeData.durum,
+        sinif_adi: odemeData.sinif_adi || null,
+        eklenecek_ders_hakki: Number(odemeData.eklenecek_ders_hakki || 0),
+        taksit_tarihleri: odemeData.taksit_sayisi > 1 ? taksitTarihleri : null,
+      });
+      showToast('✅ Ödeme başarıyla işlendi! Detay & Taksitler açılıyor...');
+      setOdemeData({
+        ogrenci_id: '',
+        sinif_adi: '',
+        eklenecek_ders_hakki: 0,
+        tutar: '',
+        odeme_periyodu: 'Aylık',
+        taksit_sayisi: 1,
+        tarih: getTodayString(),
+        odeme_yontemi: 'Nakit',
+        durum: 'Ödendi',
+      });
+      setOgrenciSiniflari([]);
+      setModalTab('bekleyenler');
+      await fetchOgrencilerVeOdemeler(targetStudentId);
+    } catch (err) {
+      const detail = err.response?.data?.detail || 'Ödeme işlemi başarısız.';
+      showToast(`❌ Hata: ${detail}`);
+    }
+  };
+
+  const handleQuickOdendiIsaretle = async (odemeRecord) => {
+    try {
+      await odemeTahsilEt(odemeRecord.id, {
+        odeme_yontemi: odemeRecord.odeme_yontemi || 'Nakit',
+        tarih: getTodayString()
+      });
+      showToast('✅ Ödeme "Ödendi" olarak işaretlendi ve bakiyeye aktarıldı!');
+      fetchOgrencilerVeOdemeler();
+    } catch (err) {
+      showToast('❌ Hata: ' + (err.response?.data?.detail || err.message));
+    }
+  };
+
+  const handleOpenTahsilatModal = (p) => {
+    setTahsilatModalOdeme(p);
+    setTahsilatYontemi(p.odeme_yontemi || 'Nakit');
+    setTahsilatTarihi(getTodayString());
+    setTahsilatAciklama(p.aciklama || '');
+  };
+
+  const handleTahsilEtSubmit = async () => {
+    if (!tahsilatModalOdeme) return;
+    try {
+      await odemeTahsilEt(tahsilatModalOdeme.id, {
+        odeme_yontemi: tahsilatYontemi,
+        tarih: tahsilatTarihi,
+        aciklama: tahsilatAciklama
+      });
+      showToast('✅ Ödeme başarıyla tahsil edildi ve bakiyeye işlendi!');
+      setTahsilatModalOdeme(null);
+      fetchOgrencilerVeOdemeler();
+    } catch (err) {
+      showToast('❌ Tahsilat hatası: ' + (err.response?.data?.detail || err.message));
+    }
+  };
+
+  const handleOpenEditModal = (p) => {
+    let dateStr = getTodayString();
+    if (p.tarih) {
+      try {
+        dateStr = new Date(p.tarih).toISOString().split('T')[0];
+      } catch {
+        dateStr = getTodayString();
+      }
+    }
+    setEditingOdeme({
+      id: p.id,
+      tutar: p.tutar,
+      tarih: dateStr,
+      odeme_yontemi: p.odeme_yontemi || 'Nakit',
+      aciklama: p.aciklama || ''
+    });
+  };
+
+  const handleEditOdemeSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingOdeme) return;
+    try {
+      await updateOdeme(editingOdeme.id, {
+        tutar: Number(editingOdeme.tutar),
+        tarih: editingOdeme.tarih,
+        odeme_yontemi: editingOdeme.odeme_yontemi,
+        aciklama: editingOdeme.aciklama
+      });
+      showToast('✅ Ödeme kaydı başarıyla güncellendi!');
+      setEditingOdeme(null);
+      fetchOgrencilerVeOdemeler();
+    } catch (err) {
+      showToast('❌ Güncelleme hatası: ' + (err.response?.data?.detail || err.message));
+    }
+  };
+
+  const handleDeleteOdemeRecord = (odemeId) => {
+    openConfirm({
+      title: 'Ödeme Kaydı Silme Onayı',
+      message: 'Bu ödeme/taksit kaydını silmek istediğinize emin misiniz?',
+      type: 'danger',
+      confirmText: 'Ödeme Kaydını Sil',
+      onConfirm: async () => {
+        try {
+          await deleteOdeme(odemeId);
+          showToast('✅ Ödeme kaydı silindi.');
+          fetchOgrencilerVeOdemeler();
+        } catch (err) {
+          showToast('❌ Silme hatası: ' + (err.response?.data?.detail || err.message));
+        }
+      }
+    });
+  };
+
+  const handleOdemeGeriAl = (p) => {
+    const confirmMsg = `₺${formatTL(p.tutar)} tutarındaki tahsil edilmiş ödemeyi tekrar ALINACAKLAR / BEKLEYENLER listesine taşımak istediğinize emin misiniz?`;
+    openConfirm({
+      title: 'Ödemeyi Geri Alma Onayı',
+      message: confirmMsg,
+      type: 'warning',
+      confirmText: 'Geri Al ve Alacaklara Taşı',
+      onConfirm: async () => {
+        try {
+          await odemeGeriAl(p.id);
+          showToast('↩️ Ödeme tekrar Alınacaklar listesine taşındı ve bakiye güncellendi.');
+          fetchOgrencilerVeOdemeler();
+        } catch (err) {
+          console.error('Ödeme geri alma hatası:', err);
+          showToast('❌ İşlem gerçekleştirilemedi: ' + (err.response?.data?.detail || err.message));
+        }
+      }
+    });
+  };
+
+  const currentUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || '{}');
+    } catch {
+      return {};
+    }
+  })();
+  const roleLower = (currentUser?.rol || '').toLowerCase();
+  const isAdmin = roleLower.includes('yönetici') || roleLower.includes('yonetici') || roleLower.includes('admin') || roleLower.includes('super') || roleLower.includes('süper');
+  const totalKasa = ogrenciler.reduce((acc, curr) => acc + (curr.bakiye || 0), 0);
+
+  const tutarNum = parseFloat(odemeData.tutar) || 0;
+  const taksitNum = parseInt(odemeData.taksit_sayisi) || 1;
+  const taksitBasinaTutar = tutarNum > 0 ? formatTL(tutarNum / taksitNum) : '0,00';
+
+  // Filtreleme ve Sıralama Mantığı
+  const filteredOgrenciler = ogrenciler.filter((o) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase().trim();
+    const name = `${o.isim} ${o.soyisim}`.toLowerCase();
+    const phone = (o.telefon || '').toLowerCase();
+    const tc = (o.tc || '').toLowerCase();
+    return name.includes(term) || String(o.id) === term || phone.includes(term) || tc.includes(term);
+  });
+
+  const selectedFormOgrenci = ogrenciler.find(o => String(o.id) === String(odemeData.ogrenci_id));
+
+  const filteredFormOgrenciler = ogrenciler.filter((o) => {
+    if (String(o.id) === String(odemeData.ogrenci_id)) return true;
+    if (!formStudentSearchQuery.trim()) return true;
+    const term = formStudentSearchQuery.toLowerCase().trim();
+    const name = `${o.isim} ${o.soyisim}`.toLowerCase();
+    const phone = (o.telefon || '').toLowerCase();
+    const tc = (o.tc || '').toLowerCase();
+    return name.includes(term) || String(o.id) === term || phone.includes(term) || tc.includes(term);
+  });
+
+  const handleOgrenciSelectDirect = (ogrenciId) => {
+    setOdemeData(prev => ({ ...prev, ogrenci_id: ogrenciId, sinif_adi: '' }));
+    if (ogrenciId) {
+      fetchOgrenciSiniflari(ogrenciId);
+    } else {
+      setOgrenciSiniflari([]);
+    }
+  };
+
+  const sortedOgrenciler = [...filteredOgrenciler].sort((a, b) => {
+    if (sortOption === 'odeme_tarihi_desc') {
+      const dateA = a.son_odeme_tarihi ? new Date(a.son_odeme_tarihi).getTime() : 0;
+      const dateB = b.son_odeme_tarihi ? new Date(b.son_odeme_tarihi).getTime() : 0;
+      return dateB - dateA;
+    }
+    if (sortOption === 'odeme_tarihi_asc') {
+      const dateA = a.son_odeme_tarihi ? new Date(a.son_odeme_tarihi).getTime() : Infinity;
+      const dateB = b.son_odeme_tarihi ? new Date(b.son_odeme_tarihi).getTime() : Infinity;
+      return dateA - dateB;
+    }
+    if (sortOption === 'isim_asc') {
+      return `${a.isim} ${a.soyisim}`.localeCompare(`${b.isim} ${b.soyisim}`, 'tr');
+    }
+    if (sortOption === 'isim_desc') {
+      return `${b.isim} ${b.soyisim}`.localeCompare(`${a.isim} ${a.soyisim}`, 'tr');
+    }
+    if (sortOption === 'bakiye_desc') {
+      return (b.bakiye || 0) - (a.bakiye || 0);
+    }
+    if (sortOption === 'bakiye_asc') {
+      return (a.bakiye || 0) - (b.bakiye || 0);
+    }
+    if (sortOption === 'tarih_desc') {
+      return (new Date(b.kayit_tarihi || 0)) - (new Date(a.kayit_tarihi || 0));
+    }
+    if (sortOption === 'tarih_asc') {
+      return (new Date(a.kayit_tarihi || 0)) - (new Date(b.kayit_tarihi || 0));
+    }
+    return 0;
+  });
+
+  // Seçili öğrencinin ödemeleri
+  const selectedStudentPayments = selectedOgrenci 
+    ? odemeler.filter(p => Number(p.ogrenci_id) === Number(selectedOgrenci.id))
+    : [];
+
+  const studentOdenenler = selectedStudentPayments.filter(p => p.durum === 'Ödendi');
+  const studentBekleyenler = selectedStudentPayments.filter(p => p.durum === 'Bekliyor' || p.durum === 'Gecikti');
+
+  const nowTime = new Date();
+  nowTime.setHours(23, 59, 59, 999);
+
+  const allBekleyenOdemeler = odemeler.filter((p) => p.durum === 'Bekliyor' || p.durum === 'Gecikti');
+  allBekleyenOdemeler.sort((a, b) => new Date(a.tarih || 0) - new Date(b.tarih || 0));
+
+  const allOdenenOdemeler = odemeler.filter((p) => p.durum === 'Ödendi');
+  allOdenenOdemeler.sort((a, b) => new Date(b.tarih || 0) - new Date(a.tarih || 0));
+
+  return (
+    <div className="space-y-6">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-[100] px-5 py-3.5 rounded-2xl shadow-2xl border backdrop-blur-md bg-slate-800/95 text-slate-900 dark:text-slate-100 border-slate-600/80 flex items-center gap-3 text-sm font-semibold animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-md">
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Top Banner */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
+        <div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <Wallet className="w-6 h-6 text-[#0284c7]" />
+            <span>Ödeme Modülü & Taksit Yönetimi</span>
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Ödeme ve taksit girişleri yapın, tarihleri özelleştirin, vadesi gelen alacakları takip edip tahsil edin.</p>
+        </div>
+
+        {isAdmin && (
+          <div className="bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/80 px-4 py-2 rounded-xl flex items-center gap-3">
+            <div className="text-right">
+              <span className="block text-[10px] font-bold uppercase text-[#0284c7]">Toplam Cari Kasa</span>
+              <span className="text-xl font-bold text-slate-800 dark:text-slate-100">₺{formatTL(totalKasa)}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Payment Entry Form Card */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-md p-6 space-y-4 text-slate-800 dark:text-slate-100">
+          <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-3">
+            <PlusCircle className="w-5 h-5 text-[#2eb82e]" />
+            <span>Yeni Ödeme Al / Tahsilat</span>
+          </h2>
+
+          <form onSubmit={handleOdemeSubmit} className="space-y-3.5">
+            {/* Öğrenci Seçiniz (Tek Birleşik Arama & Seçim Çubuğu) */}
+            <div className="relative space-y-1" ref={studentDropdownRef}>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Öğrenci Seçiniz *</label>
+              
+              <div 
+                onClick={() => setIsStudentDropdownOpen(!isStudentDropdownOpen)}
+                className={`flex items-center justify-between gap-2 px-3.5 py-2.5 bg-white dark:bg-slate-900 border rounded-xl cursor-pointer transition ${
+                  isStudentDropdownOpen ? 'border-[#2eb82e] ring-1 ring-[#2eb82e]' : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                  {isStudentDropdownOpen ? (
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Öğrenci adı, ID veya telefon yazın..."
+                      value={formStudentSearchQuery}
+                      onChange={(e) => setFormStudentSearchQuery(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-full bg-transparent text-xs font-bold text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
+                    />
+                  ) : selectedFormOgrenci ? (
+                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                      #{selectedFormOgrenci.id} - {selectedFormOgrenci.isim} {selectedFormOgrenci.soyisim} <span className="text-[#2eb82e] font-semibold">(₺{formatTL(selectedFormOgrenci.bakiye)})</span>
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold text-slate-400">-- Öğrenci Ara veya Seçiniz --</span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  {odemeData.ogrenci_id && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOgrenciSelectDirect('');
+                        setFormStudentSearchQuery('');
+                      }}
+                      className="p-1 text-slate-400 hover:text-slate-200 transition cursor-pointer"
+                      title="Seçimi Temizle"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isStudentDropdownOpen ? 'rotate-180 text-[#2eb82e]' : ''}`} />
+                </div>
+              </div>
+
+              {/* Form doğrulaması için gizli input */}
+              <input 
+                type="text" 
+                required 
+                value={odemeData.ogrenci_id} 
+                onChange={() => {}}
+                className="opacity-0 absolute bottom-0 left-0 w-full h-0 pointer-events-none" 
+              />
+
+              {/* Birleşik Açılır Arama Listesi Paneli */}
+              {isStudentDropdownOpen && (
+                <div className="absolute left-0 right-0 top-full mt-1 bg-slate-900/95 backdrop-blur-md border border-slate-300 dark:border-slate-700/90 rounded-xl shadow-2xl z-50 max-h-56 overflow-y-auto p-1.5 space-y-0.5 animate-in fade-in duration-150">
+                  {filteredFormOgrenciler.length === 0 ? (
+                    <div className="py-4 text-center text-xs text-slate-500 italic">
+                      Aradığınız kriterlere uygun öğrenci bulunamadı.
+                    </div>
+                  ) : (
+                    filteredFormOgrenciler.map((o) => {
+                      const isSelected = String(o.id) === String(odemeData.ogrenci_id);
+                      return (
+                        <div
+                          key={o.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOgrenciSelectDirect(o.id);
+                            setIsStudentDropdownOpen(false);
+                            setFormStudentSearchQuery('');
+                          }}
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold cursor-pointer transition ${
+                            isSelected 
+                              ? 'bg-emerald-950/90 text-[#2eb82e] border border-emerald-800/80 shadow-sm' 
+                              : 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <span className="text-slate-400 font-mono text-[11px] shrink-0">#{o.id}</span>
+                            <span className="truncate">{o.isim} {o.soyisim}</span>
+                            {o.telefon && <span className="text-[11px] text-slate-500 font-normal shrink-0">({o.telefon})</span>}
+                          </div>
+                          <span className="bg-slate-800 text-[#2eb82e] px-2 py-0.5 rounded font-mono border border-slate-300 dark:border-slate-700 shrink-0 ml-2">
+                            ₺{formatTL(o.bakiye)}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Seçilen Öğrenciye Kayıtlı Ders Seçeneği */}
+            {odemeData.ogrenci_id && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                  <span>Ödeme Yapılan Ders / Branş</span>
+                  <span className="text-[10px] text-slate-400 font-normal">(İsteğe Bağlı)</span>
+                </label>
+                <select
+                  value={odemeData.sinif_adi}
+                  onChange={(e) => setOdemeData({ ...odemeData, sinif_adi: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
+                >
+                  <option value="">-- Genel Ödeme / Cari Bakiye --</option>
+                  {sinifLoading ? (
+                    <option disabled>Dersler yükleniyor...</option>
+                  ) : ogrenciSiniflari.length === 0 ? (
+                    <option disabled>Bu öğrencinin aktif ders kaydı bulunamadı</option>
+                  ) : (
+                    ogrenciSiniflari.map((s) => (
+                      <option key={s.id} value={s.sinif_adi}>
+                        {s.sinif_adi} (Mevcut Hak: {s.kalan_ders_hakki} Ders)
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+            )}
+
+            {/* Seçilen Derse Eklenecek Ders Hakkı */}
+            {odemeData.sinif_adi && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Eklenecek Ders Hakkı (Adet)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={odemeData.eklenecek_ders_hakki}
+                  onChange={(e) => setOdemeData({ ...odemeData, eklenecek_ders_hakki: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
+                />
+              </div>
+            )}
+
+            <div>
+              <CustomDatePicker
+                label="Ödeme Alınan Tarih (1. Vade) *"
+                value={odemeData.tarih}
+                onChange={(newDate) => setOdemeData({ ...odemeData, tarih: newDate })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Ödenecek Tutar (₺) *</label>
+              <input
+                type="number"
+                step="0.01"
+                required
+                placeholder="1500.00"
+                value={odemeData.tutar}
+                onChange={(e) => setOdemeData({ ...odemeData, tutar: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e] placeholder-slate-400 dark:placeholder-slate-500"
+              />
+            </div>
+
+            {/* Ödeme Periyodu: Aylık / Senelik */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Ödeme Periyodu *</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOdemeData({ ...odemeData, odeme_periyodu: 'Aylık' })}
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border ${
+                    odemeData.odeme_periyodu === 'Aylık'
+                      ? 'bg-emerald-100 dark:bg-emerald-950/80 border-[#2eb82e] text-[#2eb82e] shadow-sm'
+                      : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span>📅 Aylık (4 Hafta)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOdemeData({ ...odemeData, odeme_periyodu: 'Senelik' })}
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border ${
+                    odemeData.odeme_periyodu === 'Senelik'
+                      ? 'bg-sky-950/80 border-[#0284c7] text-[#0284c7] shadow-sm'
+                      : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span>📆 Senelik / Peşin</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Aylık Ödeme Bilgilendirmesi */}
+            {odemeData.odeme_periyodu === 'Aylık' && taksitNum === 1 && (
+              <div className="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl flex items-start gap-2.5 text-xs text-emerald-300">
+                <Info className="w-4 h-4 text-[#2eb82e] shrink-0 mt-0.5" />
+                <span>Aylık ödeme alındığında, <strong>4 hafta (28 gün)</strong> sonrası için otomatik olarak <em>"Bekliyor"</em> durumunda gelecek dönem alacak kaydı oluşturulur.</span>
+              </div>
+            )}
+
+            {/* Taksit Seçenekleri (2 - 6 Taksit) */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Taksit Seçeneği *</label>
+              <select
+                value={odemeData.taksit_sayisi}
+                onChange={(e) => setOdemeData({ ...odemeData, taksit_sayisi: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
+              >
+                <option value={1}>Tek Çekim / Peşin (1 Taksit)</option>
+                <option value={2}>2 Taksit</option>
+                <option value={3}>3 Taksit</option>
+                <option value={4}>4 Taksit</option>
+                <option value={5}>5 Taksit</option>
+                <option value={6}>6 Taksit</option>
+              </select>
+            </div>
+
+            {/* Özelleştirilebilir Taksit Tarihleri Girişi */}
+            {taksitNum > 1 && (
+              <div className="p-3.5 bg-white dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700/90 rounded-xl space-y-2.5">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-[#0284c7]" />
+                    <span>Taksit Vade Tarihleri</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-semibold">Taksit Başı: ₺{taksitBasinaTutar}</span>
+                </div>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {taksitTarihleri.map((tarihVal, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-400 w-16 text-right">
+                        {idx + 1}. Taksit:
+                      </span>
+                      <CustomDatePicker
+                        value={tarihVal}
+                        onChange={(newDate) => handleTaksitTarihChange(idx, newDate)}
+                      />
+                      {idx === 0 && (
+                        <span className="text-[10px] bg-emerald-950 text-[#2eb82e] border border-emerald-800 px-1.5 py-0.5 rounded font-bold">
+                          Bugün Alınacak
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Ödeme Yöntemi</label>
+              <select
+                value={odemeData.odeme_yontemi}
+                onChange={(e) => setOdemeData({ ...odemeData, odeme_yontemi: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
+              >
+                <option value="Nakit">Nakit</option>
+                <option value="Kredi Kartı">Kredi Kartı</option>
+                <option value="Havale/EFT">Havale/EFT</option>
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-900/30 transition mt-2 flex items-center justify-center gap-2"
+            >
+              <CheckCircle className="w-4 h-4" />
+              <span>Ödemeyi İşle</span>
+            </button>
+          </form>
+        </div>
+
+        {/* Student Balances & Status Table */}
+        <div className="lg:col-span-2 bg-slate-800 rounded-xl border border-slate-700/80 shadow-md p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-300 dark:border-slate-700 pb-3">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-[#0284c7]" />
+                <span>Öğrenci Bakiyeleri & Tahsilat Durumu</span>
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">Öğrenciye tıklayarak ödeme geçmişini ve gelecek taksitlerini inceleyebilirsiniz.</p>
+            </div>
+
+            {/* Sıralama Seçenekleri */}
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="w-4 h-4 text-slate-400" />
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 font-semibold focus:outline-none focus:border-[#0284c7]"
+              >
+                <option value="odeme_tarihi_desc">Sırala: Ödeme Tarihi (Yeniden Eskiden)</option>
+                <option value="odeme_tarihi_asc">Sırala: Ödeme Tarihi (Eskiden Yeniye)</option>
+                <option value="isim_asc">Sırala: İsme Göre (A - Z)</option>
+                <option value="isim_desc">Sırala: İsme Göre (Z - A)</option>
+                {isAdmin && <option value="bakiye_desc">Sırala: Bakiye (En Yüksek)</option>}
+                {isAdmin && <option value="bakiye_asc">Sırala: Bakiye (En Düşük)</option>}
+                <option value="tarih_desc">Sırala: Kayıt Tarihi (Yeniden Eskiden)</option>
+                <option value="tarih_asc">Sırala: Kayıt Tarihi (Eskiden Yeniye)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Arama Çubuğu */}
+          <div className="flex justify-between items-center gap-4 flex-wrap">
+            <div className="relative flex-1 min-w-[240px]">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Öğrenci Adı, ID, Telefon veya TC ile ara..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0284c7] transition"
+              />
+            </div>
+            <div className="text-xs text-slate-400 font-semibold">
+              Listelenen: <span className="text-[#0284c7] font-bold">{sortedOgrenciler.length}</span> Öğrenci
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-400 tracking-wider bg-slate-900/50">
+                  <th className="py-3 px-4">ÖĞRENCİ ID</th>
+                  <th className="py-3 px-4">ADI SOYADI</th>
+                  <th className="py-3 px-4">SON ÖDEME TARİHİ</th>
+                  {isAdmin && <th className="py-3 px-4">CARİ BAKİYE</th>}
+                  <th className="py-3 px-4">TAHSİLAT / VADE DURUMU</th>
+                  <th className="py-3 px-4 text-right">İŞLEM</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-700/60 text-sm">
+                {loading ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 6 : 5} className="text-center py-8 text-slate-400">Yükleniyor...</td>
+                  </tr>
+                ) : sortedOgrenciler.length === 0 ? (
+                  <tr>
+                    <td colSpan={isAdmin ? 6 : 5} className="text-center py-8 text-slate-400">Öğrenci bulunamadı.</td>
+                  </tr>
+                ) : (
+                  sortedOgrenciler.map((o) => {
+                    const bakiye = o.bakiye || 0;
+                    const isOverdue = o.gecikmis_odeme_var_mi;
+
+                    return (
+                      <tr 
+                        key={o.id} 
+                        onClick={() => setSelectedOgrenci(o)}
+                        className={`cursor-pointer transition ${
+                          isOverdue 
+                            ? 'bg-red-950/20 hover:bg-red-950/40 border-l-4 border-l-red-500' 
+                            : 'hover:bg-slate-700/40'
+                        }`}
+                      >
+                        <td className="py-3.5 px-4 font-bold text-slate-500">#{o.id}</td>
+                        <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                          <span>{o.isim} {o.soyisim}</span>
+                          {isOverdue && (
+                            <span className="bg-red-900/80 text-red-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 border border-red-700 animate-pulse">
+                              <AlertTriangle className="w-3 h-3 text-red-400" />
+                              <span>Vadesi Geldi!</span>
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {o.son_odeme_tarihi ? new Date(o.son_odeme_tarihi).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                        </td>
+                        {isAdmin && <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">₺{formatTL(bakiye)}</td>}
+                        <td className="py-3.5 px-4">
+                          {isOverdue ? (
+                            <span className="bg-red-950/90 text-red-400 border border-red-800 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              <span>Ödeme Vadesi Gecikti</span>
+                            </span>
+                          ) : bakiye > 0 ? (
+                            <span className="bg-emerald-100 dark:bg-emerald-950/80 text-[#2eb82e] border border-emerald-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              <span>Tahsil Edildi</span>
+                            </span>
+                          ) : (
+                            <span className="bg-sky-950/80 text-[#0284c7] border border-sky-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+                              <ArrowDownRight className="w-3.5 h-3.5" />
+                              <span>Ödeme Bekliyor</span>
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedOgrenci(o);
+                            }}
+                            className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-bold transition inline-flex items-center gap-1"
+                          >
+                            <span>Detay & Taksitler</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      {/* STUDENT PAYMENT DETAILS MODAL */}
+      {selectedOgrenci && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-150">
+            
+            {/* Modal Header */}
+            <div className="p-5 bg-white dark:bg-slate-900 border-b border-slate-700/80 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-[#0284c7]" />
+                  <span>Öğrenci Ödeme & Taksit Detayları</span>
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  #{selectedOgrenci.id} - <strong>{selectedOgrenci.isim} {selectedOgrenci.soyisim}</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedOgrenci(null);
+                  setTahsilatModalOdeme(null);
+                }}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:text-slate-100 hover:bg-slate-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Student Quick Summary Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-800/80 border-b border-slate-300 dark:border-slate-700/60 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 rounded-xl">
+                <span className="text-slate-400 block font-semibold">Toplam Cari Bakiye</span>
+                <span className="text-base font-bold text-slate-900 dark:text-slate-100">₺{formatTL(selectedOgrenci.bakiye)}</span>
+              </div>
+              <div className="p-3 bg-emerald-950/30 border border-emerald-800/50 rounded-xl">
+                <span className="text-emerald-400 block font-semibold">Tahsil Edilenler</span>
+                <span className="text-base font-bold text-emerald-300">
+                  ₺{formatTL(studentOdenenler.reduce((acc, p) => acc + (p.tutar || 0), 0))} ({studentOdenenler.length} Adet)
+                </span>
+              </div>
+              <div className="p-3 bg-sky-950/30 border border-sky-800/50 rounded-xl">
+                <span className="text-sky-400 block font-semibold">Alınacak Taksitler</span>
+                <span className="text-base font-bold text-sky-300">
+                  ₺{formatTL(studentBekleyenler.reduce((acc, p) => acc + (p.tutar || 0), 0))} ({studentBekleyenler.length} Adet)
+                </span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 rounded-xl">
+                <span className="text-slate-400 block font-semibold">Vade Durumu</span>
+                {studentBekleyenler.some(p => p.tarih && new Date(p.tarih) <= nowTime) ? (
+                  <span className="text-red-400 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" /> Gecikmiş Alacak Var
+                  </span>
+                ) : (
+                  <span className="text-slate-700 dark:text-slate-300 font-bold">Zamanında / Temiz</span>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Tabs Header */}
+            <div className="flex border-b border-slate-300 dark:border-slate-700 px-5 bg-slate-900/40">
+              <button
+                onClick={() => setModalTab('bekleyenler')}
+                className={`py-3 px-4 font-bold text-xs border-b-2 flex items-center gap-2 transition ${
+                  modalTab === 'bekleyenler'
+                    ? 'border-[#0284c7] text-[#0284c7]'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+                <span>Alınacak Taksitler & Gelecek Ödemeler ({studentBekleyenler.length})</span>
+              </button>
+              <button
+                onClick={() => setModalTab('odenenler')}
+                className={`py-3 px-4 font-bold text-xs border-b-2 flex items-center gap-2 transition ${
+                  modalTab === 'odenenler'
+                    ? 'border-[#2eb82e] text-[#2eb82e]'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span>Şimdiye Kadar Alınanlar ({studentOdenenler.length})</span>
+              </button>
+            </div>
+
+            {/* Modal Content Body */}
+            <div className="p-5 overflow-y-auto flex-1 space-y-4">
+
+              {/* Inline Tahsil Et Dialog Box */}
+              {tahsilatModalOdeme && (
+                <div className="p-4 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-700/80 rounded-xl space-y-3 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between border-b border-emerald-800/80 pb-2">
+                    <h3 className="text-xs font-bold text-emerald-200 flex items-center gap-1.5">
+                      <Check className="w-4 h-4 text-[#2eb82e]" />
+                      <span>Taksit / Gelecek Ödemeyi Tahsil Et</span>
+                    </h3>
+                    <button onClick={() => setTahsilatModalOdeme(null)} className="text-emerald-400 hover:text-emerald-100">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                    <div>
+                      <span className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Tutar</span>
+                      <span className="text-xs font-bold text-white bg-white dark:bg-slate-900/90 px-3 border border-slate-300 dark:border-slate-700 rounded-xl flex items-center h-[38px]">
+                        ₺{formatTL(tahsilatModalOdeme.tutar)}
+                      </span>
+                    </div>
+                    <div>
+                      <CustomDatePicker
+                        label="Tahsilat Tarihi"
+                        value={tahsilatTarihi}
+                        onChange={(newDate) => setTahsilatTarihi(newDate)}
+                      />
+                    </div>
+                    <div>
+                      <span className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Ödeme Yöntemi</span>
+                      <select
+                        value={tahsilatYontemi}
+                        onChange={(e) => setTahsilatYontemi(e.target.value)}
+                        className="w-full px-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 h-[38px] focus:outline-none focus:border-[#2eb82e]"
+                      >
+                        <option value="Nakit">Nakit</option>
+                        <option value="Kredi Kartı">Kredi Kartı</option>
+                        <option value="Havale/EFT">Havale/EFT</option>
+                      </select>
+                    </div>
+                    <div>
+                      <span className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Ödeme Açıklaması</span>
+                      <input
+                        type="text"
+                        value={tahsilatAciklama}
+                        onChange={(e) => setTahsilatAciklama(e.target.value)}
+                        placeholder="Örn: 2. Taksit"
+                        className="w-full px-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 h-[38px] focus:outline-none focus:border-[#2eb82e]"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button
+                      onClick={() => setTahsilatModalOdeme(null)}
+                      className="px-3 py-1.5 bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-700 text-xs font-semibold rounded-lg"
+                    >
+                      İptal
+                    </button>
+                    <button
+                      onClick={handleTahsilEtSubmit}
+                      className="px-4 py-1.5 bg-[#2eb82e] hover:bg-[#269926] text-white text-xs font-bold rounded-lg shadow flex items-center gap-1.5"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>Tahsilatı Onayla</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 1: ALINACAK TAKSİTLER & GELECEK ÖDEMELER */}
+              {modalTab === 'bekleyenler' && (
+                <div>
+                  {studentBekleyenler.length === 0 ? (
+                    <div className="text-center py-10 bg-slate-900/40 rounded-xl border border-slate-700/50 space-y-2">
+                      <CheckCircle className="w-8 h-8 text-emerald-400 mx-auto" />
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Bu öğrencinin bekleyen bir taksidi veya alacağı bulunmuyor.</p>
+                      <p className="text-xs text-slate-500">Tüm ödemeler zamanında tahsil edilmiştir.</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto border border-slate-700/80 rounded-xl">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-900/70 border-b border-slate-300 dark:border-slate-700 text-slate-400 font-bold tracking-wider">
+                            <th className="py-3 px-3.5">VADE TARİHİ</th>
+                            <th className="py-3 px-3.5">AÇIKLAMA / TAKSİT NO</th>
+                            <th className="py-3 px-3.5">TUTAR</th>
+                            <th className="py-3 px-3.5">DERS / BRANŞ</th>
+                            <th className="py-3 px-3.5">DURUM</th>
+                            <th className="py-3 px-3.5 text-right">İŞLEM</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-700/60 font-semibold">
+                          {studentBekleyenler.map((p) => {
+                            const isPastDue = p.tarih && new Date(p.tarih) <= nowTime;
+                            return (
+                              <tr 
+                                key={p.id} 
+                                className={isPastDue ? 'bg-red-950/30 hover:bg-red-950/50 text-red-200' : 'hover:bg-slate-700/40 text-slate-200'}
+                              >
+                                <td className="py-3 px-3.5 font-bold">
+                                  {p.tarih ? new Date(p.tarih).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                                </td>
+                                <td className="py-3 px-3.5">{p.aciklama || (p.taksit_no ? `${p.taksit_no}. Taksit` : 'Taksit')}</td>
+                                <td className="py-3 px-3.5 font-bold text-sky-400">₺{formatTL(p.tutar)}</td>
+                                <td className="py-3 px-3.5 text-slate-400">{p.sinif_adi || 'Genel'}</td>
+                                <td className="py-3 px-3.5">
+                                  {isPastDue ? (
+                                    <span className="bg-red-950 text-red-400 border border-red-800 text-[10px] px-2 py-0.5 rounded font-extrabold inline-flex items-center gap-1">
+                                      <AlertTriangle className="w-3 h-3" />
+                                      <span>Vadesi Gecikti</span>
+                                    </span>
+                                  ) : (
+                                    <span className="bg-sky-950 text-sky-400 border border-sky-800 text-[10px] px-2 py-0.5 rounded font-extrabold inline-flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-sky-400" />
+                                      <span>Gelecek Vade</span>
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-3 px-3.5 text-right space-x-1.5 whitespace-nowrap">
+                                  <button
+                                    onClick={() => handleQuickOdendiIsaretle(p)}
+                                    className="px-2.5 py-1 bg-[#2eb82e] hover:bg-[#269926] text-white text-[11px] font-bold rounded-md shadow inline-flex items-center gap-1 transition"
+                                    title="Doğrudan Ödendi olarak işaretle ve bakiyeye ekle"
+                                  >
+                                    <CheckCircle className="w-3 h-3" />
+                                    <span>Ödendi İşaretle</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleOpenTahsilatModal(p)}
+                                    className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 text-[11px] font-bold rounded-md shadow inline-flex items-center gap-1 transition"
+                                    title="Tarih, açıklama veya ödeme yöntemi girerek tahsil et"
+                                  >
+                                    <CreditCard className="w-3 h-3 text-[#0284c7]" />
+                                    <span>Tahsil Et / Yöntem</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleOpenEditModal(p)}
+                                    className="p-1 text-slate-400 hover:text-sky-400 transition cursor-pointer"
+                                    title="Ödeme Kaydını Düzenle (Tarih, Açıklama, Tutar)"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteOdemeRecord(p.id)}
+                                    className="p-1 text-slate-400 hover:text-red-400 transition"
+                                    title="Taksit Kaydını Sil"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 2: ŞİMDİYE KADAR ALINAN ÖDEMELER */}
+              {modalTab === 'odenenler' && (
+                <div>
+                  {studentOdenenler.length === 0 ? (
+                    <div className="text-center py-10 bg-slate-900/40 rounded-xl border border-slate-700/50 space-y-2">
+                      <Clock className="w-8 h-8 text-slate-500 mx-auto" />
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Henüz tahsil edilmiş ödeme kaydı yok.</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto border border-slate-700/80 rounded-xl">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-900/70 border-b border-slate-300 dark:border-slate-700 text-slate-400 font-bold tracking-wider">
+                            <th className="py-3 px-3.5">TAHSİLAT TARİHİ</th>
+                            <th className="py-3 px-3.5">AÇIKLAMA / TAKSİT</th>
+                            <th className="py-3 px-3.5">TUTAR</th>
+                            <th className="py-3 px-3.5">ÖDEME YÖNTEMİ</th>
+                            <th className="py-3 px-3.5">PERİYOT</th>
+                            <th className="py-3 px-3.5">DERS / BRANŞ</th>
+                            <th className="py-3 px-3.5 text-right">İŞLEM</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-700/60 font-semibold text-slate-200">
+                          {studentOdenenler.map((p) => (
+                            <tr key={p.id} className="hover:bg-slate-700/40">
+                              <td className="py-3 px-3.5 font-bold">
+                                {p.tarih ? new Date(p.tarih).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                              </td>
+                              <td className="py-3 px-3.5">{p.aciklama || (p.taksit_no ? `${p.taksit_no}. Taksit` : 'Ödeme')}</td>
+                              <td className="py-3 px-3.5 font-bold text-emerald-400">₺{formatTL(p.tutar)}</td>
+                              <td className="py-3 px-3.5 text-slate-700 dark:text-slate-300">{p.odeme_yontemi || 'Nakit'}</td>
+                              <td className="py-3 px-3.5 text-slate-400">{p.odeme_periyodu || 'Aylık'}</td>
+                              <td className="py-3 px-3.5 text-slate-400">{p.sinif_adi || 'Genel'}</td>
+                              <td className="py-3 px-3.5 text-right space-x-1 whitespace-nowrap">
+                                <button
+                                  onClick={() => handleOdemeGeriAl(p)}
+                                  className="p-1 text-slate-400 hover:text-sky-400 transition cursor-pointer"
+                                  title="Ödemeyi Geri Al (Alınacaklar / Bekleyenler listesine taşı)"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleOpenEditModal(p)}
+                                  className="p-1 text-slate-400 hover:text-sky-400 transition"
+                                  title="Ödeme Kaydını Düzenle (Tarih, Açıklama, Tutar)"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteOdemeRecord(p.id)}
+                                  className="p-1 text-slate-400 hover:text-red-400 transition"
+                                  title="Ödeme Kaydını Sil"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-300 dark:border-slate-700 flex justify-between items-center text-xs">
+              <span className="text-slate-400">Toplam {selectedStudentPayments.length} ödeme kaydı listeleniyor</span>
+              <button
+                onClick={() => setSelectedOgrenci(null)}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-slate-100 font-bold rounded-xl transition"
+              >
+                Kapat
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* EDIT PAYMENT MODAL */}
+      {editingOdeme && (
+        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150">
+            <div className="flex items-center justify-between border-b border-slate-300 dark:border-slate-700 pb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Edit className="w-4 h-4 text-[#0284c7]" />
+                <span>Ödeme Kaydını Düzenle</span>
+              </h3>
+              <button onClick={() => setEditingOdeme(null)} className="text-slate-400 hover:text-slate-900 dark:text-slate-100">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditOdemeSubmit} className="space-y-3 text-xs">
+              <div>
+                <CustomDatePicker
+                  label="Tarih"
+                  value={editingOdeme.tarih}
+                  onChange={(newDate) => setEditingOdeme({ ...editingOdeme, tarih: newDate })}
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Açıklama</label>
+                <input
+                  type="text"
+                  value={editingOdeme.aciklama}
+                  onChange={(e) => setEditingOdeme({ ...editingOdeme, aciklama: e.target.value })}
+                  placeholder="Örn: 2. Taksit, Telafi Ödemesi vb."
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Tutar (₺)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editingOdeme.tutar}
+                  onChange={(e) => setEditingOdeme({ ...editingOdeme, tutar: e.target.value })}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Ödeme Yöntemi</label>
+                <select
+                  value={editingOdeme.odeme_yontemi}
+                  onChange={(e) => setEditingOdeme({ ...editingOdeme, odeme_yontemi: e.target.value })}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100"
+                >
+                  <option value="Nakit">Nakit</option>
+                  <option value="Kredi Kartı">Kredi Kartı</option>
+                  <option value="Havale/EFT">Havale/EFT</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-300 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setEditingOdeme(null)}
+                  className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600 text-xs font-semibold rounded-xl"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-xl shadow flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Değişiklikleri Kaydet</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-2xl border backdrop-blur-md transition-all duration-300 flex items-center gap-3 text-sm font-semibold animate-scale-in ${
+            typeof toastMessage === 'object' && toastMessage?.type === 'error'
+              ? 'bg-rose-950/90 text-rose-200 border-rose-700/60 shadow-rose-950/40'
+              : 'bg-emerald-950/90 text-emerald-200 border-emerald-700/60 shadow-emerald-950/40'
+          }`}
+        >
+          <Sparkles className="w-5 h-5 text-[#2eb82e]" />
+          <span>{typeof toastMessage === 'string' ? toastMessage : toastMessage.message}</span>
+        </div>
+      )}
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        confirmText={confirmModal.confirmText}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
+    </div>
+  );
+};
+
+export default Finans;
