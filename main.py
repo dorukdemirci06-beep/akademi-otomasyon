@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from typing import List, Optional
-from fastapi import FastAPI, Depends, HTTPException, status, Query, Body, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Query, Body, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +18,7 @@ from config import settings
 from database import engine, SessionLocal
 import models
 import schemas
+from services.whatsapp_service import send_whatsapp_message
 
 # Veritabanı tablolarını oluştur
 models.Base.metadata.create_all(bind=engine)
@@ -232,6 +233,7 @@ def get_dashboard():
 # ==================== ÖĞRENCİ ENDPOINTLERİ ====================
 @app.post("/ogrenciler/", response_model=schemas.OgrenciResponse, status_code=status.HTTP_201_CREATED)
 def create_ogrenci(
+    background_tasks: BackgroundTasks,
     ogrenci: schemas.OgrenciCreate = Depends(), 
     db: Session = Depends(get_db),
     current_user: models.Kullanici = Depends(get_current_user)
@@ -309,6 +311,11 @@ def create_ogrenci(
             db.refresh(yeni_ogrenci)
         except Exception:
             db.rollback()
+
+    if telefon:
+        akademi = current_user.akademi_adi or "Akademi"
+        mesaj = f"Sayın {yeni_ogrenci.isim} {yeni_ogrenci.soyisim},\n{akademi}'ne kaydınız başarıyla oluşturulmuştur. Hoş geldiniz! 🎉"
+        background_tasks.add_task(send_whatsapp_message, telefon, mesaj)
 
     return yeni_ogrenci
 
@@ -1515,3 +1522,39 @@ def delete_yoklama_oturum(
     return {"mesaj": "Yoklama oturumu silindi.", "silinen_sayi": len(existing)}
 
 
+# ==================== WHATSAPP OTOMASYON JOBS ====================
+@app.post("/jobs/daily-reminders", tags=["Jobs"])
+def run_daily_reminders(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """
+    Yarınki dersleri bulup, öğrencilere WhatsApp üzerinden hatırlatma mesajı gönderir.
+    Bu endpoint cron job vb. araçlarla günde 1 kez tetiklenmelidir.
+    """
+    tomorrow = datetime.now() + timedelta(days=1)
+    gunler = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
+    yarin_gun_str = gunler[tomorrow.weekday()]
+    
+    # Yarınki dersleri bul
+    yarin_dersleri = db.query(models.DersProgrami).filter(models.DersProgrami.gun == yarin_gun_str).all()
+    
+    mesaj_gonderilenler = 0
+    for ders in yarin_dersleri:
+        # Sınıftaki öğrencileri bul
+        ogrenci_siniflar = db.query(models.OgrenciSinif).filter(models.OgrenciSinif.sinif_id == ders.sinif_id).all()
+        
+        for os_relation in ogrenci_siniflar:
+            ogrenci = os_relation.ogrenci
+            if ogrenci and ogrenci.telefon and ogrenci.durum == "Aktif":
+                ders_adi = ders.ders_adi or "Ders"
+                mesaj = f"Hatırlatma: Sayın {ogrenci.isim} {ogrenci.soyisim},\nYarın ({yarin_gun_str}) saat {ders.baslangic_saati}'de {ders_adi} dersiniz bulunmaktadır. İyi dersler! 📚"
+                background_tasks.add_task(send_whatsapp_message, ogrenci.telefon, mesaj)
+                mesaj_gonderilenler += 1
+                
+    return {
+        "status": "success", 
+        "target_day": yarin_gun_str, 
+        "queued_messages": mesaj_gonderilenler,
+        "message": f"Yarınki ({yarin_gun_str}) {len(yarin_dersleri)} ders için toplam {mesaj_gonderilenler} öğrenciye hatırlatma mesajı kuyruğa eklendi."
+    }
