@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -27,6 +27,8 @@ class Ogrenci(Base):
     baba_eposta = Column(String, nullable=True)
     baba_meslek = Column(String, nullable=True)
     
+    dogum_tarihi = Column(String, nullable=True) # YYYY-MM-DD
+
     bakiye = Column(Float, default=0.0)
     durum = Column(String, default="Aktif") # Aktif, Pasif
     akademi_adi = Column(String, nullable=True, default="Test1", index=True)
@@ -149,6 +151,7 @@ class OnKayit(Base):
     ilgilenilen_brans = Column(String, nullable=True) # Sınıflar tablosu ile FK OLMAYACAK, serbest metin
     durum = Column(String, default="Aranacak") # Aranacak, Arandı, Ulaşılamadı, Olumsuz, Kesin Kayıt
     akademi_adi = Column(String, nullable=True, default="Test1", index=True)
+    notlar = Column(String, nullable=True)
     eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
 
 class Akademi(Base):
@@ -156,6 +159,21 @@ class Akademi(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
+    whatsapp_provider = Column(String, nullable=True, default="callmebot")
+    whatsapp_api_key = Column(String, nullable=True)
+    whatsapp_phone_number = Column(String, nullable=True)
+    msg_kayit = Column(String, nullable=True)
+    msg_ders_hatirlatma = Column(String, nullable=True)
+    msg_odeme_hatirlatma = Column(String, nullable=True)
+    msg_devamsizlik = Column(String, nullable=True)
+    msg_dogum_gunu = Column(String, nullable=True)
+    msg_ozel_gun = Column(String, nullable=True)
+    is_msg_kayit_active = Column(Boolean, default=False)
+    is_msg_ders_hatirlatma_active = Column(Boolean, default=False)
+    is_msg_odeme_hatirlatma_active = Column(Boolean, default=False)
+    is_msg_devamsizlik_active = Column(Boolean, default=False)
+    is_msg_dogum_gunu_active = Column(Boolean, default=False)
+    is_msg_ozel_gun_active = Column(Boolean, default=False)
     eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
 
 
