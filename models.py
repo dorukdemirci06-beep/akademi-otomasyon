@@ -27,6 +27,8 @@ class Ogrenci(Base):
     baba_eposta = Column(String, nullable=True)
     baba_meslek = Column(String, nullable=True)
     
+    dogum_tarihi = Column(String, nullable=True) # YYYY-MM-DD
+
     bakiye = Column(Float, default=0.0)
     durum = Column(String, default="Aktif") # Aktif, Pasif
     akademi_adi = Column(String, nullable=True, default="Test1", index=True)
@@ -149,6 +151,7 @@ class OnKayit(Base):
     ilgilenilen_brans = Column(String, nullable=True) # Sınıflar tablosu ile FK OLMAYACAK, serbest metin
     durum = Column(String, default="Aranacak") # Aranacak, Arandı, Ulaşılamadı, Olumsuz, Kesin Kayıt
     akademi_adi = Column(String, nullable=True, default="Test1", index=True)
+    notlar = Column(String, nullable=True)
     eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
 
 class Akademi(Base):

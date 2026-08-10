@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon, Users } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const Navbar = ({ currentUser, onLogout }) => {
@@ -17,7 +17,7 @@ const Navbar = ({ currentUser, onLogout }) => {
   ];
 
   if (isAdmin) {
-    navItems.push({ path: '/kullanicilar', label: 'Yönetim', icon: UserCog });
+    navItems.push({ path: '/kullanicilar', label: 'Yönetim', icon: Users });
   }
 
   const displayName = currentUser?.ad_soyad || currentUser?.kullanici_adi || 'Kullanıcı';
@@ -59,14 +59,16 @@ const Navbar = ({ currentUser, onLogout }) => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 shrink-0 ${isActive
+                    `group flex items-center px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 shrink-0 ${isActive
                       ? 'bg-[#2eb82e] text-white shadow-lg shadow-emerald-900/30 dark:shadow-emerald-900/40 font-bold'
                       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
                     }`
                   }
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span className="whitespace-nowrap">{item.label}</span>
+                  <Icon className="w-5 h-5 shrink-0" />
+                  <span className="whitespace-nowrap overflow-hidden transition-all duration-300 max-w-0 opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-2">
+                    {item.label}
+                  </span>
                 </NavLink>
               );
             })}

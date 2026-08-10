@@ -3,8 +3,9 @@ import {
   UserPlus, Search, UserMinus, UserCheck, BookPlus, ArrowUpDown, Users, UserX, X,
   ChevronDown, ChevronUp, BookOpen, User, Phone, Mail, MapPin, Heart, Sparkles
 } from 'lucide-react';
-import { getOgrenciler, createOgrenci, updateOgrenciDurum, kaydetOgrenciSinif, getOgrenciSiniflar, getSiniflar, deleteOgrenciSinif } from '../services/api';
+import { getOgrenciler, createOgrenci, updateOgrenciDurum, updateOgrenciInfo, kaydetOgrenciSinif, getOgrenciSiniflar, getSiniflar, deleteOgrenciSinif } from '../services/api';
 import ConfirmModal from '../components/ConfirmModal';
+import CustomDatePicker from '../components/CustomDatePicker';
 import { formatTL } from '../utils/formatters';
 
 const Kayit = () => {
@@ -35,6 +36,8 @@ const Kayit = () => {
   const [activeTab, setActiveTab] = useState('Aktif'); // 'Aktif' veya 'Pasif'
   const [sortOption, setSortOption] = useState('isim_asc');
   const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [showEkDersModal, setShowEkDersModal] = useState(false);
   const [selectedOgrenci, setSelectedOgrenci] = useState(null);
   const [expandedRows, setExpandedRows] = useState({});
@@ -80,6 +83,7 @@ const Kayit = () => {
     isim: '',
     soyisim: '',
     tc: '',
+    dogum_tarihi: '',
     telefon: '',
     eposta: '',
     adres: '',
@@ -147,19 +151,41 @@ const Kayit = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createOgrenci(formData);
-      showToast('Öğrenci ve veli bilgileri başarıyla kaydedildi!');
+      if (isEditing && editId) {
+        await updateOgrenciInfo(editId, formData);
+        showToast('Öğrenci bilgileri başarıyla güncellendi!');
+      } else {
+        await createOgrenci(formData);
+        showToast('Öğrenci ve veli bilgileri başarıyla kaydedildi!');
+      }
       setShowModal(false);
+      setIsEditing(false);
+      setEditId(null);
       setFormData({
-        isim: '', soyisim: '', tc: '', telefon: '', eposta: '', adres: '',
+        isim: '', soyisim: '', tc: '', dogum_tarihi: '', telefon: '', eposta: '', adres: '',
         sinif_adi: '', bakiye: 0.0, anne_isim: '', anne_tc: '', anne_telefon: '',
         anne_eposta: '', anne_meslek: '', baba_isim: '', baba_tc: '', baba_telefon: '', baba_eposta: '', baba_meslek: ''
       });
       fetchOgrenciler();
     } catch (err) {
-      const detail = err.response?.data?.detail || 'Öğrenci kaydedilemedi.';
+      const detail = err.response?.data?.detail || 'İşlem başarısız oldu.';
       showToast(`Hata: ${detail}`, 'error');
     }
+  };
+
+  const handleEditOgrenci = (ogrenci) => {
+    setFormData({
+      isim: ogrenci.isim || '', soyisim: ogrenci.soyisim || '', tc: ogrenci.tc || '', dogum_tarihi: ogrenci.dogum_tarihi || '',
+      telefon: ogrenci.telefon || '', eposta: ogrenci.eposta || '', adres: ogrenci.adres || '',
+      sinif_adi: ogrenci.sinif_adi || '', bakiye: ogrenci.bakiye || 0.0, 
+      anne_isim: ogrenci.anne_isim || '', anne_tc: ogrenci.anne_tc || '', anne_telefon: ogrenci.anne_telefon || '',
+      anne_eposta: ogrenci.anne_eposta || '', anne_meslek: ogrenci.anne_meslek || '', 
+      baba_isim: ogrenci.baba_isim || '', baba_tc: ogrenci.baba_tc || '', baba_telefon: ogrenci.baba_telefon || '', 
+      baba_eposta: ogrenci.baba_eposta || '', baba_meslek: ogrenci.baba_meslek || ''
+    });
+    setEditId(ogrenci.id);
+    setIsEditing(true);
+    setShowModal(true);
   };
 
   const handleToggleDurum = (id, name, currentDurum) => {
@@ -265,7 +291,16 @@ const Kayit = () => {
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Yeni öğrenci kaydı oluşturun veya aktif / pasif öğrencileri yönetin.</p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            setIsEditing(false);
+            setEditId(null);
+            setFormData({
+              isim: '', soyisim: '', tc: '', dogum_tarihi: '', telefon: '', eposta: '', adres: '',
+              sinif_adi: '', bakiye: 0.0, anne_isim: '', anne_tc: '', anne_telefon: '',
+              anne_eposta: '', anne_meslek: '', baba_isim: '', baba_tc: '', baba_telefon: '', baba_eposta: '', baba_meslek: ''
+            });
+            setShowModal(true);
+          }}
           className="px-4 py-2.5 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition shadow-lg shadow-emerald-900/20 flex items-center gap-2 cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
@@ -464,10 +499,20 @@ const Kayit = () => {
                               <span>Ders Ekle</span>
                             </button>
 
+                            <button
+                              type="button"
+                              onClick={() => handleEditOgrenci(o)}
+                              className="px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/80 cursor-pointer"
+                              title="Öğrenciyi Düzenle"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                              <span>Düzenle</span>
+                            </button>
+
                             {o.durum === 'Aktif' ? (
                               <button
                                 type="button"
-                                onClick={() => handleToggleDurum(o)}
+                                onClick={() => handleToggleDurum(o.id, `${o.isim} ${o.soyisim}`, o.durum)}
                                 className="px-2.5 py-1.5 bg-sky-50 dark:bg-sky-950/80 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-sky-200 dark:border-sky-800/80 cursor-pointer"
                                 title="Öğrenciyi Pasife Al"
                               >
@@ -477,7 +522,7 @@ const Kayit = () => {
                             ) : (
                               <button
                                 type="button"
-                                onClick={() => handleToggleDurum(o)}
+                                onClick={() => handleToggleDurum(o.id, `${o.isim} ${o.soyisim}`, o.durum)}
                                 className="px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/80 cursor-pointer"
                                 title="Öğrenciyi Aktifleştir"
                               >
@@ -508,6 +553,7 @@ const Kayit = () => {
                                   </div>
                                   <div className="space-y-1 text-slate-700 dark:text-slate-300">
                                     <div><strong className="text-slate-800 dark:text-slate-200">TC Kimlik:</strong> {o.tc || '-'}</div>
+                                    <div><strong className="text-slate-800 dark:text-slate-200">Doğum Tarihi:</strong> {o.dogum_tarihi ? new Date(o.dogum_tarihi).toLocaleDateString('tr-TR') : '-'}</div>
                                     <div><strong className="text-slate-800 dark:text-slate-200">E-Posta:</strong> {o.eposta || '-'}</div>
                                     <div><strong className="text-slate-800 dark:text-slate-200">Telefon:</strong> {o.telefon || '-'}</div>
                                     <div><strong className="text-slate-800 dark:text-slate-200">Adres:</strong> {o.adres || '-'}</div>
@@ -591,19 +637,19 @@ const Kayit = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden text-slate-800 dark:text-slate-100">
             {/* STICKY FIXED HEADER */}
             <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 px-6 py-4 bg-white dark:bg-slate-800 shrink-0">
-              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-[#2eb82e]" />
-                <span>Yeni Öğrenci & Veli Kaydı</span>
-              </h3>
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <UserPlus className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                {isEditing ? "Öğrenciyi Düzenle" : "Yeni Öğrenci Ekle"}
+              </h2>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-xl cursor-pointer">&times;</button>
             </div>
 
             {/* SCROLLABLE FORM BODY */}
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
               {/* 1. Öğrenci Bilgileri */}
-              <div className="text-xs font-bold text-[#2eb82e] uppercase tracking-wider border-b border-emerald-200 dark:border-emerald-900/50 pb-1">
-                1. Öğrenci Kişisel Bilgileri
-              </div>
+              <h3 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-4 border-b border-emerald-200 dark:border-emerald-800/50 pb-2">
+                {isEditing ? "Öğrenci Bilgilerini Güncelle" : "Öğrenci Temel Bilgileri"}
+              </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Adı *</label>
@@ -616,6 +662,15 @@ const Kayit = () => {
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Öğrenci TC Kimlik No</label>
                   <input type="text" name="tc" value={formData.tc} onChange={handleInputChange} maxLength="11" className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="11122233344" />
+                </div>
+                <div>
+                  <CustomDatePicker
+                    label="Doğum Tarihi"
+                    value={formData.dogum_tarihi}
+                    onChange={(val) => setFormData(prev => ({ ...prev, dogum_tarihi: val }))}
+                    placeholder="Tarih Seçin"
+                    align="right"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Telefon</label>

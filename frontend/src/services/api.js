@@ -42,6 +42,7 @@ export const getOgrenciler = (durum) => API.get('/ogrenciler/', { params: durum 
 export const createOgrenci = (params) => API.post('/ogrenciler/', null, { params });
 export const deleteOgrenci = (id) => API.delete(`/ogrenciler/${id}`);
 export const updateOgrenciDurum = (id, durum) => API.put(`/ogrenciler/${id}/durum`, null, { params: { durum } });
+export const updateOgrenciInfo = (id, data) => API.put(`/ogrenciler/${id}`, data);
 export const araOgrenci = (q) => API.get('/ogrenciler/ara', { params: { q } });
 export const getOgrenciSiniflar = (id) => API.get(`/ogrenciler/${id}/siniflar/`);
 
@@ -64,6 +65,7 @@ export const deleteOgrenciSinif = (id) => API.delete(`/ogrenci-sinif/${id}`);
 // Ön Kayıt Endpointleri
 export const getOnKayitlar = () => API.get('/on-kayitlar/');
 export const createOnKayit = (data) => API.post('/on-kayitlar/', data);
+export const updateOnKayit = (id, data) => API.put(`/on-kayitlar/${id}`, data);
 export const updateOnKayitDurum = (id, durum) => API.put(`/on-kayitlar/${id}/durum`, { durum });
 export const deleteOnKayit = (id) => API.delete(`/on-kayitlar/${id}`);
 

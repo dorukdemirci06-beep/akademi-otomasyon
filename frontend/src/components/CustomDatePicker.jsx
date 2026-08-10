@@ -153,8 +153,7 @@ const CustomDatePicker = ({
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
       {label && (
-        <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center gap-1.5">
-          <CalendarIcon className="w-4 h-4 text-[#2eb82e]" />
+        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
           <span>{label}</span>
         </label>
       )}
@@ -166,7 +165,7 @@ const CustomDatePicker = ({
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className={buttonClassName || "w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-900 border border-slate-700 hover:border-[#2eb82e] rounded-xl text-xs font-bold text-slate-100 shadow-md transition cursor-pointer min-w-0 h-[38px]"}
+        className={buttonClassName || "w-full flex items-center justify-between gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-100 shadow-sm transition cursor-pointer min-w-0 h-[38px]"}
       >
         <div className="flex items-center gap-2 truncate min-w-0">
           <IconComponent className="w-4 h-4 text-[#2eb82e] shrink-0" />
@@ -186,9 +185,24 @@ const CustomDatePicker = ({
           {/* Header Bar */}
           <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
             <div className="flex items-center gap-2">
-              <span className="text-base font-black text-slate-100 tracking-tight">
-                {AYLAR[viewMonth]} {viewYear}
-              </span>
+              <select 
+                value={viewMonth}
+                onChange={(e) => setViewDate(new Date(viewYear, parseInt(e.target.value), 1))}
+                className="bg-slate-800 text-slate-100 font-bold border border-slate-700 rounded-lg px-2 py-1 outline-none focus:border-emerald-500 cursor-pointer text-sm hover:bg-slate-700 transition"
+              >
+                {AYLAR.map((ay, idx) => (
+                  <option key={ay} value={idx}>{ay}</option>
+                ))}
+              </select>
+              <select 
+                value={viewYear}
+                onChange={(e) => setViewDate(new Date(parseInt(e.target.value), viewMonth, 1))}
+                className="bg-slate-800 text-slate-100 font-bold border border-slate-700 rounded-lg px-2 py-1 outline-none focus:border-emerald-500 cursor-pointer text-sm hover:bg-slate-700 transition"
+              >
+                {Array.from({length: 100}, (_, i) => new Date().getFullYear() - 80 + i).map(yil => (
+                  <option key={yil} value={yil}>{yil}</option>
+                ))}
+              </select>
             </div>
 
             <div className="flex items-center gap-1">

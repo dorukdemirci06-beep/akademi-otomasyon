@@ -49,6 +49,7 @@ class OgrenciBase(BaseModel):
     telefon: Optional[str] = None
     eposta: Optional[str] = None
     adres: Optional[str] = None
+    dogum_tarihi: Optional[str] = None
     durum: Optional[str] = "Aktif"
     
     anne_isim: Optional[str] = None
@@ -66,6 +67,26 @@ class OgrenciBase(BaseModel):
 class OgrenciCreate(OgrenciBase):
     sinif_adi: Optional[str] = None
     bakiye: float = 0.0
+
+class OgrenciUpdate(BaseModel):
+    isim: Optional[str] = None
+    soyisim: Optional[str] = None
+    tc: Optional[str] = None
+    telefon: Optional[str] = None
+    eposta: Optional[str] = None
+    adres: Optional[str] = None
+    
+    anne_isim: Optional[str] = None
+    anne_tc: Optional[str] = None
+    anne_telefon: Optional[str] = None
+    anne_eposta: Optional[str] = None
+    anne_meslek: Optional[str] = None
+    
+    baba_isim: Optional[str] = None
+    baba_tc: Optional[str] = None
+    baba_telefon: Optional[str] = None
+    baba_eposta: Optional[str] = None
+    baba_meslek: Optional[str] = None
 
 class OgrenciResponse(OgrenciBase):
     id: int
@@ -132,6 +153,7 @@ class OnKayitBase(BaseModel):
     veli_meslek: Optional[str] = None
     telefon: Optional[str] = None
     ilgilenilen_brans: Optional[str] = None
+    notlar: Optional[str] = None
     durum: Optional[str] = "Aranacak"
 
 class OnKayitCreate(OnKayitBase):
@@ -139,6 +161,17 @@ class OnKayitCreate(OnKayitBase):
 
 class OnKayitDurumUpdate(BaseModel):
     durum: str
+
+class OnKayitUpdate(BaseModel):
+    ogrenci_adi: Optional[str] = None
+    ogrenci_soyadi: Optional[str] = None
+    veli_adi: Optional[str] = None
+    veli_soyadi: Optional[str] = None
+    veli_meslek: Optional[str] = None
+    telefon: Optional[str] = None
+    ilgilenilen_brans: Optional[str] = None
+    notlar: Optional[str] = None
+    durum: Optional[str] = None
 
 class OnKayitResponse(OnKayitBase):
     id: int

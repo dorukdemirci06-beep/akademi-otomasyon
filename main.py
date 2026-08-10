@@ -266,6 +266,7 @@ def create_ogrenci(
         isim=ogrenci.isim,
         soyisim=ogrenci.soyisim,
         tc=tc,
+        dogum_tarihi=ogrenci.dogum_tarihi,
         telefon=telefon,
         eposta=eposta,
         adres=adres,
@@ -326,6 +327,26 @@ def get_ogrenciler(
         query = query.filter(models.Ogrenci.durum == durum)
     ogrenciler = query.all()
     return [schemas.OgrenciResponse.model_validate(o) for o in ogrenciler]
+
+
+@app.put("/ogrenciler/{ogrenci_id}", response_model=schemas.OgrenciResponse)
+def update_ogrenci(
+    ogrenci_id: int,
+    ogrenci_data: schemas.OgrenciUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    ogrenci = db.query(models.Ogrenci).filter(models.Ogrenci.id == ogrenci_id).first()
+    if not ogrenci or (ogrenci.akademi_adi != current_user.akademi_adi):
+        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı")
+    
+    update_data = ogrenci_data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(ogrenci, key, value)
+        
+    db.commit()
+    db.refresh(ogrenci)
+    return ogrenci
 
 
 @app.put("/ogrenciler/{ogrenci_id}/durum", response_model=schemas.OgrenciResponse)
@@ -1076,6 +1097,7 @@ def create_on_kayit(
         veli_meslek=on_kayit.veli_meslek.strip() if on_kayit.veli_meslek else None,
         telefon=on_kayit.telefon.strip() if on_kayit.telefon else None,
         ilgilenilen_brans=on_kayit.ilgilenilen_brans.strip() if on_kayit.ilgilenilen_brans else None,
+        notlar=on_kayit.notlar.strip() if on_kayit.notlar else None,
         durum=on_kayit.durum if on_kayit.durum else "Aranacak",
         akademi_adi=current_user.akademi_adi or "Test1"
     )
@@ -1084,6 +1106,25 @@ def create_on_kayit(
     db.refresh(yeni_kayit)
     return yeni_kayit
 
+
+@app.put("/on-kayitlar/{kayit_id}", response_model=schemas.OnKayitResponse)
+def update_on_kayit(
+    kayit_id: int,
+    on_kayit_data: schemas.OnKayitUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    kayit = db.query(models.OnKayit).filter(models.OnKayit.id == kayit_id).first()
+    if not kayit or (kayit.akademi_adi != current_user.akademi_adi):
+        raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+    
+    update_data = on_kayit_data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(kayit, key, value)
+        
+    db.commit()
+    db.refresh(kayit)
+    return kayit
 
 @app.put("/on-kayitlar/{kayit_id}/durum", response_model=schemas.OnKayitResponse)
 def update_on_kayit_durum(
