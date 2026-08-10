@@ -106,11 +106,11 @@ export default function Ayarlar({ showToast, user }) {
       <button 
         type="button" 
         onClick={() => handleToggle(name)}
-        className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors duration-300 ${checked ? 'bg-[#2eb82e]' : 'bg-slate-300 dark:bg-slate-600'}`}
+        className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors duration-300 shrink-0 ${checked ? 'bg-[#2eb82e]' : 'bg-slate-300 dark:bg-slate-600'}`}
       >
         <div className={`bg-white w-3 h-3 rounded-full shadow-md transform transition-transform duration-300 ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>
-      {label && <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{checked ? 'Açık' : 'Kapalı'}</span>}
+      {label && <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-12 text-left">{checked ? 'Açık' : 'Kapalı'}</span>}
     </div>
   );
 

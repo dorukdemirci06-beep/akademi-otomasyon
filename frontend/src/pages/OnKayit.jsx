@@ -16,7 +16,8 @@ import {
   UserCheck,
   Heart,
   X,
-  Edit
+  Edit,
+  Eye
 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 import { 
@@ -877,9 +878,9 @@ const OnKayit = () => {
                           <button
                             onClick={() => openEditModal(item)}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
-                            title="Ön Kaydı Düzenle"
+                            title="Görüntüle"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </button>
 
                           <button
@@ -1245,9 +1246,9 @@ const OnKayit = () => {
           <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
             <div className="sticky top-0 z-10 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700/60 p-6 flex justify-between items-center">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Ön Kayıt Düzenle</h3>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Ön Kayıt Detayları</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Aday bilgilerini güncelleyebilirsiniz.
+                  Aday bilgilerini görüntüleyip güncelleyebilirsiniz.
                 </p>
               </div>
               <button

@@ -3,7 +3,6 @@ import { Users, BookOpen, Wallet, ArrowUpRight, TrendingUp, Plus, Trash2, X, Eye
 import { getOgrenciler, getSiniflar, createSinif, deleteSinif, getSinifOgrencileri, getOnKayitlar, createDersProgrami, deleteDersProgrami } from '../services/api';
 import { Link } from 'react-router-dom';
 import ConfirmModal from '../components/ConfirmModal';
-import HaftalikDersCizelgesi from '../components/HaftalikDersCizelgesi';
 import { formatTL } from '../utils/formatters';
 
 const GUNLER = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
@@ -19,7 +18,7 @@ const RENK_OPTIONS = [
   { label: 'Kırmızı', value: 'red', bg: 'bg-red-100/90 border-red-300 text-red-950 dark:bg-red-950/80 dark:border-red-600/80 dark:text-red-200 shadow-sm' }
 ];
 
-const Dashboard = () => {
+const Siniflar = () => {
   const currentUser = (() => {
     try {
       return JSON.parse(localStorage.getItem('user') || '{}');
@@ -57,8 +56,6 @@ const Dashboard = () => {
   const [sinifCount, setSinifCount] = useState(0);
   const [onKayitCount, setOnKayitCount] = useState(0);
   const [recentOgrenciler, setRecentOgrenciler] = useState([]);
-  const [dersProgrami, setDersProgrami] = useState([]);
-  const [expandedGun, setExpandedGun] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Toast Notification State
@@ -105,7 +102,7 @@ const Dashboard = () => {
   const [detayLoading, setDetayLoading] = useState(false);
 
   useEffect(() => {
-    loadDashboardData();
+    fetchSiniflarModal();
   }, []);
 
   const loadDashboardData = async () => {
@@ -125,21 +122,6 @@ const Dashboard = () => {
       setSinifCount(siniflar.length);
       setOnKayitCount(onKayitlar.length);
       setSiniflarList(siniflar);
-
-      const dersler = [];
-      siniflar.forEach(sinif => {
-        if (sinif.ders_programi && Array.isArray(sinif.ders_programi)) {
-          sinif.ders_programi.forEach(dp => {
-            dersler.push({
-              ...dp,
-              sinif_adi: sinif.sinif_adi,
-              renk: sinif.renk || 'indigo',
-              ogretmen_adi: sinif.ogretmen_adi || dp.ogretmen_adi || '-'
-            });
-          });
-        }
-      });
-      setDersProgrami(dersler);
 
       setRecentOgrenciler(ogrenciler.slice(-5).reverse());
     } catch (err) {
@@ -306,163 +288,109 @@ const Dashboard = () => {
     }
   };
 
-  return (
+    return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-md flex justify-between items-center transition-colors">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Hoş Geldiniz 👋</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Kurum öğrenci, yoklama ve finans süreçlerinizi buradan yönetin.</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-sky-500" />
+            Mevcut Sınıflar & Branşlar
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Sınıflarınızı, öğretmen atamalarını ve ders programlarını yönetin.
+          </p>
         </div>
-        <div className="flex gap-3">
-          <Link
-            to="/kayit"
-            className="px-4 py-2.5 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition shadow-lg shadow-emerald-900/20 flex items-center gap-2"
-          >
-            <span>Yeni Öğrenci Ekle</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </Link>
-          <Link
-            to="/finans"
-            className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-sky-900/20 flex items-center gap-2"
-          >
-            <span>Ödeme Girişi</span>
-            <Wallet className="w-4 h-4" />
-          </Link>
-        </div>
-      </div>
-
-      {/* KPI Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        
-        {/* Total Ogrenci Card */}
-        <Link 
-          to="/kayit" 
-          className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-md hover:border-[#2eb82e] hover:scale-[1.01] transition block group"
+        <button
+          onClick={() => setShowEkleModal(true)}
+          className="px-4 py-2 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition flex items-center gap-2 shadow-md shadow-emerald-900/30 cursor-pointer"
         >
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider group-hover:text-[#2eb82e] transition">TOPLAM ÖĞRENCİ</p>
-              <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-2">{loading ? '...' : ogrenciCount}</h3>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 text-[#2eb82e] flex items-center justify-center shrink-0">
-              <Users className="w-6 h-6" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center text-xs text-[#2eb82e] font-semibold gap-1">
-            <TrendingUp className="w-4 h-4 shrink-0" />
-            <span>Kayıtlı Öğrenci Listesi →</span>
-          </div>
-        </Link>
-
-        {/* Aktif Sinif & Brans Card - CLICKABLE */}
-        <Link to="/siniflar"
-          className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-md hover:border-sky-500 hover:scale-[1.01] transition cursor-pointer group"
-          title="Tıklayarak sınıfları görüntüleyin ve yönetin"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider group-hover:text-sky-500 transition">AKTİF SINIF & BRANŞ</p>
-              <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-2">{loading ? '...' : sinifCount}</h3>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-sky-50 dark:bg-sky-950/80 border border-sky-200 dark:border-sky-800/60 text-sky-500 flex items-center justify-center shrink-0">
-              <BookOpen className="w-6 h-6" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center text-xs text-sky-500 font-semibold gap-1">
-            <TrendingUp className="w-4 h-4 shrink-0" />
-            <span>Sınıfları Görüntüle & Yönet →</span>
-          </div>
-        </Link>
-
-        {/* Ön Kayıt Adaylar Card */}
-        <Link 
-          to="/on-kayit" 
-          className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-md hover:border-emerald-500 hover:scale-[1.01] transition block group"
-        >
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider group-hover:text-emerald-500 transition">ÖN KAYIT ADAY LİSTESİ</p>
-              <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-2">{loading ? '...' : onKayitCount}</h3>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-              <UserPlus className="w-6 h-6" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center text-xs text-emerald-600 dark:text-emerald-400 font-semibold gap-1">
-          </div>
-        </Link>
+          <Plus className="w-5 h-5" />
+          <span>Yeni Sınıf Ekle</span>
+        </button>
       </div>
-
-      <div className="mt-8">
-        <HaftalikDersCizelgesi 
-          dersProgrami={dersProgrami}
-          expandedGun={expandedGun}
-          setExpandedGun={setExpandedGun}
-          readonly={true}
-        />
-      </div>
-
-      {/* Recent Activity Table */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-md p-6">
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <span>Son Kaydolan Öğrenciler</span>
-          </h2>
-          <Link to="/kayit" className="text-sm font-semibold text-[#2eb82e] hover:underline">
-            Tümünü Gör →
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider bg-slate-50 dark:bg-slate-900/50">
-                <th className="py-3 px-4 w-16">ID</th>
-                <th className="py-3 px-4 whitespace-nowrap">ÖĞRENCİ ADI SOYADI</th>
-                <th className="py-3 px-4 whitespace-nowrap">TELEFON</th>
-                <th className="py-3 px-4 min-w-[220px]">ANNE / BABA VELİ</th>
-                {isAdmin && <th className="py-3 px-4 text-right whitespace-nowrap">BAKİYE</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700/60 text-sm">
-              {loading ? (
-                <tr>
-                  <td colSpan={isAdmin ? 5 : 4} className="text-center py-6 text-slate-400">Yükleniyor...</td>
-                </tr>
-              ) : recentOgrenciler.length === 0 ? (
-                <tr>
-                  <td colSpan={isAdmin ? 5 : 4} className="text-center py-6 text-slate-400">Henüz öğrenci kaydı bulunamadı.</td>
-                </tr>
-              ) : (
-                recentOgrenciler.map((o) => (
-                  <tr key={o.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
-                    <td className="py-3.5 px-4 font-bold text-slate-400 dark:text-slate-500 whitespace-nowrap">#{o.id}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap">{o.isim} {o.soyisim}</td>
-                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 whitespace-nowrap">{o.telefon || '-'}</td>
-                    <td className="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400 space-y-0.5 min-w-[220px]">
-                      <div>
-                        <strong className="text-slate-700 dark:text-slate-300">Anne:</strong> {o.anne_isim || '-'}
-                        {o.anne_meslek && <span className="text-sky-600 dark:text-sky-400 font-medium"> ({o.anne_meslek})</span>}
-                        {o.anne_telefon && <span> ({o.anne_telefon})</span>}
-                      </div>
-                      <div>
-                        <strong className="text-slate-700 dark:text-slate-300">Baba:</strong> {o.baba_isim || '-'}
-                        {o.baba_meslek && <span className="text-sky-600 dark:text-sky-400 font-medium"> ({o.baba_meslek})</span>}
-                        {o.baba_telefon && <span> ({o.baba_telefon})</span>}
-                      </div>
-                    </td>
-                    {isAdmin && <td className="py-3.5 px-4 font-bold text-[#2eb82e] text-right whitespace-nowrap">₺{formatTL(o.bakiye)}</td>}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-md border border-slate-200 dark:border-slate-700">
+{/* Modal Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider bg-slate-50 dark:bg-slate-900/50">
+                    <th className="py-3 px-4">SINIF ID</th>
+                    <th className="py-3 px-4">SINIF / BRANŞ ADI</th>
+                    <th className="py-3 px-4">TÜM ATANAN DERS SAATLERİ</th>
+                    <th className="py-3 px-4">KAYITLI ÖĞRENCİ</th>
+                    <th className="py-3 px-4 text-right">İŞLEMLER</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700/60 text-sm">
+                  {siniflarLoading ? (
+                    <tr>
+                      <td colSpan="5" className="text-center py-6 text-slate-400">Sınıflar yükleniyor...</td>
+                    </tr>
+                  ) : siniflarList.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" className="text-center py-6 text-slate-400">Henüz kayıtlı sınıf yok.</td>
+                    </tr>
+                  ) : (
+                    siniflarList.map((s) => (
+                      <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+                        <td className="py-3.5 px-4 font-bold text-slate-500">#{s.id}</td>
+                        <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">
+                          <span className="bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-300 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1 rounded-lg text-xs font-semibold">
+                            {s.sinif_adi}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          {!s.ders_programi || s.ders_programi.length === 0 ? (
+                            <span className="text-xs text-slate-400 dark:text-slate-500 italic">Henüz saat atanmadı</span>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                              {s.ders_programi.map(dp => (
+                                <span key={dp.id} className="bg-emerald-50 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/80 text-[11px] px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                                  <Calendar className="w-3 h-3 text-[#2eb82e]" />
+                                  <span>{dp.gun} ({dp.baslangic_saati}-{dp.bitis_saati})</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 font-bold text-slate-700 dark:text-slate-200">
+                          {s.ogrenci_sayisi || 0} Öğrenci
+                        </td>
+                        <td className="py-3.5 px-4 text-right space-x-2 whitespace-nowrap">
+                          <button
+                            onClick={() => setSelectedSinifSchedule(s)}
+                            className="px-2.5 py-1.5 bg-sky-100 dark:bg-sky-900/80 hover:bg-sky-200 dark:hover:bg-sky-800 text-sky-800 dark:text-sky-200 text-xs font-bold rounded-lg transition inline-flex items-center gap-1 border border-sky-300 dark:border-sky-700 cursor-pointer"
+                            title="Ders Gün/Saat Ata & Yönet"
+                          >
+                            <Clock className="w-3.5 h-3.5 text-sky-600 dark:text-sky-300" />
+                            <span>Ders Saati Ata</span>
+                          </button>
+                          <button
+                            onClick={() => openSinifDetayModal(s)}
+                            className="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 text-xs font-bold rounded-lg transition inline-flex items-center gap-1 border border-slate-300 dark:border-slate-600 cursor-pointer"
+                            title="Sınıftaki Öğrencileri Gör"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-sky-500" />
+                            <span>Öğrenciler</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSinif(s.id, s.sinif_adi)}
+                            className="px-2.5 py-1.5 bg-red-50 dark:bg-red-950/80 hover:bg-red-100 dark:hover:bg-red-900 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/60 text-xs font-bold rounded-lg transition inline-flex items-center gap-1 cursor-pointer"
+                            title="Sınıfı Sil"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Sil</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
       </div>
-
-          </div>
+    </div>
   );
-};
+}
 
-export default Dashboard;
+export default Siniflar;

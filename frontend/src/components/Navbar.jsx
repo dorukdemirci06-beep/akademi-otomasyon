@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon, Users, Settings } from 'lucide-react';
+import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon, Users, Settings, BookOpen } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 const WhatsappIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" {...props}>
@@ -17,6 +17,7 @@ const Navbar = ({ currentUser, onLogout }) => {
     { path: '/', label: 'Ana Panel', icon: LayoutDashboard },
     { path: '/kayit', label: 'Kayıt', icon: UserPlus },
     { path: '/on-kayit', label: 'Ön Kayıtlar', icon: UserCheck },
+    { path: '/siniflar', label: 'Sınıflar', icon: BookOpen },
     { path: '/yoklama', label: 'Yoklama', icon: ClipboardCheck },
     { path: '/finans', label: 'Ödemeler', icon: Wallet },
   ];

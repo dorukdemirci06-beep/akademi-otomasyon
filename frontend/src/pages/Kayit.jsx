@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   UserPlus, Search, UserMinus, UserCheck, BookPlus, ArrowUpDown, Users, UserX, X,
   ChevronDown, ChevronUp, BookOpen, User, Phone, Mail, MapPin, Heart, Sparkles
@@ -9,6 +10,7 @@ import CustomDatePicker from '../components/CustomDatePicker';
 import { formatTL } from '../utils/formatters';
 
 const Kayit = () => {
+  const navigate = useNavigate();
   const currentUser = (() => {
     try {
       return JSON.parse(localStorage.getItem('user') || '{}');
@@ -154,19 +156,28 @@ const Kayit = () => {
       if (isEditing && editId) {
         await updateOgrenciInfo(editId, formData);
         showToast('Öğrenci bilgileri başarıyla güncellendi!');
+        setShowModal(false);
+        setIsEditing(false);
+        setEditId(null);
+        setFormData({
+          isim: '', soyisim: '', tc: '', dogum_tarihi: '', telefon: '', eposta: '', adres: '',
+          sinif_adi: '', bakiye: 0.0, anne_isim: '', anne_tc: '', anne_telefon: '',
+          anne_eposta: '', anne_meslek: '', baba_isim: '', baba_tc: '', baba_telefon: '', baba_eposta: '', baba_meslek: ''
+        });
+        fetchOgrenciler();
       } else {
-        await createOgrenci(formData);
+        const response = await createOgrenci(formData);
         showToast('Öğrenci ve veli bilgileri başarıyla kaydedildi!');
+        setShowModal(false);
+        setIsEditing(false);
+        setEditId(null);
+        setFormData({
+          isim: '', soyisim: '', tc: '', dogum_tarihi: '', telefon: '', eposta: '', adres: '',
+          sinif_adi: '', bakiye: 0.0, anne_isim: '', anne_tc: '', anne_telefon: '',
+          anne_eposta: '', anne_meslek: '', baba_isim: '', baba_tc: '', baba_telefon: '', baba_eposta: '', baba_meslek: ''
+        });
+        navigate('/finans', { state: { autoSelectStudentId: response.data.id } });
       }
-      setShowModal(false);
-      setIsEditing(false);
-      setEditId(null);
-      setFormData({
-        isim: '', soyisim: '', tc: '', dogum_tarihi: '', telefon: '', eposta: '', adres: '',
-        sinif_adi: '', bakiye: 0.0, anne_isim: '', anne_tc: '', anne_telefon: '',
-        anne_eposta: '', anne_meslek: '', baba_isim: '', baba_tc: '', baba_telefon: '', baba_eposta: '', baba_meslek: ''
-      });
-      fetchOgrenciler();
     } catch (err) {
       const detail = err.response?.data?.detail || 'İşlem başarısız oldu.';
       showToast(`Hata: ${detail}`, 'error');

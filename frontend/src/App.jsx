@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
+import Siniflar from './pages/Siniflar';
 import Kayit from './pages/Kayit';
 import OnKayit from './pages/OnKayit';
 import Yoklama from './pages/Yoklama';
@@ -51,6 +52,7 @@ function App() {
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/siniflar" element={<Siniflar />} />
                 <Route path="/kayit" element={<Kayit />} />
                 <Route path="/on-kayit" element={<OnKayit />} />
                 <Route path="/yoklama" element={<Yoklama />} />

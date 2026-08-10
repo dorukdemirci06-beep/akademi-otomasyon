@@ -4,16 +4,19 @@ import {
   Calendar, BookOpen, AlertTriangle, ChevronRight, ChevronDown, Info, Clock, Trash2, X, FileText, Check, Edit, RotateCcw, Search, Sparkles 
 } from 'lucide-react';
 import { getOgrenciler, createOdeme, getOgrenciSiniflar, getOdemeler, odemeTahsilEt, updateOdeme, deleteOdeme, odemeGeriAl } from '../services/api';
+import { useLocation } from 'react-router-dom';
 import CustomDatePicker from '../components/CustomDatePicker';
 import ConfirmModal from '../components/ConfirmModal';
 import { formatTL } from '../utils/formatters';
 
 const Finans = () => {
+  const location = useLocation();
   const [ogrenciler, setOgrenciler] = useState([]);
   const [odemeler, setOdemeler] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState('odeme_tarihi_desc');
   const [searchTerm, setSearchTerm] = useState('');
+  const [vadeFilter, setVadeFilter] = useState('hepsi');
   const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState(false);
   const [formStudentSearchQuery, setFormStudentSearchQuery] = useState('');
   const studentDropdownRef = useRef(null);
@@ -376,6 +379,11 @@ const Finans = () => {
 
   // Filtreleme ve Sıralama Mantığı
   const filteredOgrenciler = ogrenciler.filter((o) => {
+    // Vade Filtresi
+    if (vadeFilter === 'gecikmis' && !o.gecikmis_odeme_var_mi) return false;
+    if (vadeFilter === 'bekleyen' && o.bekleyen_odeme_sayisi === 0) return false;
+    if (vadeFilter === 'sorunsuz' && o.bekleyen_odeme_sayisi > 0) return false;
+
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase().trim();
     const name = `${o.isim} ${o.soyisim}`.toLowerCase();
@@ -404,6 +412,13 @@ const Finans = () => {
       setOgrenciSiniflari([]);
     }
   };
+
+  useEffect(() => {
+    if (location.state?.autoSelectStudentId) {
+      handleOgrenciSelectDirect(location.state.autoSelectStudentId);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const sortedOgrenciler = [...filteredOgrenciler].sort((a, b) => {
     if (sortOption === 'odeme_tarihi_desc') {
@@ -794,6 +809,19 @@ const Finans = () => {
                 {isAdmin && <option value="bakiye_asc">Sırala: Bakiye (En Düşük)</option>}
                 <option value="tarih_desc">Sırala: Kayıt Tarihi (Yeniden Eskiden)</option>
                 <option value="tarih_asc">Sırala: Kayıt Tarihi (Eskiden Yeniye)</option>
+              </select>
+            </div>
+            
+            <div className="relative">
+              <select
+                value={vadeFilter}
+                onChange={(e) => setVadeFilter(e.target.value)}
+                className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-700 dark:text-slate-200 font-semibold focus:outline-none focus:border-[#0284c7]"
+              >
+                <option value="hepsi">Tüm Vade Durumları</option>
+                <option value="gecikmis">Vadesi Gecikenler</option>
+                <option value="bekleyen">Ödeme Bekleyenler</option>
+                <option value="sorunsuz">Sorunsuz / Borçsuz</option>
               </select>
             </div>
           </div>
