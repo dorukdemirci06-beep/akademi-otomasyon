@@ -18,8 +18,6 @@ export const ThemeProvider = ({ children }) => {
     } catch (e) {
       console.error('Theme storage error:', e);
     }
-    
-    // Apply data-theme and theme class to document root
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
     if (theme === 'light') {
