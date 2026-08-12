@@ -27,6 +27,8 @@ class Ogrenci(Base):
     baba_eposta = Column(String, nullable=True)
     baba_meslek = Column(String, nullable=True)
     
+    birincil_veli = Column(String, nullable=True, default="Kendisi")
+    
     dogum_tarihi = Column(String, nullable=True) # YYYY-MM-DD
 
     bakiye = Column(Float, default=0.0)

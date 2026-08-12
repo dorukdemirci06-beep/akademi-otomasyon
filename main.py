@@ -603,6 +603,7 @@ def create_sinif(
 
 @app.get("/siniflar/", response_model=List[schemas.SinifResponse])
 def get_siniflar(
+    basic: bool = False,
     db: Session = Depends(get_db),
     current_user: models.Kullanici = Depends(get_current_user)
 ):
@@ -610,6 +611,10 @@ def get_siniflar(
     if current_user.akademi_adi:
         query = query.filter(models.Sinif.akademi_adi == current_user.akademi_adi)
     siniflar = query.all()
+    
+    if basic:
+        return siniflar
+        
     res = []
     for s in siniflar:
         count = db.query(models.OgrenciSinif).filter(models.OgrenciSinif.sinif_id == s.id).count()

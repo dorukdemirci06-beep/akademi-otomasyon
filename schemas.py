@@ -63,6 +63,7 @@ class OgrenciBase(BaseModel):
     baba_telefon: Optional[str] = None
     baba_eposta: Optional[str] = None
     baba_meslek: Optional[str] = None
+    birincil_veli: Optional[str] = "Kendisi"
 
 class OgrenciCreate(OgrenciBase):
     sinif_adi: Optional[str] = None
@@ -87,6 +88,8 @@ class OgrenciUpdate(BaseModel):
     baba_telefon: Optional[str] = None
     baba_eposta: Optional[str] = None
     baba_meslek: Optional[str] = None
+    
+    birincil_veli: Optional[str] = None
 
 class OgrenciResponse(OgrenciBase):
     id: int
