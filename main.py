@@ -1,7 +1,8 @@
 import os
+# Force uvicorn reload
 from datetime import datetime, timedelta
 from typing import List, Optional
-from fastapi import FastAPI, Depends, HTTPException, status, Query, Body, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Query, Body, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,6 +19,7 @@ from config import settings
 from database import engine, SessionLocal
 import models
 import schemas
+from services.whatsapp_service import send_whatsapp_message
 
 # Veritabanı tablolarını oluştur
 models.Base.metadata.create_all(bind=engine)
@@ -70,6 +72,7 @@ def auto_migrate():
             
             conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS veli_meslek VARCHAR;"))
             conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
+            conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS notlar VARCHAR;"))
             
             conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
             
@@ -232,6 +235,7 @@ def get_dashboard():
 # ==================== ÖĞRENCİ ENDPOINTLERİ ====================
 @app.post("/ogrenciler/", response_model=schemas.OgrenciResponse, status_code=status.HTTP_201_CREATED)
 def create_ogrenci(
+    background_tasks: BackgroundTasks,
     ogrenci: schemas.OgrenciCreate = Depends(), 
     db: Session = Depends(get_db),
     current_user: models.Kullanici = Depends(get_current_user)
@@ -247,6 +251,8 @@ def create_ogrenci(
     anne_telefon = ogrenci.anne_telefon.strip() if ogrenci.anne_telefon and ogrenci.anne_telefon.strip() else None
     anne_eposta = ogrenci.anne_eposta.strip() if ogrenci.anne_eposta and ogrenci.anne_eposta.strip() else None
     anne_meslek = ogrenci.anne_meslek.strip() if ogrenci.anne_meslek and ogrenci.anne_meslek.strip() else None
+    
+    dogum_tarihi = ogrenci.dogum_tarihi.strip() if ogrenci.dogum_tarihi and ogrenci.dogum_tarihi.strip() else None
 
     baba_isim = ogrenci.baba_isim.strip() if ogrenci.baba_isim and ogrenci.baba_isim.strip() else None
     baba_tc = ogrenci.baba_tc.strip() if ogrenci.baba_tc and ogrenci.baba_tc.strip() else None
@@ -280,6 +286,7 @@ def create_ogrenci(
         baba_telefon=baba_telefon,
         baba_eposta=baba_eposta,
         baba_meslek=baba_meslek,
+        dogum_tarihi=dogum_tarihi,
         bakiye=ogrenci.bakiye,
         durum=ogrenci.durum or "Aktif",
         akademi_adi=current_user.akademi_adi or "Test1"
@@ -291,11 +298,8 @@ def create_ogrenci(
     except Exception as e:
         db.rollback()
         err_msg = str(e)
-        if "telefon" in err_msg.lower():
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"'{telefon}' telefon numarasına sahip bir öğrenci zaten mevcut.")
-        if "tc" in err_msg.lower():
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"'{tc}' TC kimlik numarasına sahip bir öğrenci zaten mevcut.")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Öğrenci veritabanına eklenirken bir hata oluştu.")
+
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Veritabanı Hatası: {err_msg}")
 
     # Sınıf seçildiyse OgrenciSinif tablosuna ders hakkı 0 olacak şekilde ilişkisini ekle
     if db_sinif:
@@ -307,11 +311,61 @@ def create_ogrenci(
         db.add(ogrenci_sinif)
         try:
             db.commit()
-            db.refresh(yeni_ogrenci)
         except Exception:
             db.rollback()
 
+    # 2. Kurumun "msg_kayit" şablonu varsa ve açıksa whatsapp mesajı gönder
+    if yeni_ogrenci.telefon:
+        akademi_record = db.query(models.Akademi).filter(models.Akademi.name == (current_user.akademi_adi or "Test1")).first()
+        if akademi_record and akademi_record.msg_kayit and akademi_record.is_msg_kayit_active:
+            try:
+                akademi_adi_str = current_user.akademi_adi or "Akademi"
+                mesaj = akademi_record.msg_kayit.format(
+                    isim=yeni_ogrenci.isim, 
+                    soyisim=yeni_ogrenci.soyisim, 
+                    akademi_adi=akademi_adi_str
+                )
+                background_tasks.add_task(
+                    send_whatsapp_message, 
+                    yeni_ogrenci.telefon, 
+                    mesaj,
+                    akademi_record.whatsapp_provider,
+                    akademi_record.whatsapp_api_key,
+                    akademi_record.whatsapp_phone_number
+                )
+            except Exception:
+                pass
+
     return yeni_ogrenci
+
+
+@app.put("/ogrenciler/{ogrenci_id}", response_model=schemas.OgrenciResponse)
+def update_ogrenci(
+    ogrenci_id: int,
+    ogrenci_update: schemas.OgrenciUpdate = Body(...),
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    ogrenci = db.query(models.Ogrenci).filter(
+        models.Ogrenci.id == ogrenci_id,
+        (models.Ogrenci.akademi_adi == current_user.akademi_adi) if current_user.akademi_adi else True
+    ).first()
+    
+    if not ogrenci:
+        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı")
+
+    update_data = ogrenci_update.model_dump(exclude_unset=True)
+    
+
+            
+
+
+    for key, value in update_data.items():
+        setattr(ogrenci, key, value)
+        
+    db.commit()
+    db.refresh(ogrenci)
+    return ogrenci
 
 
 @app.get("/ogrenciler/", response_model=List[schemas.OgrenciResponse])
@@ -1111,6 +1165,25 @@ def create_on_kayit(
     db.refresh(yeni_kayit)
     return yeni_kayit
 
+@app.put("/on-kayitlar/{kayit_id}", response_model=schemas.OnKayitResponse)
+def update_on_kayit(
+    kayit_id: int,
+    on_kayit_data: schemas.OnKayitUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    kayit = db.query(models.OnKayit).filter(models.OnKayit.id == kayit_id).first()
+    if not kayit or (kayit.akademi_adi != current_user.akademi_adi):
+        raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+    
+    update_data = on_kayit_data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(kayit, key, value)
+        
+    db.commit()
+    db.refresh(kayit)
+    return kayit
+
 
 @app.put("/on-kayitlar/{kayit_id}", response_model=schemas.OnKayitResponse)
 def update_on_kayit(
@@ -1256,6 +1329,75 @@ def kurulum_akademi(data: schemas.AkademiKurulumCreate, db: Session = Depends(ge
         "token_type": "bearer",
         "user": yeni_user
     }
+
+
+@app.get("/akademiler/ayarlar", response_model=schemas.AkademiResponse)
+def get_akademi_ayarlar(
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    if not current_user.akademi_adi:
+        raise HTTPException(status_code=400, detail="Kullanıcı bir akademiye bağlı değil.")
+    
+    akademi = db.query(models.Akademi).filter(models.Akademi.name == current_user.akademi_adi).first()
+    if not akademi:
+        raise HTTPException(status_code=404, detail="Akademi bulunamadı.")
+        
+    return akademi
+
+
+@app.put("/akademiler/ayarlar", response_model=schemas.AkademiResponse)
+def update_akademi_ayarlar(
+    ayarlar: schemas.AkademiUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    if current_user.rol != "Yönetici":
+        raise HTTPException(status_code=403, detail="Bu işlem için yönetici yetkisi gerekiyor.")
+        
+    if not current_user.akademi_adi:
+        raise HTTPException(status_code=400, detail="Kullanıcı bir akademiye bağlı değil.")
+        
+    akademi = db.query(models.Akademi).filter(models.Akademi.name == current_user.akademi_adi).first()
+    if not akademi:
+        raise HTTPException(status_code=404, detail="Akademi bulunamadı.")
+        
+    if ayarlar.whatsapp_provider is not None:
+        akademi.whatsapp_provider = ayarlar.whatsapp_provider
+    if ayarlar.whatsapp_api_key is not None:
+        akademi.whatsapp_api_key = ayarlar.whatsapp_api_key
+    if ayarlar.whatsapp_phone_number is not None:
+        akademi.whatsapp_phone_number = ayarlar.whatsapp_phone_number
+    if ayarlar.msg_kayit is not None:
+        akademi.msg_kayit = ayarlar.msg_kayit
+    if ayarlar.msg_ders_hatirlatma is not None:
+        akademi.msg_ders_hatirlatma = ayarlar.msg_ders_hatirlatma
+    if ayarlar.msg_odeme_hatirlatma is not None:
+        akademi.msg_odeme_hatirlatma = ayarlar.msg_odeme_hatirlatma
+    if ayarlar.msg_devamsizlik is not None:
+        akademi.msg_devamsizlik = ayarlar.msg_devamsizlik
+    if ayarlar.msg_dogum_gunu is not None:
+        akademi.msg_dogum_gunu = ayarlar.msg_dogum_gunu
+    if ayarlar.msg_ozel_gun is not None:
+        akademi.msg_ozel_gun = ayarlar.msg_ozel_gun
+        
+    if ayarlar.is_msg_kayit_active is not None:
+        akademi.is_msg_kayit_active = ayarlar.is_msg_kayit_active
+    if ayarlar.is_msg_ders_hatirlatma_active is not None:
+        akademi.is_msg_ders_hatirlatma_active = ayarlar.is_msg_ders_hatirlatma_active
+    if ayarlar.is_msg_odeme_hatirlatma_active is not None:
+        akademi.is_msg_odeme_hatirlatma_active = ayarlar.is_msg_odeme_hatirlatma_active
+    if ayarlar.is_msg_devamsizlik_active is not None:
+        akademi.is_msg_devamsizlik_active = ayarlar.is_msg_devamsizlik_active
+    if ayarlar.is_msg_dogum_gunu_active is not None:
+        akademi.is_msg_dogum_gunu_active = ayarlar.is_msg_dogum_gunu_active
+    if ayarlar.is_msg_ozel_gun_active is not None:
+        akademi.is_msg_ozel_gun_active = ayarlar.is_msg_ozel_gun_active
+        
+    db.commit()
+    db.refresh(akademi)
+    return akademi
+
 
 
 # ==================== KULLANICI & AUTH ENDPOINTLERİ ====================
@@ -1470,6 +1612,7 @@ def get_yoklama(
 
 @app.post("/yoklama/toplu", status_code=status.HTTP_200_OK)
 def save_yoklama_toplu(
+    background_tasks: BackgroundTasks,
     req: schemas.YoklamaSaveRequest, 
     db: Session = Depends(get_db),
     current_user: models.Kullanici = Depends(get_current_user)
@@ -1493,16 +1636,25 @@ def save_yoklama_toplu(
     existing = existing_query.all()
 
     existing_map = {y.ogrenci_id: y for y in existing}
+    
+    ak_name = current_user.akademi_adi or "Test1"
+    akademi = db.query(models.Akademi).filter(models.Akademi.name == ak_name).first()
 
     for item in req.yoklamalar:
         aciklama_val = item.aciklama.strip() if item.aciklama and item.aciklama.strip() else None
+        is_newly_absent = False
+        
         if item.ogrenci_id in existing_map:
             # Güncelle
             rec = existing_map[item.ogrenci_id]
+            if rec.durum != "Gelmedi" and item.durum == "Gelmedi":
+                is_newly_absent = True
             rec.durum = item.durum
             rec.aciklama = aciklama_val
         else:
             # Yeni Ekle: Sınıfın dersi yapıldığında öğrencilerin durumundan (geldi/gelmedi/mazeret) bağımsız olarak ders hakkı eksilir
+            if item.durum == "Gelmedi":
+                is_newly_absent = True
             new_rec = models.Yoklama(
                 ogrenci_id=item.ogrenci_id,
                 sinif_id=req.sinif_id,
@@ -1520,6 +1672,27 @@ def save_yoklama_toplu(
 
             if ogrenci_sinif:
                 ogrenci_sinif.kalan_ders_hakki -= 1
+        
+        # WhatsApp Devamsızlık Bildirimi
+        if is_newly_absent and akademi and akademi.msg_devamsizlik and akademi.is_msg_devamsizlik_active:
+            ogrenci = db.query(models.Ogrenci).filter(models.Ogrenci.id == item.ogrenci_id).first()
+            if ogrenci and ogrenci.telefon:
+                try:
+                    mesaj = akademi.msg_devamsizlik.format(
+                        isim=ogrenci.isim, 
+                        soyisim=ogrenci.soyisim, 
+                        tarih=req.tarih
+                    )
+                    background_tasks.add_task(
+                        send_whatsapp_message, 
+                        ogrenci.telefon, 
+                        mesaj, 
+                        akademi.whatsapp_provider, 
+                        akademi.whatsapp_api_key, 
+                        akademi.whatsapp_phone_number
+                    )
+                except Exception:
+                    pass
 
     db.commit()
     return {"mesaj": "Yoklama başarıyla kaydedildi.", "kayit_sayisi": len(req.yoklamalar)}
@@ -1561,3 +1734,196 @@ def delete_yoklama_oturum(
     return {"mesaj": "Yoklama oturumu silindi.", "silinen_sayi": len(existing)}
 
 
+# ==================== WHATSAPP OTOMASYON JOBS ====================
+@app.post("/jobs/daily-reminders", tags=["Jobs"])
+def run_daily_reminders(
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """
+    Yarınki dersleri bulup, öğrencilere WhatsApp üzerinden hatırlatma mesajı gönderir.
+    Bu endpoint cron job vb. araçlarla günde 1 kez tetiklenmelidir.
+    """
+    tomorrow = datetime.now() + timedelta(days=1)
+    gunler = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
+    yarin_gun_str = gunler[tomorrow.weekday()]
+    
+    # Yarınki dersleri bul
+    yarin_dersleri = db.query(models.DersProgrami).filter(models.DersProgrami.gun == yarin_gun_str).all()
+    
+    akademi_cache = {}
+    
+    mesaj_gonderilenler = 0
+    for ders in yarin_dersleri:
+        # Sınıftaki öğrencileri bul
+        ogrenci_siniflar = db.query(models.OgrenciSinif).filter(models.OgrenciSinif.sinif_id == ders.sinif_id).all()
+        
+        for os_relation in ogrenci_siniflar:
+            ogrenci = os_relation.ogrenci
+            if ogrenci and ogrenci.telefon and ogrenci.durum == "Aktif":
+                ders_adi = ders.ders_adi or "Ders"
+                
+                # Get academy whatsapp credentials
+                ak_name = ogrenci.akademi_adi or "Test1"
+                if ak_name not in akademi_cache:
+                    akademi_cache[ak_name] = db.query(models.Akademi).filter(models.Akademi.name == ak_name).first()
+                
+                ak_record = akademi_cache.get(ak_name)
+                
+                if ak_record and ak_record.msg_ders_hatirlatma and ak_record.is_msg_ders_hatirlatma_active:
+                    try:
+                        mesaj = ak_record.msg_ders_hatirlatma.format(
+                            isim=ogrenci.isim,
+                            soyisim=ogrenci.soyisim,
+                            ders_adi=ders_adi,
+                            gun=yarin_gun_str,
+                            saat=ders.baslangic_saati
+                        )
+                        background_tasks.add_task(
+                            send_whatsapp_message, 
+                            ogrenci.telefon, 
+                            mesaj,
+                            ak_record.whatsapp_provider,
+                            ak_record.whatsapp_api_key,
+                            ak_record.whatsapp_phone_number
+                        )
+                        mesaj_gonderilenler += 1
+                    except Exception:
+                        pass
+                
+    return {
+        "status": "success", 
+        "target_day": yarin_gun_str, 
+        "queued_messages": mesaj_gonderilenler,
+        "message": f"Yarınki ({yarin_gun_str}) {len(yarin_dersleri)} ders için toplam {mesaj_gonderilenler} öğrenciye hatırlatma mesajı kuyruğa eklendi."
+    }
+
+@app.post("/jobs/daily-celebrations")
+def run_daily_celebrations(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    bugun = datetime.now()
+    bugun_ay_gun = bugun.strftime("%m-%d") # Ornegin "08-10"
+    
+    # Ozel Gun Kontrolu
+    ozel_gunler = {
+        "01-01": "Yılbaşı",
+        "04-23": "23 Nisan Ulusal Egemenlik ve Çocuk Bayramı",
+        "05-01": "1 Mayıs Emek ve Dayanışma Günü",
+        "05-19": "19 Mayıs Atatürk'ü Anma, Gençlik ve Spor Bayramı",
+        "07-15": "15 Temmuz Demokrasi ve Milli Birlik Günü",
+        "08-30": "30 Ağustos Zafer Bayramı",
+        "10-29": "29 Ekim Cumhuriyet Bayramı"
+    }
+    
+    bugun_ozel_gun_mu = ozel_gunler.get(bugun_ay_gun)
+    
+    aktif_ogrenciler = db.query(models.Ogrenci).filter(
+        models.Ogrenci.durum == "Aktif",
+        models.Ogrenci.telefon != None
+    ).all()
+    
+    akademi_cache = {}
+    mesaj_sayisi = 0
+    
+    for ogrenci in aktif_ogrenciler:
+        ak_name = ogrenci.akademi_adi or "Test1"
+        if ak_name not in akademi_cache:
+            akademi_cache[ak_name] = db.query(models.Akademi).filter(models.Akademi.name == ak_name).first()
+            
+        ak_record = akademi_cache.get(ak_name)
+        if not ak_record:
+            continue
+            
+        # 1. Dogum Gunu Kontrolu
+        if ogrenci.dogum_tarihi:
+            try:
+                # dogum_tarihi format "YYYY-MM-DD"
+                dt_parts = ogrenci.dogum_tarihi.split("-")
+                if len(dt_parts) >= 3:
+                    o_ay_gun = f"{dt_parts[1]}-{dt_parts[2]}"
+                    if o_ay_gun == bugun_ay_gun:
+                        if ak_record.msg_dogum_gunu and ak_record.is_msg_dogum_gunu_active:
+                            try:
+                                d_mesaj = ak_record.msg_dogum_gunu.format(isim=ogrenci.isim, soyisim=ogrenci.soyisim)
+                                background_tasks.add_task(send_whatsapp_message, ogrenci.telefon, d_mesaj, ak_record.whatsapp_provider, ak_record.whatsapp_api_key, ak_record.whatsapp_phone_number)
+                                mesaj_sayisi += 1
+                            except Exception:
+                                pass
+            except Exception:
+                pass
+                
+        # 2. Ozel Gun Kontrolu
+        if bugun_ozel_gun_mu and ak_record.msg_ozel_gun and ak_record.is_msg_ozel_gun_active:
+            try:
+                o_mesaj = ak_record.msg_ozel_gun.format(isim=ogrenci.isim, soyisim=ogrenci.soyisim, ozel_gun_adi=bugun_ozel_gun_mu)
+                background_tasks.add_task(send_whatsapp_message, ogrenci.telefon, o_mesaj, ak_record.whatsapp_provider, ak_record.whatsapp_api_key, ak_record.whatsapp_phone_number)
+                mesaj_sayisi += 1
+            except Exception:
+                pass
+                
+    return {
+        "status": "success",
+        "message": f"Kutlama ve özel gün işlemleri tamamlandı. {mesaj_sayisi} mesaj sıraya alındı."
+    }
+
+@app.post("/jobs/payment-reminders")
+def run_payment_reminders(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    bugun = datetime.now()
+    bugun_baslangic = datetime(bugun.year, bugun.month, bugun.day)
+    bugun_bitis = bugun_baslangic + timedelta(days=1)
+    
+    gecen_hafta_baslangic = bugun_baslangic - timedelta(days=7)
+    gecen_hafta_bitis = gecen_hafta_baslangic + timedelta(days=1)
+
+    bekleyen_odemeler = db.query(models.Odeme).filter(
+        models.Odeme.durum.in_(["Bekliyor", "Gecikti"])
+    ).all()
+    
+    akademi_cache = {}
+    mesaj_sayisi = 0
+    
+    for odeme in bekleyen_odemeler:
+        if not odeme.tarih:
+            continue
+            
+        is_today = bugun_baslangic <= odeme.tarih < bugun_bitis
+        is_week_ago = gecen_hafta_baslangic <= odeme.tarih < gecen_hafta_bitis
+        
+        if not (is_today or is_week_ago):
+            continue
+            
+        ogrenci = db.query(models.Ogrenci).filter(models.Ogrenci.id == odeme.ogrenci_id).first()
+        if not ogrenci or not ogrenci.telefon or ogrenci.durum != "Aktif":
+            continue
+            
+        ak_name = odeme.akademi_adi or "Test1"
+        if ak_name not in akademi_cache:
+            akademi_cache[ak_name] = db.query(models.Akademi).filter(models.Akademi.name == ak_name).first()
+            
+        ak_record = akademi_cache.get(ak_name)
+        if not ak_record or not ak_record.msg_odeme_hatirlatma or not ak_record.is_msg_odeme_hatirlatma_active:
+            continue
+            
+        try:
+            vade_str = odeme.tarih.strftime("%d.%m.%Y")
+            mesaj = ak_record.msg_odeme_hatirlatma.format(
+                isim=ogrenci.isim, 
+                soyisim=ogrenci.soyisim, 
+                tutar=odeme.tutar,
+                vade=vade_str
+            )
+            background_tasks.add_task(
+                send_whatsapp_message, 
+                ogrenci.telefon, 
+                mesaj, 
+                ak_record.whatsapp_provider, 
+                ak_record.whatsapp_api_key, 
+                ak_record.whatsapp_phone_number
+            )
+            mesaj_sayisi += 1
+        except Exception:
+            pass
+            
+    return {
+        "status": "success",
+        "message": f"Ödeme hatırlatma işlemleri tamamlandı. {mesaj_sayisi} mesaj sıraya alındı."
+    }

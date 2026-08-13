@@ -196,8 +196,40 @@ class AkademiKurulumCreate(BaseModel):
     kullanici_adi: str
     sifre: str
 
+class AkademiUpdate(BaseModel):
+    whatsapp_provider: Optional[str] = "callmebot"
+    whatsapp_api_key: Optional[str] = None
+    whatsapp_phone_number: Optional[str] = None
+    msg_kayit: Optional[str] = None
+    msg_ders_hatirlatma: Optional[str] = None
+    msg_odeme_hatirlatma: Optional[str] = None
+    msg_devamsizlik: Optional[str] = None
+    msg_dogum_gunu: Optional[str] = None
+    msg_ozel_gun: Optional[str] = None
+    is_msg_kayit_active: Optional[bool] = None
+    is_msg_ders_hatirlatma_active: Optional[bool] = None
+    is_msg_odeme_hatirlatma_active: Optional[bool] = None
+    is_msg_devamsizlik_active: Optional[bool] = None
+    is_msg_dogum_gunu_active: Optional[bool] = None
+    is_msg_ozel_gun_active: Optional[bool] = None
+
 class AkademiResponse(AkademiBase):
     id: int
+    whatsapp_provider: Optional[str] = None
+    whatsapp_api_key: Optional[str] = None
+    whatsapp_phone_number: Optional[str] = None
+    msg_kayit: Optional[str] = None
+    msg_ders_hatirlatma: Optional[str] = None
+    msg_odeme_hatirlatma: Optional[str] = None
+    msg_devamsizlik: Optional[str] = None
+    msg_dogum_gunu: Optional[str] = None
+    msg_ozel_gun: Optional[str] = None
+    is_msg_kayit_active: Optional[bool] = False
+    is_msg_ders_hatirlatma_active: Optional[bool] = False
+    is_msg_odeme_hatirlatma_active: Optional[bool] = False
+    is_msg_devamsizlik_active: Optional[bool] = False
+    is_msg_dogum_gunu_active: Optional[bool] = False
+    is_msg_ozel_gun_active: Optional[bool] = False
     eklenme_tarihi: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)

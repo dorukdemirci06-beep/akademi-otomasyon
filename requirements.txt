@@ -9,3 +9,5 @@ bcrypt
 slowapi
 python-dotenv
 email-validator
+
+requests

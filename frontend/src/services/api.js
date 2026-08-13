@@ -102,7 +102,8 @@ export const getAkademiler = () => API.get('/akademiler/');
 export const getAkademilerDetayli = () => API.get('/akademiler/detayli');
 export const kurAkademi = (data) => API.post('/akademiler/kurulum', data);
 export const deleteAkademi = (id) => API.delete(`/akademiler/${id}`);
-
+export const getAkademiAyarlar = () => API.get('/akademiler/ayarlar');
+export const updateAkademiAyarlar = (data) => API.put('/akademiler/ayarlar', data);
 // Kullanıcı & Auth Endpointleri
 export const loginKullanici = (credentials) => API.post('/kullanicilar/login', credentials);
 export const getKullanicilar = () => API.get('/kullanicilar/');

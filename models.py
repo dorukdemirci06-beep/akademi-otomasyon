@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -161,6 +161,21 @@ class Akademi(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
+    whatsapp_provider = Column(String, nullable=True, default="callmebot")
+    whatsapp_api_key = Column(String, nullable=True)
+    whatsapp_phone_number = Column(String, nullable=True)
+    msg_kayit = Column(String, nullable=True)
+    msg_ders_hatirlatma = Column(String, nullable=True)
+    msg_odeme_hatirlatma = Column(String, nullable=True)
+    msg_devamsizlik = Column(String, nullable=True)
+    msg_dogum_gunu = Column(String, nullable=True)
+    msg_ozel_gun = Column(String, nullable=True)
+    is_msg_kayit_active = Column(Boolean, default=False)
+    is_msg_ders_hatirlatma_active = Column(Boolean, default=False)
+    is_msg_odeme_hatirlatma_active = Column(Boolean, default=False)
+    is_msg_devamsizlik_active = Column(Boolean, default=False)
+    is_msg_dogum_gunu_active = Column(Boolean, default=False)
+    is_msg_ozel_gun_active = Column(Boolean, default=False)
     eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
 
 
