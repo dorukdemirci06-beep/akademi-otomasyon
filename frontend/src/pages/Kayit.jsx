@@ -412,7 +412,7 @@ const Kayit = () => {
 
  {/* COMPACT & EXPANDABLE ACCORDION TABLE */}
  <div className="overflow-x-auto">
- <table className="w-full text-left border-collapse">
+ <table className="w-full text-left border-collapse min-w-[900px]">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
  <th className="py-3 px-4 w-16">#ID</th>
@@ -429,11 +429,23 @@ const Kayit = () => {
  <td colSpan={isAdmin ? 6 : 5} className="text-center py-8 text-slate-400">Öğrenciler Yükleniyor...</td>
  </tr>
  ) : filteredOgrenciler.length === 0 ? (
- <tr>
- <td colSpan={isAdmin ? 6 : 5} className="text-center py-8 text-slate-400">
- {activeTab === 'Pasif' ? 'Pasif listede öğrenci bulunmamaktadır.' : 'Aradığınız kriterlere uygun aktif öğrenci bulunamadı.'}
- </td>
- </tr>
+                      <tr>
+                        <td colSpan={isAdmin ? 6 : 5} className="py-16">
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
+                              <Users className="w-8 h-8 text-slate-400" />
+                            </div>
+                            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                              {activeTab === 'Pasif' ? 'Pasif Öğrenci Yok' : 'Öğrenci Bulunamadı'}
+                            </h3>
+                            <p className="text-xs text-slate-500 max-w-sm">
+                              {activeTab === 'Pasif' 
+                                ? 'Sistemde kayıtlı pasif öğrenci bulunmuyor.' 
+                                : 'Arama kriterlerinize uyan bir aktif öğrenci bulunamadı. Yeni bir kayıt eklemeyi deneyebilirsiniz.'}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
  ) : (
  filteredOgrenciler.map((o) => {
  const isExpanded = !!expandedRows[o.id];
@@ -443,7 +455,7 @@ const Kayit = () => {
  {/* COMPACT SINGLE LINE ROW */}
  <tr 
  onClick={() => toggleRowExpand(o.id)}
- className={`hover: dark:hover: transition cursor-pointer select-none ${
+ className={`group hover:bg-black/5 dark:hover:bg-white/5 transition cursor-pointer select-none ${
  isExpanded ? ' border-l-4 border-l-[#2eb82e]' : ''
  }`}
  >
@@ -536,52 +548,50 @@ const Kayit = () => {
 
  {/* İşlemler & Aç/Kapa İkonu */}
  <td className="py-3.5 px-4 text-right whitespace-nowrap">
- <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+ <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
  <button
  type="button"
- onClick={() => {
- setSelectedOgrenci(o);
- setShowEkDersModal(true);
- }}
- className="px-2.5 py-1.5 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border cursor-pointer"
+ onClick={() => handleEkDersEkle(o)}
+ className="px-2 py-1.5 bg-indigo-50 dark:bg-indigo-950/80 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-indigo-200 dark:border-indigo-800/80 cursor-pointer"
+ title="Ek Ders / Sınıf Ekle"
  >
- <BookPlus className="w-3.5 h-3.5 text-[#0284c7]" />
- <span>Ders Ekle</span>
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+ <span className="hidden xl:inline">Ders Ekle</span>
  </button>
 
  <button
  type="button"
  onClick={() => handleEditOgrenci(o)}
- className="px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/80 cursor-pointer"
+ className="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/80 cursor-pointer"
  title="Öğrenciyi Düzenle"
  >
  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
- <span>Düzenle</span>
+ <span className="hidden xl:inline">Düzenle</span>
  </button>
 
  {o.durum === 'Aktif' ? (
  <button
  type="button"
  onClick={() => handleToggleDurum(o.id, `${o.isim} ${o.soyisim}`, o.durum)}
- className="px-2.5 py-1.5 bg-sky-50 dark:bg-sky-950/80 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-sky-200 dark:border-sky-800/80 cursor-pointer"
+ className="px-2 py-1.5 bg-sky-50 dark:bg-sky-950/80 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-sky-200 dark:border-sky-800/80 cursor-pointer"
  title="Öğrenciyi Pasife Al"
  >
  <UserMinus className="w-3.5 h-3.5" />
- <span>Pasife Al</span>
+ <span className="hidden xl:inline">Pasife Al</span>
  </button>
  ) : (
  <button
  type="button"
  onClick={() => handleToggleDurum(o.id, `${o.isim} ${o.soyisim}`, o.durum)}
- className="px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/80 cursor-pointer"
+ className="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/80 cursor-pointer"
  title="Öğrenciyi Aktifleştir"
  >
  <UserCheck className="w-3.5 h-3.5" />
- <span>Aktifleştir</span>
+ <span className="hidden xl:inline">Aktifleştir</span>
  </button>
  )}
 
- <div className="pl-1 text-slate-400">
+ <div className="pl-0.5 text-slate-400 shrink-0">
  {isExpanded ? <ChevronUp className="w-4 h-4 text-[#2eb82e]" /> : <ChevronDown className="w-4 h-4" />}
  </div>
  </div>

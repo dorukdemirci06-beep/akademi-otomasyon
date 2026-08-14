@@ -507,13 +507,13 @@ const Finans = () => {
 
  <form onSubmit={handleOdemeSubmit} className="space-y-3.5">
  {/* Öğrenci Seçiniz (Tek Birleşik Arama & Seçim Çubuğu) */}
- <div className="relative space-y-1" ref={studentDropdownRef}>
+ <div className={`relative space-y-1 ${isStudentDropdownOpen ? 'z-50' : ''}`} ref={studentDropdownRef}>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Öğrenci Seçiniz *</label>
  
  <div 
  onClick={() => setIsStudentDropdownOpen(!isStudentDropdownOpen)}
  className={`flex items-center justify-between gap-2 px-3.5 py-2.5 border rounded-xl cursor-pointer transition ${
- isStudentDropdownOpen ? 'border-[#2eb82e] ring-1 ring-[#2eb82e]' : ' hover: dark:hover:'
+ isStudentDropdownOpen ? 'border-[#2eb82e] ring-1 ring-[#2eb82e]' : ' hover:bg-slate-50 dark:hover:bg-slate-800/50'
  }`}
  >
  <div className="flex items-center gap-2.5 flex-1 min-w-0">
@@ -567,7 +567,7 @@ const Finans = () => {
 
  {/* Birleşik Açılır Arama Listesi Paneli */}
  {isStudentDropdownOpen && (
- <div className="absolute left-0 right-0 top-full mt-1 backdrop-blur-md border rounded-xl z-50 max-h-56 overflow-y-auto p-1.5 space-y-0.5 animate-in fade-in duration-150">
+ <div className="absolute left-0 right-0 top-full mt-1 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 shadow-xl rounded-xl z-50 max-h-56 overflow-y-auto p-1.5 space-y-0.5 animate-in fade-in duration-150 custom-scrollbar">
  {filteredFormOgrenciler.length === 0 ? (
  <div className="py-4 text-center text-xs text-slate-500 italic">
  Aradığınız kriterlere uygun öğrenci bulunamadı.
@@ -587,7 +587,7 @@ const Finans = () => {
  className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold cursor-pointer transition ${
  isSelected 
  ? 'bg-emerald-950/90 text-[#2eb82e] border border-emerald-800/80 ' 
- : 'text-slate-200 hover: hover:text-white'
+ : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 dark:hover:text-white'
  }`}
  >
  <div className="flex items-center gap-2 truncate">
@@ -703,7 +703,7 @@ const Finans = () => {
 
  {/* Aylık Ödeme Bilgilendirmesi */}
  {odemeData.odeme_periyodu === 'Aylık' && taksitNum === 1 && (
- <div className="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl flex items-start gap-2.5 text-xs text-emerald-300">
+ <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-start gap-2.5 text-xs text-emerald-700 dark:text-emerald-300">
  <Info className="w-4 h-4 text-[#2eb82e] shrink-0 mt-0.5" />
  <span>Aylık ödeme alındığında, <strong>4 hafta (28 gün)</strong> sonrası için otomatik olarak <em>"Bekliyor"</em> durumunda gelecek dönem alacak kaydı oluşturulur.</span>
  </div>
@@ -873,16 +873,16 @@ const Finans = () => {
  onClick={() => setSelectedOgrenci(o)}
  className={`cursor-pointer transition ${
  isOverdue 
- ? 'bg-red-950/20 hover:bg-red-950/40 border-l-4 border-l-red-500' 
- : 'hover:'
+ ? 'bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 border-l-4 border-l-rose-500' 
+ : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
  }`}
  >
  <td className="py-3.5 px-4 font-bold text-slate-500">#{o.id}</td>
  <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
  <span>{o.isim} {o.soyisim}</span>
  {isOverdue && (
- <span className="bg-red-900/80 text-red-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 border border-red-700 animate-pulse">
- <AlertTriangle className="w-3 h-3 text-red-400" />
+ <span className="bg-rose-100 dark:bg-rose-900/80 text-rose-600 dark:text-rose-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 border border-rose-200 dark:border-rose-700 animate-pulse">
+ <AlertTriangle className="w-3 h-3 text-rose-500 dark:text-rose-400" />
  <span>Vadesi Geldi!</span>
  </span>
  )}
@@ -893,17 +893,17 @@ const Finans = () => {
  {isAdmin && <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">₺{formatTL(bakiye)}</td>}
  <td className="py-3.5 px-4">
  {isOverdue ? (
- <span className="bg-red-950/90 text-red-400 border border-red-800 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+ <span className="bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
  <AlertTriangle className="w-3.5 h-3.5" />
  <span>Ödeme Vadesi Gecikti</span>
  </span>
  ) : bakiye > 0 ? (
- <span className="bg-emerald-100 dark:bg-emerald-950/80 text-[#2eb82e] border border-emerald-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+ <span className="bg-emerald-50 dark:bg-emerald-950/80 text-[#2eb82e] border border-emerald-200 dark:border-emerald-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
  <CheckCircle className="w-3.5 h-3.5" />
  <span>Tahsil Edildi</span>
  </span>
  ) : (
- <span className="bg-sky-950/80 text-[#0284c7] border border-sky-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+ <span className="bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
  <ArrowDownRight className="w-3.5 h-3.5" />
  <span>Ödeme Bekliyor</span>
  </span>
@@ -915,7 +915,7 @@ const Finans = () => {
  e.stopPropagation();
  setSelectedOgrenci(o);
  }}
- className="px-3 py-1.5 hover: text-slate-200 rounded-lg text-xs font-bold transition inline-flex items-center gap-1"
+ className="px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-1"
  >
  <span>Detay & Taksitler</span>
  <ChevronRight className="w-3.5 h-3.5" />

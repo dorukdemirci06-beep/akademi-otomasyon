@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon, Users, BookOpen } from 'lucide-react';
+import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon, Users, BookOpen, HelpCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 const WhatsappIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" {...props}>
@@ -74,7 +74,18 @@ const Navbar = ({ currentUser, onLogout }) => {
             })}
           </nav>
           {/* Profile, Theme Switch & Logout */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Guide/Help Button */}
+            <NavLink
+              to="/kilavuz"
+              className={({ isActive }) =>
+                `w-10 h-10 rounded-xl transition-all duration-300 cursor-pointer flex items-center justify-center ${isActive ? 'neo-button-primary' : 'neo-button text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`
+              }
+              title="Kullanım Kılavuzu"
+            >
+              <HelpCircle className="w-5 h-5" />
+            </NavLink>
+            
             {/* Theme Toggle Switch (Icon Only) */}
             <button
               type="button"

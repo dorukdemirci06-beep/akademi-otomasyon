@@ -753,12 +753,18 @@ const OnKayit = () => {
  <span className="text-sm font-medium">Kayıtlar yükleniyor...</span>
  </div>
  ) : filteredKayitlar.length === 0 ? (
- <div className="neo-card text-center py-12 rounded-2xl -dashed text-slate-400">
- <GraduationCap className="w-10 h-10 mx-auto text-slate-600 mb-2" />
- <p className="text-sm font-semibold">Gösterilecek ön kayıt bulunamadı.</p>
- <p className="text-xs text-slate-500 mt-1">Arama kriterlerinizi değiştirebilir veya yeni bir ön kayıt ekleyebilirsiniz.</p>
- </div>
- ) : (
+                  <div className="py-16">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
+                        <GraduationCap className="w-8 h-8 text-slate-400" />
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Ön Kayıt Bulunamadı</h3>
+                      <p className="text-xs text-slate-500 max-w-sm mt-1">
+                        Arama kriterlerinizi değiştirebilir veya yeni bir ön kayıt ekleyebilirsiniz.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-[11px] font-bold text-slate-400 tracking-wider">
