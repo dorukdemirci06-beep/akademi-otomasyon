@@ -272,7 +272,6 @@ def create_ogrenci(
         isim=ogrenci.isim,
         soyisim=ogrenci.soyisim,
         tc=tc,
-        dogum_tarihi=ogrenci.dogum_tarihi,
         telefon=telefon,
         eposta=eposta,
         adres=adres,

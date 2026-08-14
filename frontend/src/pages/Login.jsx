@@ -316,7 +316,7 @@ const Login = ({ onLoginSuccess }) => {
 
  <form onSubmit={handleSubmit} className="space-y-3">
  {/* Akademi Seçimi (Tek Entegre Aranabilir Kutu) */}
- <div className="relative" ref={comboboxRef}>
+ <div className={`relative ${akademiComboboxOpen ? 'z-50' : ''}`} ref={comboboxRef}>
  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
  Kurum Seçin
  </label>
@@ -345,7 +345,7 @@ const Login = ({ onLoginSuccess }) => {
 
  {/* Açılır Arama Listesi */}
  {akademiComboboxOpen && (
- <div className="absolute left-0 right-0 top-full mt-1 border rounded-xl z-50 max-h-48 overflow-y-auto p-1 text-xs animate-scale-in">
+ <div className="absolute left-0 right-0 top-full mt-2 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 shadow-xl rounded-xl z-50 max-h-48 overflow-y-auto p-1.5 space-y-0.5 text-xs animate-scale-in custom-scrollbar">
  {akademiler.filter((ak) => ak.name.toLowerCase().includes(akademiSearchQuery.toLowerCase().trim())).length > 0 ? (
  akademiler
  .filter((ak) => ak.name.toLowerCase().includes(akademiSearchQuery.toLowerCase().trim()))
@@ -358,10 +358,10 @@ const Login = ({ onLoginSuccess }) => {
  setAkademiComboboxOpen(false);
  setAkademiSearchQuery('');
  }}
- className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between font-semibold transition cursor-pointer ${
+ className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between font-bold transition cursor-pointer ${
  selectedAkademi === ak.name
- ? 'bg-emerald-50 dark:bg-emerald-950/80 text-[#2eb82e]'
- : 'hover: dark:hover: text-slate-700 dark:text-slate-200'
+ ? 'bg-emerald-950/90 text-[#2eb82e] border border-emerald-800/80 '
+ : 'text-slate-900 dark:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 dark:hover:text-white'
  }`}
  >
  <span>{ak.name}</span>

@@ -30,7 +30,7 @@ const SearchableSelect = ({
   const selectedOption = options.find(opt => String(opt.value) === String(value));
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={`relative ${isOpen ? 'z-50' : ''}`} ref={dropdownRef}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center justify-between gap-2 px-3.5 py-2.5 border rounded-xl cursor-pointer transition ${
@@ -43,7 +43,7 @@ const SearchableSelect = ({
             <input
               type="text"
               autoFocus
-              placeholder={searchPlaceholder}
+              placeholder={placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onClick={(e) => e.stopPropagation()}
@@ -59,14 +59,16 @@ const SearchableSelect = ({
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          {value && !isOpen && (
-            <button 
+          {value && (
+            <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onChange('');
+                setSearchQuery('');
               }}
-              className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
+              className="p-1 text-slate-400 hover:text-slate-200 transition cursor-pointer"
+              title="Seçimi Temizle"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -76,7 +78,7 @@ const SearchableSelect = ({
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1 bg-white/70 dark:bg-slate-900/50 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-lg shadow-slate-200/50 dark:shadow-[0_8px_30px_rgb(0,0,0,0.5)] rounded-xl z-50 max-h-56 overflow-y-auto p-1.5 space-y-0.5 shadow-xl animate-scale-in custom-scrollbar">
+        <div className="absolute left-0 right-0 top-full mt-1 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 shadow-xl rounded-xl z-50 max-h-56 overflow-y-auto p-1.5 space-y-0.5 animate-in fade-in duration-150 custom-scrollbar">
           {filteredOptions.length === 0 ? (
             <div className="py-4 text-center text-xs text-slate-900 dark:text-slate-400 italic">
               Sonuç bulunamadı.
@@ -95,8 +97,8 @@ const SearchableSelect = ({
                   }}
                   className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold cursor-pointer transition ${
                     isSelected 
-                      ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400' 
-                      : 'text-slate-900 dark:text-slate-100 hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
+                      ? 'bg-emerald-950/90 text-[#2eb82e] border border-emerald-800/80 ' 
+                      : 'text-slate-900 dark:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-white/5 dark:hover:text-white'
                   }`}
                 >
                   {o.label}

@@ -14,6 +14,7 @@ import Yoklama from "./pages/Yoklama";
 import Finans from "./pages/Finans";
 import Login from "./pages/Login";
 import Kullanicilar from "./pages/Kullanicilar";
+import Ayarlar from "./pages/Ayarlar";
 import Kilavuz from "./pages/Kilavuz";
 import { ThemeProvider } from "./context/ThemeContext";
 function App() {
@@ -82,6 +83,16 @@ function App() {
                   path="/kullanicilar"
                   element={
                     isAdmin ? <Kullanicilar /> : <Navigate to="/" replace />
+                  }
+                />{" "}
+                <Route
+                  path="/ayarlar"
+                  element={
+                    isAdmin ? (
+                      <Ayarlar showToast={() => {}} user={currentUser} />
+                    ) : (
+                      <Navigate to="/" replace />
+                    )
                   }
                 />{" "}
                 <Route path="/login" element={<Navigate to="/" replace />} />{" "}
