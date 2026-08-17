@@ -1483,19 +1483,64 @@ def delete_kullanici(
     return {"mesaj": "Kullanıcı başarıyla silindi."}
 
 
+# ==================== DERSLİKLER ENDPOINTLERİ ====================
+@app.get("/derslikler/", response_model=List[schemas.DerslikResponse])
+def get_derslikler(
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    query = db.query(models.Derslik)
+    if current_user.akademi_adi:
+        query = query.filter(models.Derslik.akademi_adi == current_user.akademi_adi)
+    return query.all()
+
+@app.post("/derslikler/", response_model=schemas.DerslikResponse, status_code=status.HTTP_201_CREATED)
+def create_derslik(
+    item: schemas.DerslikCreate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    yeni_derslik = models.Derslik(
+        ad=item.ad.strip(),
+        kapasite=item.kapasite,
+        akademi_adi=current_user.akademi_adi or "Test1"
+    )
+    db.add(yeni_derslik)
+    db.commit()
+    db.refresh(yeni_derslik)
+    return yeni_derslik
+
+@app.delete("/derslikler/{derslik_id}", status_code=status.HTTP_200_OK)
+def delete_derslik(
+    derslik_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    derslik = db.query(models.Derslik).filter(models.Derslik.id == derslik_id).first()
+    if not derslik:
+        raise HTTPException(status_code=404, detail="Derslik bulunamadı.")
+    
+    if current_user.akademi_adi and derslik.akademi_adi and derslik.akademi_adi != current_user.akademi_adi:
+        raise HTTPException(status_code=403, detail="Bu dersliği silme yetkiniz yok.")
+        
+    db.delete(derslik)
+    db.commit()
+    return {"mesaj": "Derslik başarıyla silindi."}
+
 # ==================== DERS PROGRAMI ENDPOINTLERİ ====================
 @app.get("/ders-programi/", response_model=List[schemas.DersProgramiResponse])
 def get_ders_programi(
     db: Session = Depends(get_db),
     current_user: models.Kullanici = Depends(get_current_user)
 ):
-    query = db.query(models.DersProgrami).join(models.DersProgrami.sinif)
+    query = db.query(models.DersProgrami).join(models.DersProgrami.sinif).outerjoin(models.DersProgrami.derslik)
     if current_user.akademi_adi:
         query = query.filter(models.Sinif.akademi_adi == current_user.akademi_adi)
-    program = query.options(joinedload(models.DersProgrami.sinif)).all()
+    program = query.options(joinedload(models.DersProgrami.sinif), joinedload(models.DersProgrami.derslik)).all()
     res = []
     for item in program:
         sinif_adi = item.sinif.sinif_adi if item.sinif else None
+        derslik_adi = item.derslik.ad if item.derslik else None
         res.append(schemas.DersProgramiResponse(
             id=item.id,
             sinif_id=item.sinif_id,
@@ -1505,7 +1550,9 @@ def get_ders_programi(
             ders_adi=item.ders_adi,
             ogretmen_adi=item.ogretmen_adi,
             renk=item.renk or "indigo",
-            sinif_adi=sinif_adi
+            derslik_id=item.derslik_id,
+            sinif_adi=sinif_adi,
+            derslik_adi=derslik_adi
         ))
     return res
 
@@ -1522,6 +1569,20 @@ def create_ders_programi(
     if not sinif:
         raise HTTPException(status_code=404, detail="Sınıf bulunamadı.")
 
+    if item.derslik_id:
+        conflict = db.query(models.DersProgrami).filter(
+            models.DersProgrami.derslik_id == item.derslik_id,
+            models.DersProgrami.gun == item.gun.strip(),
+            models.DersProgrami.baslangic_saati < item.bitis_saati.strip(),
+            models.DersProgrami.bitis_saati > item.baslangic_saati.strip()
+        ).first()
+        if conflict:
+            conflict_sinif = conflict.sinif.sinif_adi if conflict.sinif else "Bilinmeyen Sınıf"
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Çakışma! Bu derslik {conflict.gun} günü {conflict.baslangic_saati}-{conflict.bitis_saati} saatleri arasında '{conflict_sinif}' sınıfına ayrılmıştır."
+            )
+
     yeni_ders = models.DersProgrami(
         sinif_id=item.sinif_id,
         gun=item.gun.strip(),
@@ -1529,11 +1590,14 @@ def create_ders_programi(
         bitis_saati=item.bitis_saati.strip(),
         ders_adi=item.ders_adi.strip() if item.ders_adi else sinif.sinif_adi,
         ogretmen_adi=item.ogretmen_adi.strip() if item.ogretmen_adi else None,
-        renk=item.renk or "indigo"
+        renk=item.renk or "indigo",
+        derslik_id=item.derslik_id
     )
     db.add(yeni_ders)
     db.commit()
     db.refresh(yeni_ders)
+
+    derslik_adi = db.query(models.Derslik).filter(models.Derslik.id == yeni_ders.derslik_id).first().ad if yeni_ders.derslik_id else None
 
     return schemas.DersProgramiResponse(
         id=yeni_ders.id,
@@ -1544,7 +1608,9 @@ def create_ders_programi(
         ders_adi=yeni_ders.ders_adi,
         ogretmen_adi=yeni_ders.ogretmen_adi,
         renk=yeni_ders.renk,
-        sinif_adi=sinif.sinif_adi
+        derslik_id=yeni_ders.derslik_id,
+        sinif_adi=sinif.sinif_adi,
+        derslik_adi=derslik_adi
     )
 
 @app.delete("/ders-programi/{ders_id}", status_code=status.HTTP_200_OK)

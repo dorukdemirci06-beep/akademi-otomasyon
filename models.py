@@ -136,8 +136,11 @@ class DersProgrami(Base):
     ogretmen_adi = Column(String, nullable=True)
     renk = Column(String, default="indigo")
 
+    derslik_id = Column(Integer, ForeignKey("derslikler.id"), nullable=True)
+
     # İlişkiler
     sinif = relationship("Sinif")
+    derslik = relationship("Derslik")
 
 
 class OnKayit(Base):
@@ -189,3 +192,11 @@ class Kullanici(Base):
     ad_soyad = Column(String, nullable=True)
     akademi_adi = Column(String, nullable=True, default="Test1")
     eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
+
+class Derslik(Base):
+    __tablename__ = "derslikler"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ad = Column(String, nullable=False, index=True)
+    kapasite = Column(Integer, default=20)
+    akademi_adi = Column(String, nullable=True, default="Test1", index=True)

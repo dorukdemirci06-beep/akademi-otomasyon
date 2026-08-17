@@ -274,6 +274,7 @@ class DersProgramiBase(BaseModel):
     ders_adi: Optional[str] = None
     ogretmen_adi: Optional[str] = None
     renk: Optional[str] = "indigo"
+    derslik_id: Optional[int] = None
 
 class DersProgramiCreate(DersProgramiBase):
     pass
@@ -281,6 +282,21 @@ class DersProgramiCreate(DersProgramiBase):
 class DersProgramiResponse(DersProgramiBase):
     id: int
     sinif_adi: Optional[str] = None
+    derslik_adi: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+# ==================== DERSLIK SCHEMAS ====================
+class DerslikBase(BaseModel):
+    ad: str
+    kapasite: int = 20
+
+class DerslikCreate(DerslikBase):
+    pass
+
+class DerslikResponse(DerslikBase):
+    id: int
+    akademi_adi: Optional[str] = "Test1"
 
     model_config = ConfigDict(from_attributes=True)
 

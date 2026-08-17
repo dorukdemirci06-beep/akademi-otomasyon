@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Users, BookOpen, 
  Calendar, Clock, Plus, Trash2, Save, FileText, X, Sparkles, User,
- History, ChevronDown, ChevronUp, Filter, RefreshCw, CalendarPlus, Maximize2, Minimize2, MessageCircle } from 'lucide-react';
+ History, ChevronDown, ChevronUp, Filter, RefreshCw, CalendarPlus, Maximize2, Minimize2, MessageCircle, Check } from 'lucide-react';
 import { 
  getSiniflar, getSiniflarBasic, getSinifOgrencileri, getDersProgrami, 
  createDersProgrami, deleteDersProgrami, getYoklama, saveYoklamaToplu,
- deleteYoklamaOturum
+ deleteYoklamaOturum, getDerslikler
 } from '../services/api';
 import CustomDatePicker from '../components/CustomDatePicker';
 import HaftalikDersCizelgesi from '../components/HaftalikDersCizelgesi';
@@ -16,15 +16,24 @@ import TimePicker from '../components/TimePicker';
 const GUNLER = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
 
 const RENK_OPTIONS = [
- { label: 'İndigo', value: 'indigo', bg: 'bg-indigo-100/90 border-indigo-300 text-indigo-950 dark:bg-indigo-950/80 dark:border-indigo-700/80 dark:text-indigo-200 ' },
- { label: 'Zümrüt', value: 'emerald', bg: 'bg-emerald-100/90 border-emerald-300 text-emerald-950 dark:bg-emerald-100 dark:bg-emerald-950/80 dark:border-emerald-700/80 dark:text-emerald-200 ' },
- { label: 'Turuncu', value: 'amber', bg: 'bg-amber-100/90 border-amber-300 text-amber-950 dark:bg-amber-950/80 dark:border-amber-700/80 dark:text-amber-200 ' },
- { label: 'Mor', value: 'purple', bg: 'bg-purple-100/90 border-purple-300 text-purple-950 dark:bg-purple-950/80 dark:border-purple-700/80 dark:text-purple-200 ' },
- { label: 'Mavi', value: 'sky', bg: 'bg-sky-100/90 border-sky-300 text-sky-950 dark:bg-sky-950/80 dark:border-sky-700/80 dark:text-sky-200 ' },
- { label: 'Gül', value: 'rose', bg: 'bg-rose-100/90 border-rose-300 text-rose-950 dark:bg-rose-950/80 dark:border-rose-700/80 dark:text-rose-200 ' },
- { label: 'Yeşil', value: 'green', bg: 'bg-green-100/90 border-green-300 text-green-950 dark:bg-emerald-900/70 dark:border-emerald-600/80 dark:text-emerald-200 ' },
- { label: 'Sarı', value: 'yellow', bg: 'bg-yellow-100/90 border-yellow-300 text-yellow-950 dark:bg-yellow-950/80 dark:border-yellow-600/80 dark:text-yellow-200 ' },
- { label: 'Kırmızı', value: 'red', bg: 'bg-red-100/90 border-red-300 text-red-950 dark:bg-red-950/80 dark:border-red-600/80 dark:text-red-200 ' }
+ { label: 'Kırmızı', value: 'red', bg: 'bg-red-100/90 border-red-300 text-red-950 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200', dotClass: 'bg-red-500' },
+ { label: 'Turuncu', value: 'orange', bg: 'bg-orange-100/90 border-orange-300 text-orange-950 dark:bg-orange-950/80 dark:border-orange-700/80 dark:text-orange-200', dotClass: 'bg-orange-500' },
+ { label: 'Kehribar', value: 'amber', bg: 'bg-amber-100/90 border-amber-300 text-amber-950 dark:bg-amber-950/80 dark:border-amber-700/80 dark:text-amber-200', dotClass: 'bg-amber-500' },
+ { label: 'Sarı', value: 'yellow', bg: 'bg-yellow-100/90 border-yellow-300 text-yellow-950 dark:bg-yellow-950/80 dark:border-yellow-700/80 dark:text-yellow-200', dotClass: 'bg-yellow-500' },
+ { label: 'Açık Yeşil', value: 'lime', bg: 'bg-lime-100/90 border-lime-300 text-lime-950 dark:bg-lime-950/80 dark:border-lime-700/80 dark:text-lime-200', dotClass: 'bg-lime-500' },
+ { label: 'Yeşil', value: 'green', bg: 'bg-green-100/90 border-green-300 text-green-950 dark:bg-green-950/80 dark:border-green-700/80 dark:text-green-200', dotClass: 'bg-green-500' },
+ { label: 'Zümrüt', value: 'emerald', bg: 'bg-emerald-100/90 border-emerald-300 text-emerald-950 dark:bg-emerald-950/80 dark:border-emerald-700/80 dark:text-emerald-200', dotClass: 'bg-emerald-500' },
+ { label: 'Turkuaz', value: 'teal', bg: 'bg-teal-100/90 border-teal-300 text-teal-950 dark:bg-teal-950/80 dark:border-teal-700/80 dark:text-teal-200', dotClass: 'bg-teal-500' },
+ { label: 'Camgöbeği', value: 'cyan', bg: 'bg-cyan-100/90 border-cyan-300 text-cyan-950 dark:bg-cyan-950/80 dark:border-cyan-700/80 dark:text-cyan-200', dotClass: 'bg-cyan-500' },
+ { label: 'Açık Mavi', value: 'sky', bg: 'bg-sky-100/90 border-sky-300 text-sky-950 dark:bg-sky-950/80 dark:border-sky-700/80 dark:text-sky-200', dotClass: 'bg-sky-500' },
+ { label: 'Mavi', value: 'blue', bg: 'bg-blue-100/90 border-blue-300 text-blue-950 dark:bg-blue-950/80 dark:border-blue-700/80 dark:text-blue-200', dotClass: 'bg-blue-500' },
+ { label: 'İndigo', value: 'indigo', bg: 'bg-indigo-100/90 border-indigo-300 text-indigo-950 dark:bg-indigo-950/80 dark:border-indigo-700/80 dark:text-indigo-200', dotClass: 'bg-indigo-500' },
+ { label: 'Menekşe', value: 'violet', bg: 'bg-violet-100/90 border-violet-300 text-violet-950 dark:bg-violet-950/80 dark:border-violet-700/80 dark:text-violet-200', dotClass: 'bg-violet-500' },
+ { label: 'Mor', value: 'purple', bg: 'bg-purple-100/90 border-purple-300 text-purple-950 dark:bg-purple-950/80 dark:border-purple-700/80 dark:text-purple-200', dotClass: 'bg-purple-500' },
+ { label: 'Fuşya', value: 'fuchsia', bg: 'bg-fuchsia-100/90 border-fuchsia-300 text-fuchsia-950 dark:bg-fuchsia-950/80 dark:border-fuchsia-700/80 dark:text-fuchsia-200', dotClass: 'bg-fuchsia-500' },
+ { label: 'Pembe', value: 'pink', bg: 'bg-pink-100/90 border-pink-300 text-pink-950 dark:bg-pink-950/80 dark:border-pink-700/80 dark:text-pink-200', dotClass: 'bg-pink-500' },
+ { label: 'Gül', value: 'rose', bg: 'bg-rose-100/90 border-rose-300 text-rose-950 dark:bg-rose-950/80 dark:border-rose-700/80 dark:text-rose-200', dotClass: 'bg-rose-500' },
+ { label: 'Antrasit', value: 'slate', bg: 'bg-slate-100/90 border-slate-300 text-slate-950 dark:bg-slate-800/80 dark:border-slate-600/80 dark:text-slate-200', dotClass: 'bg-slate-500' }
 ];
 
 const Yoklama = () => {
@@ -53,6 +62,7 @@ const Yoklama = () => {
  const [loadingOgrenciler, setLoadingOgrenciler] = useState(false);
  const [savingAttendance, setSavingAttendance] = useState(false);
  const [successMessage, setSuccessMessage] = useState('');
+ const [dersliklerList, setDersliklerList] = useState([]);
 
  // Genişletilmiş Gün State'i
  const [expandedGun, setExpandedGun] = useState(null);
@@ -85,6 +95,7 @@ const Yoklama = () => {
  bitis_saati: '11:30',
  ders_adi: '',
  ogretmen_adi: '',
+ derslik_id: '',
  renk: 'amber'
  });
 
@@ -262,14 +273,16 @@ const Yoklama = () => {
 
  const fetchInitialData = async () => {
  try {
- const [sinifRes, progRes] = await Promise.all([
+ const [sinifRes, progRes, derslikRes] = await Promise.all([
  getSiniflar(),
- getDersProgrami()
+ getDersProgrami(),
+ getDerslikler()
  ]);
 
  const sinifList = sinifRes.data || [];
  setSiniflar(sinifList);
  setDersProgrami(progRes.data || []);
+ setDersliklerList(derslikRes.data || []);
 
  if (sinifList.length > 0 && !selectedSinifId) {
  setSelectedSinifId(sinifList[0].id.toString());
@@ -389,20 +402,22 @@ const Yoklama = () => {
  }
 
  try {
- await createDersProgrami({
- ...newDersForm,
- sinif_id: parseInt(newDersForm.sinif_id)
- });
- showToast('Haftalık ders programına yeni ders başarıyla eklendi!');
- setNewDersForm({
- sinif_id: '',
- gun: 'Pazartesi',
- baslangic_saati: '10:00',
- bitis_saati: '11:30',
- ders_adi: '',
- ogretmen_adi: '',
- renk: 'amber'
- });
+  await createDersProgrami({
+  ...newDersForm,
+  sinif_id: parseInt(newDersForm.sinif_id),
+  derslik_id: newDersForm.derslik_id ? parseInt(newDersForm.derslik_id) : null
+  });
+  showToast('Haftalık ders programına yeni ders başarıyla eklendi!');
+  setNewDersForm({
+  sinif_id: '',
+  gun: 'Pazartesi',
+  baslangic_saati: '10:00',
+  bitis_saati: '11:30',
+  ders_adi: '',
+  ogretmen_adi: '',
+  derslik_id: '',
+  renk: 'amber'
+  });
  setShowAddModal(false);
  fetchInitialData();
  } catch (err) {
@@ -1126,20 +1141,38 @@ const Yoklama = () => {
  </div>
 
  <div>
- <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Kart Rengi</label>
- <div className="grid grid-cols-3 gap-2">
- {RENK_OPTIONS.map(r => (
+ <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Derslik (Opsiyonel)</label>
+ <select
+ value={newDersForm.derslik_id || ''}
+ onChange={(e) => setNewDersForm(prev => ({ ...prev, derslik_id: e.target.value }))}
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+ >
+ <option value="">-- Derslik Seçin --</option>
+ {dersliklerList.map(d => (
+ <option key={d.id} value={d.id}>{d.ad}</option>
+ ))}
+ </select>
+ </div>
+
+ <div>
+ <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Kart Rengi</label>
+ <div className="flex flex-wrap gap-2.5">
+ {RENK_OPTIONS.map(r => {
+ const isSelected = newDersForm.renk === r.value;
+ return (
  <button
  key={r.value}
  type="button"
+ title={r.label}
  onClick={() => setNewDersForm(prev => ({ ...prev, renk: r.value }))}
- className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${r.bg} ${
- newDersForm.renk === r.value ? 'ring-2 ring-indigo-500 dark:ring-white ring-offset-1 ring-offset-white dark:ring-offset-slate-900' : 'opacity-70'
+ className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out cursor-pointer text-white shadow-sm hover:shadow-md ${r.dotClass} ${
+ isSelected ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-slate-500 scale-110' : 'opacity-80 hover:opacity-100 hover:scale-105'
  }`}
  >
- {r.label}
+ {isSelected && <Check className="w-4 h-4" strokeWidth={3} />}
  </button>
- ))}
+ );
+ })}
  </div>
  </div>
 

@@ -125,4 +125,9 @@ export const getYoklama = (sinifId, tarih) => {
 export const saveYoklamaToplu = (data) => API.post('/yoklama/toplu', data);
 export const deleteYoklamaOturum = (sinifId, tarih) => API.delete('/yoklama/oturum', { params: { sinif_id: sinifId, tarih } });
 
+// Derslik Endpointleri
+export const getDerslikler = () => API.get('/derslikler/');
+export const createDerslik = (data) => API.post('/derslikler/', data);
+export const deleteDerslik = (id) => API.delete(`/derslikler/${id}`);
+
 export default API;

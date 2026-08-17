@@ -135,7 +135,7 @@ export default function Ayarlar({ showToast, user }) {
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Sağlayıcı (Altyapı)</label>
               <div className="grid grid-cols-1 gap-3">
                 <label className={`cursor-pointer p-3 transition-all flex items-center gap-3 rounded-2xl ${formData.whatsapp_provider === 'meta' ? 'neo-button-primary' : 'border-white/10 dark:border-white/5 neo-button'}`}>
-                  <input type="radio" name="whatsapp_provider" value="meta" checked={formData.whatsapp_provider === 'meta'} onChange={handleChange} className="w-4 h-4 text-emerald-600 neo-input" />
+                  <input type="radio" name="whatsapp_provider" value="meta" checked={formData.whatsapp_provider === 'meta'} onChange={handleChange} className="hidden" />
                   <div>
                     <span className="font-bold text-sm text-slate-800 dark:text-slate-100">Meta Cloud API (Resmi)</span>
                     <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">Kurumsal hesaplar için işletme onayı gerektirir.</p>
@@ -143,7 +143,7 @@ export default function Ayarlar({ showToast, user }) {
                 </label>
                 
                 <label className={`cursor-pointer p-3 transition-all flex items-center gap-3 rounded-2xl ${formData.whatsapp_provider === 'callmebot' ? 'neo-button-primary' : 'border-white/10 dark:border-white/5 neo-button'}`}>
-                  <input type="radio" name="whatsapp_provider" value="callmebot" checked={formData.whatsapp_provider === 'callmebot'} onChange={handleChange} className="w-4 h-4 text-emerald-600 neo-input" />
+                  <input type="radio" name="whatsapp_provider" value="callmebot" checked={formData.whatsapp_provider === 'callmebot'} onChange={handleChange} className="hidden" />
                   <div>
                     <span className="font-bold text-sm text-slate-800 dark:text-slate-100">CallMeBot (Ücretsiz)</span>
                     <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">İzin verilen numaralara ücretsiz mesaj gönderimi.</p>

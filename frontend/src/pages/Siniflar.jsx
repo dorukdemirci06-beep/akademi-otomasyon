@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Users, BookOpen, Wallet, ArrowUpRight, TrendingUp, Plus, Trash2, X, Eye, UserPlus, Calendar, Clock } from 'lucide-react';
-import { getOgrenciler, getSiniflar, getSiniflarBasic, createSinif, deleteSinif, getSinifOgrencileri, getOnKayitlar, createDersProgrami, deleteDersProgrami } from '../services/api';
+import { Users, BookOpen, Wallet, ArrowUpRight, TrendingUp, Plus, Trash2, X, Eye, UserPlus, Calendar, Clock, Check } from 'lucide-react';
+import { getOgrenciler, getSiniflar, getSiniflarBasic, createSinif, deleteSinif, getSinifOgrencileri, getOnKayitlar, createDersProgrami, deleteDersProgrami, getDerslikler, createDerslik, deleteDerslik } from '../services/api';
 import { Link } from 'react-router-dom';
 import ConfirmModal from '../components/ConfirmModal';
 import SearchableSelect from '../components/SearchableSelect';
@@ -9,15 +9,24 @@ import { formatTL } from '../utils/formatters';
 
 const GUNLER = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
 const RENK_OPTIONS = [
- { label: 'İndigo', value: 'indigo', bg: 'bg-indigo-100/90 border-indigo-300 text-indigo-950 dark:bg-indigo-950/80 dark:border-indigo-700/80 dark:text-indigo-200 ' },
- { label: 'Zümrüt', value: 'emerald', bg: 'bg-emerald-100/90 border-emerald-300 text-emerald-950 dark:bg-emerald-950/80 dark:border-emerald-700/80 dark:text-emerald-200 ' },
- { label: 'Turuncu', value: 'amber', bg: 'bg-amber-100/90 border-amber-300 text-amber-950 dark:bg-amber-950/80 dark:border-amber-700/80 dark:text-amber-200 ' },
- { label: 'Mor', value: 'purple', bg: 'bg-purple-100/90 border-purple-300 text-purple-950 dark:bg-purple-950/80 dark:border-purple-700/80 dark:text-purple-200 ' },
- { label: 'Mavi', value: 'sky', bg: 'bg-sky-100/90 border-sky-300 text-sky-950 dark:bg-sky-950/80 dark:border-sky-700/80 dark:text-sky-200 ' },
- { label: 'Gül', value: 'rose', bg: 'bg-rose-100/90 border-rose-300 text-rose-950 dark:bg-rose-950/80 dark:border-rose-700/80 dark:text-rose-200 ' },
- { label: 'Yeşil', value: 'green', bg: 'bg-green-100/90 border-green-300 text-green-950 dark:bg-emerald-900/70 dark:border-emerald-600/80 dark:text-emerald-200 ' },
- { label: 'Sarı', value: 'yellow', bg: 'bg-yellow-100/90 border-yellow-300 text-yellow-950 dark:bg-yellow-950/80 dark:border-yellow-600/80 dark:text-yellow-200 ' },
- { label: 'Kırmızı', value: 'red', bg: 'bg-red-100/90 border-red-300 text-red-950 dark:bg-red-950/80 dark:border-red-600/80 dark:text-red-200 ' }
+ { label: 'Kırmızı', value: 'red', bg: 'bg-red-100/90 border-red-300 text-red-950 dark:bg-red-950/80 dark:border-red-700/80 dark:text-red-200', dotClass: 'bg-red-500' },
+ { label: 'Turuncu', value: 'orange', bg: 'bg-orange-100/90 border-orange-300 text-orange-950 dark:bg-orange-950/80 dark:border-orange-700/80 dark:text-orange-200', dotClass: 'bg-orange-500' },
+ { label: 'Kehribar', value: 'amber', bg: 'bg-amber-100/90 border-amber-300 text-amber-950 dark:bg-amber-950/80 dark:border-amber-700/80 dark:text-amber-200', dotClass: 'bg-amber-500' },
+ { label: 'Sarı', value: 'yellow', bg: 'bg-yellow-100/90 border-yellow-300 text-yellow-950 dark:bg-yellow-950/80 dark:border-yellow-700/80 dark:text-yellow-200', dotClass: 'bg-yellow-500' },
+ { label: 'Açık Yeşil', value: 'lime', bg: 'bg-lime-100/90 border-lime-300 text-lime-950 dark:bg-lime-950/80 dark:border-lime-700/80 dark:text-lime-200', dotClass: 'bg-lime-500' },
+ { label: 'Yeşil', value: 'green', bg: 'bg-green-100/90 border-green-300 text-green-950 dark:bg-green-950/80 dark:border-green-700/80 dark:text-green-200', dotClass: 'bg-green-500' },
+ { label: 'Zümrüt', value: 'emerald', bg: 'bg-emerald-100/90 border-emerald-300 text-emerald-950 dark:bg-emerald-950/80 dark:border-emerald-700/80 dark:text-emerald-200', dotClass: 'bg-emerald-500' },
+ { label: 'Turkuaz', value: 'teal', bg: 'bg-teal-100/90 border-teal-300 text-teal-950 dark:bg-teal-950/80 dark:border-teal-700/80 dark:text-teal-200', dotClass: 'bg-teal-500' },
+ { label: 'Camgöbeği', value: 'cyan', bg: 'bg-cyan-100/90 border-cyan-300 text-cyan-950 dark:bg-cyan-950/80 dark:border-cyan-700/80 dark:text-cyan-200', dotClass: 'bg-cyan-500' },
+ { label: 'Açık Mavi', value: 'sky', bg: 'bg-sky-100/90 border-sky-300 text-sky-950 dark:bg-sky-950/80 dark:border-sky-700/80 dark:text-sky-200', dotClass: 'bg-sky-500' },
+ { label: 'Mavi', value: 'blue', bg: 'bg-blue-100/90 border-blue-300 text-blue-950 dark:bg-blue-950/80 dark:border-blue-700/80 dark:text-blue-200', dotClass: 'bg-blue-500' },
+ { label: 'İndigo', value: 'indigo', bg: 'bg-indigo-100/90 border-indigo-300 text-indigo-950 dark:bg-indigo-950/80 dark:border-indigo-700/80 dark:text-indigo-200', dotClass: 'bg-indigo-500' },
+ { label: 'Menekşe', value: 'violet', bg: 'bg-violet-100/90 border-violet-300 text-violet-950 dark:bg-violet-950/80 dark:border-violet-700/80 dark:text-violet-200', dotClass: 'bg-violet-500' },
+ { label: 'Mor', value: 'purple', bg: 'bg-purple-100/90 border-purple-300 text-purple-950 dark:bg-purple-950/80 dark:border-purple-700/80 dark:text-purple-200', dotClass: 'bg-purple-500' },
+ { label: 'Fuşya', value: 'fuchsia', bg: 'bg-fuchsia-100/90 border-fuchsia-300 text-fuchsia-950 dark:bg-fuchsia-950/80 dark:border-fuchsia-700/80 dark:text-fuchsia-200', dotClass: 'bg-fuchsia-500' },
+ { label: 'Pembe', value: 'pink', bg: 'bg-pink-100/90 border-pink-300 text-pink-950 dark:bg-pink-950/80 dark:border-pink-700/80 dark:text-pink-200', dotClass: 'bg-pink-500' },
+ { label: 'Gül', value: 'rose', bg: 'bg-rose-100/90 border-rose-300 text-rose-950 dark:bg-rose-950/80 dark:border-rose-700/80 dark:text-rose-200', dotClass: 'bg-rose-500' },
+ { label: 'Antrasit', value: 'slate', bg: 'bg-slate-100/90 border-slate-300 text-slate-950 dark:bg-slate-800/80 dark:border-slate-600/80 dark:text-slate-200', dotClass: 'bg-slate-500' }
 ];
 
 const Siniflar = () => {
@@ -75,6 +84,11 @@ const Siniflar = () => {
  const [siniflarList, setSiniflarList] = useState([]);
  const [siniflarLoading, setSiniflarLoading] = useState(false);
 
+ // Derslikler Modal State
+ const [showDerslikModal, setShowDerslikModal] = useState(false);
+ const [dersliklerList, setDersliklerList] = useState([]);
+ const [yeniDerslik, setYeniDerslik] = useState({ ad: '' });
+
  // Sınıf Ekleme Sub-Modal State
  const [showEkleModal, setShowEkleModal] = useState(false);
  const [yeniSinifAdi, setYeniSinifAdi] = useState('');
@@ -95,7 +109,8 @@ const Siniflar = () => {
  bitis_saati: '11:30',
  ders_adi: '',
  ogretmen_adi: '',
- renk: 'indigo'
+ renk: 'indigo',
+ derslik_id: ''
  });
 
  // Sınıf Öğrencileri Detay Modal State
@@ -103,8 +118,18 @@ const Siniflar = () => {
  const [sinifOgrencileriList, setSinifOgrencileriList] = useState([]);
  const [detayLoading, setDetayLoading] = useState(false);
 
+ const fetchDerslikler = async () => {
+   try {
+     const res = await getDerslikler();
+     setDersliklerList(res.data || []);
+   } catch (err) {
+     console.error("Derslikler yüklenemedi", err);
+   }
+ };
+
  useEffect(() => {
  fetchSiniflarModal();
+ fetchDerslikler();
  }, []);
 
  const loadDashboardData = async () => {
@@ -176,6 +201,37 @@ const Siniflar = () => {
  }
  };
 
+ const handleCreateDerslik = async (e) => {
+   e.preventDefault();
+   if(!yeniDerslik.ad.trim()) return;
+   try {
+     await createDerslik({ ad: yeniDerslik.ad });
+     showToast('Derslik başarıyla oluşturuldu.');
+     setYeniDerslik({ ad: '' });
+     fetchDerslikler();
+   } catch(err) {
+     showToast('Derslik oluşturulurken hata!', 'error');
+   }
+ };
+
+ const handleDeleteDerslik = (id) => {
+   openConfirm({
+     title: 'Derslik Sil',
+     message: 'Bu dersliği silmek istediğinize emin misiniz?',
+     type: 'danger',
+     confirmText: 'Sil',
+     onConfirm: async () => {
+       try {
+         await deleteDerslik(id);
+         showToast('Derslik silindi.');
+         fetchDerslikler();
+       } catch(err) {
+         showToast('Derslik silinemedi.', 'error');
+       }
+     }
+   });
+ };
+
  const handleCreateSinif = async (e) => {
  e.preventDefault();
  if (!yeniSinifAdi.trim()) return;
@@ -245,7 +301,8 @@ const Siniflar = () => {
  bitis_saati: newScheduleForm.bitis_saati,
  ders_adi: newScheduleForm.ders_adi || selectedSinifSchedule.sinif_adi,
  ogretmen_adi: newScheduleForm.ogretmen_adi,
- renk: newScheduleForm.renk
+ renk: newScheduleForm.renk,
+ derslik_id: newScheduleForm.derslik_id ? parseInt(newScheduleForm.derslik_id) : null
  });
  await fetchSiniflarModal();
  const updatedRes = await getSiniflar();
@@ -257,10 +314,17 @@ const Siniflar = () => {
  bitis_saati: '11:30',
  ders_adi: '',
  ogretmen_adi: '',
- renk: 'indigo'
+ renk: 'indigo',
+ derslik_id: ''
  });
+ showToast('Ders saati başarıyla eklendi.', 'success');
  } catch (err) {
- console.error('Ders saati atanamadı:', err);
+ if (err.response?.status === 400) {
+   showToast(err.response.data.detail || 'Çakışma veya geçersiz saat.', 'error');
+ } else {
+   console.error('Ders saati atanamadı:', err);
+   showToast('Ders saati atanamadı.', 'error');
+ }
  }
  };
 
@@ -299,7 +363,7 @@ const Siniflar = () => {
  };
 
  return (
- <div className="space-y-6">
+ <div className="space-y-6 pb-24">
  <div className="neo-card p-6 rounded-2xl flex justify-between items-center transition-colors">
  <div>
  <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -310,13 +374,22 @@ const Siniflar = () => {
  Sınıflarınızı, öğretmen atamalarını ve ders programlarını yönetin.
  </p>
  </div>
- <button
- onClick={() => setShowEkleModal(true)}
- className="px-4 py-2 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition flex items-center gap-2 -emerald-900/30 cursor-pointer"
- >
- <Plus className="w-5 h-5" />
- <span>Yeni Sınıf Ekle</span>
- </button>
+         <div className="flex gap-3">
+          <button
+            onClick={() => setShowDerslikModal(true)}
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm rounded-xl transition flex items-center gap-2 cursor-pointer"
+          >
+            <BookOpen className="w-5 h-5" />
+            <span>Derslikler</span>
+          </button>
+          <button
+            onClick={() => setShowEkleModal(true)}
+            className="px-4 py-2 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition flex items-center gap-2 -emerald-900/30 cursor-pointer"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Yeni Sınıf Ekle</span>
+          </button>
+        </div>
  </div>
  <div className="neo-card rounded-2xl p-6">
 {/* Modal Table */}
@@ -357,7 +430,7 @@ const Siniflar = () => {
  {s.ders_programi.map(dp => (
  <span key={dp.id} className="bg-emerald-50 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/80 text-[11px] px-2 py-0.5 rounded font-bold flex items-center gap-1">
  <Calendar className="w-3 h-3 text-[#2eb82e]" />
- <span>{dp.gun} ({dp.baslangic_saati}-{dp.bitis_saati})</span>
+ <span>{dp.gun} ({dp.baslangic_saati}-{dp.bitis_saati}){dp.derslik_adi ? ` - ${dp.derslik_adi}` : ''}</span>
  </span>
  ))}
  </div>
@@ -400,6 +473,49 @@ const Siniflar = () => {
  </div>
  </div>
  
+      {/* ================= MODAL: Derslikler ================= */}
+      {showDerslikModal && (
+        <div className="fixed inset-0 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+          <div className="neo-card max-w-lg w-full p-6 rounded-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700/50 pb-4 mb-2">
+              <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-sky-500" />
+                <span>Derslik Yönetimi</span>
+              </h3>
+              <button onClick={() => setShowDerslikModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-xl cursor-pointer">&times;</button>
+            </div>
+
+            <form onSubmit={handleCreateDerslik} className="flex gap-2 items-end pb-4 border-b border-slate-100 dark:border-slate-700/50">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Derslik Adı</label>
+                <input required type="text" value={yeniDerslik.ad} onChange={e => setYeniDerslik({...yeniDerslik, ad: e.target.value})} className="neo-input w-full px-3 py-2 rounded-xl text-sm" placeholder="Örn: 1A, Müzik Odası" />
+              </div>
+              <button type="submit" className="px-4 py-2 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition cursor-pointer">Ekle</button>
+            </form>
+
+            <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+              {dersliklerList.length === 0 ? (
+                <p className="text-sm text-slate-500 text-center py-4">Kayıtlı derslik bulunmuyor.</p>
+              ) : (
+                dersliklerList.map(d => (
+                  <div key={d.id} className="flex justify-between items-center p-3 neo-input rounded-xl">
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-100 text-sm">{d.ad}</strong>
+                    </div>
+                    <button onClick={() => handleDeleteDerslik(d.id)} className="text-red-500 hover:text-red-700 p-1 cursor-pointer">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex justify-end pt-2 border-t border-slate-200 dark:border-slate-700/50">
+               <button onClick={() => setShowDerslikModal(false)} className="px-4 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold rounded-lg cursor-pointer">Kapat</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ================= MODAL: Yeni Sınıf Ekle Sub-Modal ================= */}
       {showEkleModal && (
         <div className="fixed inset-0 backdrop-blur-md z-[60] flex items-center justify-center p-4">
@@ -484,16 +600,25 @@ const Siniflar = () => {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Kart Rengi</label>
-                    <select
-                      value={scheduleData.renk}
-                      onChange={(e) => setScheduleData({ ...scheduleData, renk: e.target.value })}
-                      className="neo-input w-full px-3 py-1.5 rounded-lg font-bold"
-                    >
-                      {RENK_OPTIONS.map(r => (
-                        <option key={r.value} value={r.value}>{r.label}</option>
-                      ))}
-                    </select>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-2">Kart Rengi</label>
+                    <div className="flex flex-wrap gap-2.5">
+                      {RENK_OPTIONS.map(r => {
+                        const isSelected = scheduleData.renk === r.value;
+                        return (
+                          <button
+                            key={r.value}
+                            type="button"
+                            title={r.label}
+                            onClick={() => setScheduleData({ ...scheduleData, renk: r.value })}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out cursor-pointer text-white shadow-sm hover:shadow-md ${r.dotClass} ${
+                              isSelected ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-slate-500 scale-110' : 'opacity-80 hover:opacity-100 hover:scale-105'
+                            }`}
+                          >
+                            {isSelected && <Check className="w-4 h-4" strokeWidth={3} />}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
@@ -544,6 +669,7 @@ const Siniflar = () => {
                         <strong className="text-sky-600 dark:text-sky-300 font-extrabold">{dp.gun}</strong>
                         <span className="text-slate-700 dark:text-slate-300 ml-2">{dp.baslangic_saati} - {dp.bitis_saati}</span>
                         {dp.ogretmen_adi && <span className="text-slate-500 dark:text-slate-400 ml-2">({dp.ogretmen_adi})</span>}
+                        {dp.derslik_adi && <span className="text-emerald-600 dark:text-emerald-400 font-semibold ml-2">[{dp.derslik_adi}]</span>}
                       </div>
                       <button
                         onClick={() => handleDeleteScheduleSlot(dp.id)}
@@ -562,32 +688,17 @@ const Siniflar = () => {
             <form onSubmit={handleAddScheduleSlot} className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-700">
               <h4 className="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">+ Yeni Ders Saati Ekle</h4>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Gün</label>
-                  <select
-                    value={newScheduleForm.gun}
-                    onChange={(e) => setNewScheduleForm({ ...newScheduleForm, gun: e.target.value })}
-                    className="neo-input w-full px-3 py-2 rounded-xl text-xs font-bold"
-                  >
-                    {GUNLER.map(g => (
-                      <option key={g} value={g}>{g}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kart Rengi</label>
-                  <select
-                    value={newScheduleForm.renk}
-                    onChange={(e) => setNewScheduleForm({ ...newScheduleForm, renk: e.target.value })}
-                    className="neo-input w-full px-3 py-2 rounded-xl text-xs font-bold"
-                  >
-                    {RENK_OPTIONS.map(r => (
-                      <option key={r.value} value={r.value}>{r.label}</option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Gün</label>
+                <select
+                  value={newScheduleForm.gun}
+                  onChange={(e) => setNewScheduleForm({ ...newScheduleForm, gun: e.target.value })}
+                  className="neo-input w-full px-3 py-2 rounded-xl text-xs font-bold"
+                >
+                  {GUNLER.map(g => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -606,16 +717,50 @@ const Siniflar = () => {
                     />
                 </div>
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Derslik (Opsiyonel)</label>
+                <select
+                  value={newScheduleForm.derslik_id}
+                  onChange={(e) => setNewScheduleForm({ ...newScheduleForm, derslik_id: e.target.value })}
+                  className="neo-input w-full px-3 py-2.5 rounded-xl text-xs font-bold"
+                >
+                  <option value="">-- Derslik Seçin --</option>
+                  {dersliklerList.map(d => (
+                    <option key={d.id} value={d.id}>{d.ad}</option>
+                  ))}
+                </select>
+              </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Eğitmen / Öğretmen (Opsiyonel)</label>
-                <SearchableSelect
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Eğitmen / Öğretmen (Opsiyonel)</label>                <SearchableSelect
   value={newScheduleForm.ogretmen_adi}
   onChange={(val) => setNewScheduleForm({ ...newScheduleForm, ogretmen_adi: val })}
   options={getRegisteredTeachers().map(t => ({ value: `${t.isim} ${t.soyisim || ""}`.trim(), label: `${t.isim} ${t.soyisim || ""}`.trim() }))}
   placeholder="-- Öğretmen Seçin (Opsiyonel) --"
   searchPlaceholder="Öğretmen ara..."
 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Kart Rengi</label>
+                <div className="flex flex-wrap gap-2.5">
+                  {RENK_OPTIONS.map(r => {
+                    const isSelected = newScheduleForm.renk === r.value;
+                    return (
+                      <button
+                        key={r.value}
+                        type="button"
+                        title={r.label}
+                        onClick={() => setNewScheduleForm({ ...newScheduleForm, renk: r.value })}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ease-in-out cursor-pointer text-white shadow-sm hover:shadow-md ${r.dotClass} ${
+                          isSelected ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-slate-500 scale-110' : 'opacity-80 hover:opacity-100 hover:scale-105'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-4 h-4" strokeWidth={3} />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
@@ -715,7 +860,7 @@ const Siniflar = () => {
       {/* Toast Notification */}
       {toastMessage && (
         <div
-          className={`fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-2xl border backdrop-blur-md transition-all duration-300 flex items-center gap-3 text-sm font-semibold animate-scale-in ${
+          className={`fixed bottom-6 right-6 z-[100] px-5 py-3.5 rounded-2xl shadow-2xl border backdrop-blur-md transition-all duration-300 flex items-center gap-3 text-sm font-semibold animate-scale-in ${
             toastMessage.type === 'error'
               ? 'bg-rose-950/90 text-rose-200 border-rose-700/60 shadow-rose-950/40'
               : 'bg-emerald-950/90 text-emerald-200 border-emerald-700/60 shadow-emerald-950/40'

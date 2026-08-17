@@ -1,19 +1,28 @@
 import React from 'react';
-import { Calendar, Minimize2, Maximize2, Trash2, Clock, User } from 'lucide-react';
+import { Calendar, Minimize2, Maximize2, Trash2, Clock, User, MapPin } from 'lucide-react';
 
 export const GUNLER = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
 
 export const getStyleForRenk = (renk) => {
  const styles = {
- indigo: 'neo-card !border-l-4 !border-l-indigo-500 !bg-transparent text-slate-800 dark:text-slate-100',
- emerald: 'neo-card !border-l-4 !border-l-emerald-500 !bg-transparent text-slate-800 dark:text-slate-100',
- amber: 'neo-card !border-l-4 !border-l-amber-500 !bg-transparent text-slate-800 dark:text-slate-100',
- purple: 'neo-card !border-l-4 !border-l-purple-500 !bg-transparent text-slate-800 dark:text-slate-100',
- sky: 'neo-card !border-l-4 !border-l-sky-500 !bg-transparent text-slate-800 dark:text-slate-100',
- rose: 'neo-card !border-l-4 !border-l-rose-500 !bg-transparent text-slate-800 dark:text-slate-100',
- green: 'neo-card !border-l-4 !border-l-green-500 !bg-transparent text-slate-800 dark:text-slate-100',
- yellow: 'neo-card !border-l-4 !border-l-yellow-500 !bg-transparent text-slate-800 dark:text-slate-100',
- red: 'neo-card !border-l-4 !border-l-red-500 !bg-transparent text-slate-800 dark:text-slate-100'
+  red: 'neo-card !border-l-4 !border-l-red-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  orange: 'neo-card !border-l-4 !border-l-orange-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  amber: 'neo-card !border-l-4 !border-l-amber-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  yellow: 'neo-card !border-l-4 !border-l-yellow-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  lime: 'neo-card !border-l-4 !border-l-lime-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  green: 'neo-card !border-l-4 !border-l-green-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  emerald: 'neo-card !border-l-4 !border-l-emerald-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  teal: 'neo-card !border-l-4 !border-l-teal-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  cyan: 'neo-card !border-l-4 !border-l-cyan-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  sky: 'neo-card !border-l-4 !border-l-sky-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  blue: 'neo-card !border-l-4 !border-l-blue-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  indigo: 'neo-card !border-l-4 !border-l-indigo-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  violet: 'neo-card !border-l-4 !border-l-violet-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  purple: 'neo-card !border-l-4 !border-l-purple-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  fuchsia: 'neo-card !border-l-4 !border-l-fuchsia-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  pink: 'neo-card !border-l-4 !border-l-pink-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  rose: 'neo-card !border-l-4 !border-l-rose-500 !bg-transparent text-slate-800 dark:text-slate-100',
+  slate: 'neo-card !border-l-4 !border-l-slate-500 !bg-transparent text-slate-800 dark:text-slate-100'
  };
  return styles[renk] || styles.indigo;
 };
@@ -140,6 +149,14 @@ const HaftalikDersCizelgesi = ({
  <div className={`opacity-75 mt-0.5 flex items-center gap-1 ${isExpanded ? 'text-xs font-semibold' : 'text-[9px]'}`}>
  <User className="w-2.5 h-2.5 opacity-70 shrink-0" />
  <span className={isExpanded ? 'whitespace-normal' : 'truncate'}>{ders.ogretmen_adi}</span>
+ </div>
+ )}
+
+ {/* Derslik */}
+ {ders.derslik_adi && (
+ <div className={`opacity-75 mt-0.5 flex items-center gap-1 ${isExpanded ? 'text-xs font-semibold' : 'text-[9px]'}`}>
+ <MapPin className="w-2.5 h-2.5 opacity-70 shrink-0" />
+ <span className={isExpanded ? 'whitespace-normal' : 'truncate'}>{ders.derslik_adi}</span>
  </div>
  )}
 
