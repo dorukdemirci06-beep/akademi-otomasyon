@@ -16,10 +16,12 @@ import {
  UserCheck,
  Heart,
  X,
- Edit,
- Eye
+ Eye,
+ MessageCircle,
+ ChevronDown
 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
+import SearchableSelect from '../components/SearchableSelect';
 import { 
  getOnKayitlar, 
  createOnKayit,
@@ -48,6 +50,7 @@ const OnKayit = () => {
  const [selectedDurumFilter, setSelectedDurumFilter] = useState('Tümü');
  const [sortOption, setSortOption] = useState('tarih_desc');
  const [toastMessage, setToastMessage] = useState(null);
+ const [openDropdownId, setOpenDropdownId] = useState(null);
 
  // Form State (Yeni Ön Kayıt)
  const [formData, setFormData] = useState({
@@ -65,8 +68,7 @@ const OnKayit = () => {
  const [isCustomBrans, setIsCustomBrans] = useState(false);
  const [customBransText, setCustomBransText] = useState('');
 
- const handleBransSelectChange = (e) => {
- const val = e.target.value;
+ const handleBransSelectChange = (val) => {
  if (val === 'DIGER_MANUEL') {
  setIsCustomBrans(true);
  setFormData((prev) => ({ ...prev, ilgilenilen_brans: customBransText }));
@@ -629,21 +631,16 @@ const OnKayit = () => {
  <div className="space-y-2">
  <div className="relative">
  <BookOpen className="w-4 h-4 absolute left-3.5 top-3 text-slate-400 z-10" />
- <select
+ <SearchableSelect
  value={isCustomBrans ? 'DIGER_MANUEL' : formData.ilgilenilen_brans}
  onChange={handleBransSelectChange}
- className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all cursor-pointer neo-input"
- >
- <option value="">-- Mevcut Sınıflardan Seçiniz --</option>
- {siniflar.map((s) => (
- <option key={s.id} value={s.sinif_adi} className="text-slate-900 dark:text-slate-100">
- {s.sinif_adi} (Kapasite: {s.kapasite})
- </option>
- ))}
- <option value="DIGER_MANUEL" className="text-amber-300 font-bold">
- ✍️ Diğer / Elle Özel Branş Yaz...
- </option>
- </select>
+ options={[
+   ...siniflar.map(s => ({ value: s.sinif_adi, label: `${s.sinif_adi} (Kapasite: ${s.kapasite})` })),
+   { value: 'DIGER_MANUEL', label: '➕ DİĞER (Manuel Gir)' }
+ ]}
+ placeholder="-- Mevcut Sınıflardan Seçiniz --"
+ searchPlaceholder="Branş ara..."
+ />
  </div>
 
  {isCustomBrans && (
@@ -718,30 +715,30 @@ const OnKayit = () => {
  </div>
 
  {/* Durum Filter Pills */}
- <select
+ <SearchableSelect
  value={selectedDurumFilter}
- onChange={(e) => setSelectedDurumFilter(e.target.value)}
- className="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#2eb82e] neo-input"
- >
- <option value="Tümü">Tüm Durumlar</option>
- {DURUM_OPTIONS.map((opt) => (
- <option key={opt.value} value={opt.value}>
- {opt.label}
- </option>
- ))}
- </select>
+ onChange={(val) => setSelectedDurumFilter(val)}
+ options={[
+   { value: 'Tümü', label: 'Tüm Durumlar' },
+   ...DURUM_OPTIONS.map(opt => ({ value: opt.value, label: opt.label }))
+ ]}
+ placeholder="-- Durum Filtresi --"
+ searchPlaceholder="Durum ara..."
+ />
 
  {/* Sıralama Menüsü */}
- <select
+ <SearchableSelect
  value={sortOption}
- onChange={(e) => setSortOption(e.target.value)}
- className="rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-200 focus:outline-none focus:border-[#2eb82e] neo-input"
- >
- <option value="tarih_desc">Sırala: Kayıt Tarihi (Yeniden Eskiden)</option>
- <option value="tarih_asc">Sırala: Kayıt Tarihi (Eskiden Yeniye)</option>
- <option value="isim_asc">Sırala: İsme Göre (A - Z)</option>
- <option value="isim_desc">Sırala: İsme Göre (Z - A)</option>
- </select>
+ onChange={(val) => setSortOption(val)}
+ options={[
+   { value: 'tarih_desc', label: 'Sırala: Kayıt Tarihi (Yeniden Eskiden)' },
+   { value: 'tarih_asc', label: 'Sırala: Kayıt Tarihi (Eskiden Yeniye)' },
+   { value: 'isim_asc', label: 'Sırala: İsme Göre (A - Z)' },
+   { value: 'isim_desc', label: 'Sırala: İsme Göre (Z - A)' }
+ ]}
+ placeholder="-- Sıralama Seçin --"
+ searchPlaceholder="Sıralama ara..."
+ />
  </div>
  </div>
 
@@ -765,7 +762,8 @@ const OnKayit = () => {
                     </div>
                   </div>
                 ) : (
- <table className="w-full text-left border-collapse">
+  <div className="hidden md:block">
+  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-[11px] font-bold text-slate-400 tracking-wider">
  <th className="py-3 px-4 rounded-l-xl">ÖĞRENCİ BİLGİSİ</th>
@@ -850,24 +848,18 @@ const OnKayit = () => {
  : '-'}
  </td>
 
- {/* Durum Dropdown */}
- <td className="py-3.5 px-4 text-center">
- <select
- value={item.durum || 'Aranacak'}
- onChange={(e) => handleDurumChange(item.id, e.target.value)}
- className={`w-full max-w-[150px] mx-auto px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 ${currentDurumOpt.color}`}
- >
- {DURUM_OPTIONS.map((opt) => (
- <option
- key={opt.value}
- value={opt.value}
- className="text-slate-900 dark:text-slate-100 py-1 font-semibold"
- >
- {opt.label}
- </option>
- ))}
- </select>
- </td>
+  {/* Durum Dropdown (Desktop) */}
+  <td className="py-3.5 px-4 text-center">
+    <div className="w-full max-w-[150px] mx-auto">
+      <SearchableSelect
+        value={item.durum || 'Aranacak'}
+        onChange={(val) => handleDurumChange(item.id, val)}
+        options={DURUM_OPTIONS.map(opt => ({ value: opt.value, label: opt.label }))}
+        placeholder="Durum Seçin"
+        searchPlaceholder="Durum ara..."
+      />
+    </div>
+  </td>
 
  {/* İşlemler (Öğrenci Kaydı Yap & Sil) */}
  <td className="py-3.5 px-4 text-right whitespace-nowrap">
@@ -902,8 +894,81 @@ const OnKayit = () => {
  );
  })}
  </tbody>
- </table>
- )}
+  </table>
+  </div>
+  )}
+
+  {/* Mobil Kart Görünümü */}
+  <div className="md:hidden space-y-4">
+    {filteredKayitlar.map((item) => {
+      const currentDurumOpt = DURUM_OPTIONS.find((d) => d.value === item.durum) || DURUM_OPTIONS[0];
+
+      return (
+        <div key={item.id} className="neo-card p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-3 shadow-sm bg-white dark:bg-[#15181e]">
+          <div className="flex justify-between items-center border-b pb-2 border-slate-100 dark:border-slate-800/60">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{item.ogrenci_adi} {item.ogrenci_soyadi}</span>
+            </div>
+            <span className="text-xs font-bold text-slate-400">#{item.id}</span>
+          </div>
+
+          <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">
+             <div className="flex justify-between items-center">
+                <span className="font-semibold">Veli:</span>
+                <span>{item.veli_adi || item.veli_soyadi ? `${item.veli_adi} ${item.veli_soyadi}` : '-'}</span>
+             </div>
+             <div className="flex justify-between items-center">
+                <span className="font-semibold">Telefon:</span>
+                <div className="flex items-center gap-2">
+                   <span className="font-bold text-slate-700 dark:text-slate-200">{item.telefon || '-'}</span>
+                   {item.telefon && (
+                     <a href={`https://wa.me/${item.telefon.replace(/\D/g, '').startsWith('90') ? item.telefon.replace(/\D/g, '') : (item.telefon.replace(/\D/g, '').startsWith('0') ? '9' + item.telefon.replace(/\D/g, '') : '90' + item.telefon.replace(/\D/g, ''))}`} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#25D366]/10 text-[#25D366] rounded-lg flex items-center justify-center">
+                       <MessageCircle className="w-3.5 h-3.5" />
+                     </a>
+                   )}
+                </div>
+             </div>
+             {item.ilgilenilen_brans && (
+               <div className="flex justify-between items-center">
+                  <span className="font-semibold">Branş:</span>
+                  <span className="px-2.5 py-0.5 border border-sky-200 dark:border-sky-800/80 bg-sky-50 dark:bg-sky-950/50 rounded-lg font-bold text-[#0284c7] dark:text-sky-400">{item.ilgilenilen_brans}</span>
+               </div>
+             )}
+             {item.notlar && (
+               <div className="flex flex-col gap-1 pt-1">
+                  <span className="font-semibold">Notlar:</span>
+                  <p className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg italic text-slate-500 border border-slate-100 dark:border-slate-800/50">{item.notlar}</p>
+               </div>
+             )}
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800/60 space-y-3">
+             <div className="flex flex-col gap-1.5">
+               <SearchableSelect
+                  value={item.durum || 'Aranacak'}
+                  onChange={(val) => handleDurumChange(item.id, val)}
+                  options={DURUM_OPTIONS.map(opt => ({ value: opt.value, label: opt.label }))}
+                  placeholder="Durum Seçin"
+                  searchPlaceholder="Durum ara..."
+                />
+             </div>
+
+             <div className="grid grid-cols-[1fr_auto_auto] gap-2 pt-1">
+               <button onClick={() => openConvertModal(item)} className="py-2.5 rounded-xl bg-gradient-to-r from-[#2eb82e] to-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm -emerald-900/30">
+                 <UserCheck className="w-4 h-4" /> Öğrenci Yap
+               </button>
+               <button onClick={() => openEditModal(item)} className="p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 flex items-center justify-center transition">
+                 <Eye className="w-4 h-4" />
+               </button>
+               <button onClick={() => handleDelete(item.id, `${item.ogrenci_adi} ${item.ogrenci_soyadi}`)} className="p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 flex items-center justify-center transition">
+                 <Trash2 className="w-4 h-4" />
+               </button>
+             </div>
+          </div>
+        </div>
+      );
+    })}
+  </div>
  </div>
  </div>
 
@@ -982,19 +1047,13 @@ const OnKayit = () => {
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kayıt Yapılacak Sınıf / Branş Seçin</label>
- <select
- name="sinif_adi"
+ <SearchableSelect
  value={convertFormData.sinif_adi}
- onChange={handleConvertInputChange}
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#2eb82e] outline-none cursor-pointer"
- >
- <option value="">-- Mevcut Sınıflardan Seçiniz --</option>
- {siniflar.map((s) => (
- <option key={s.id} value={s.sinif_adi} className="text-slate-900 dark:text-slate-100">
- {s.sinif_adi} (Kapasite: {s.kapasite})
- </option>
- ))}
- </select>
+ onChange={(val) => handleConvertInputChange({ target: { name: 'sinif_adi', value: val } })}
+ options={siniflar.map(s => ({ value: s.sinif_adi, label: `${s.sinif_adi} (Kapasite: ${s.kapasite})` }))}
+ placeholder="-- Mevcut Sınıflardan Seçiniz --"
+ searchPlaceholder="Sınıf ara..."
+ />
  </div>
 
  <div>

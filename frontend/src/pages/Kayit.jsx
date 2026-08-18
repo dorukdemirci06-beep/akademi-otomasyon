@@ -4,6 +4,7 @@ import { UserPlus, Search, UserMinus, UserCheck, BookPlus, ArrowUpDown, Users, U
  ChevronDown, ChevronUp, BookOpen, User, Phone, Mail, MapPin, Heart, Sparkles, MessageCircle } from 'lucide-react';
 import { getOgrenciler, createOgrenci, updateOgrenciDurum, updateOgrenciInfo, kaydetOgrenciSinif, getOgrenciSiniflar, getSiniflar, deleteOgrenciSinif } from '../services/api';
 import ConfirmModal from '../components/ConfirmModal';
+import SearchableSelect from '../components/SearchableSelect';
 import CustomDatePicker from '../components/CustomDatePicker';
 import { formatTL } from '../utils/formatters';
 
@@ -237,6 +238,12 @@ const Kayit = () => {
  });
  };
 
+ const handleEkDersEkle = (ogrenci) => {
+ setSelectedOgrenci(ogrenci);
+ setEkDersData({ sinif_adi: '', kalan_ders_hakki: 0 });
+ setShowEkDersModal(true);
+ };
+
  const handleEkDersSubmit = async (e) => {
  e.preventDefault();
  if (!selectedOgrenci) return;
@@ -369,16 +376,18 @@ const Kayit = () => {
  {/* Sıralama Menüsü */}
  <div className="flex items-center gap-2 w-full sm:w-auto">
  <ArrowUpDown className="w-4 h-4 text-slate-400" />
- <select
+ <SearchableSelect
  value={sortOption}
- onChange={(e) => setSortOption(e.target.value)}
- className="rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#2eb82e] w-full sm:w-auto neo-input"
- >
- <option value="isim_asc">Sırala: İsme Göre (A - Z)</option>
- <option value="isim_desc">Sırala: İsme Göre (Z - A)</option>
- <option value="tarih_desc">Sırala: Kayıt Tarihi (Yeniden Eskiden)</option>
- <option value="tarih_asc">Sırala: Kayıt Tarihi (Eskiden Yeniye)</option>
- </select>
+ onChange={(val) => setSortOption(val)}
+ options={[
+   { value: 'isim_asc', label: 'Sırala: İsme Göre (A - Z)' },
+   { value: 'isim_desc', label: 'Sırala: İsme Göre (Z - A)' },
+   { value: 'tarih_desc', label: 'Sırala: Kayıt Tarihi (Yeniden Eskiden)' },
+   { value: 'tarih_asc', label: 'Sırala: Kayıt Tarihi (Eskiden Yeniye)' }
+ ]}
+ placeholder="-- Sıralama Seçin --"
+ searchPlaceholder="Sıralama ara..."
+ />
  </div>
  </div>
 
@@ -411,7 +420,7 @@ const Kayit = () => {
  </div>
 
  {/* COMPACT & EXPANDABLE ACCORDION TABLE */}
- <div className="overflow-x-auto">
+ <div className="hidden md:block overflow-x-auto">
  <table className="w-full text-left border-collapse min-w-[900px]">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
@@ -523,7 +532,7 @@ const Kayit = () => {
  {o.siniflar.slice(0, 2).map((s) => (
  <span key={s.id} className="text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 text-xs px-2.5 py-0.5 rounded-lg font-bold flex items-center gap-1">
  <span>{s.sinif_adi}</span>
- <span className={`px-1.5 py-0.2 rounded text-[10px] font-black border ${s.kalan_ders_hakki <= 0 ? 'bg-rose-50 dark:bg-rose-950 text-rose-600 border-rose-200 dark:border-rose-800/80' : 'bg-emerald-50 dark:bg-emerald-950 text-[#2eb82e] border-emerald-200 dark:border-emerald-700/60'}`}>
+ <span className={`px-1.5 py-0.2 rounded text-[10px] font-black border ${Number(s.kalan_ders_hakki) < 0 ? 'bg-rose-50 dark:bg-rose-950 text-rose-600 border-rose-200 dark:border-rose-800/80' : 'bg-emerald-50 dark:bg-emerald-950 text-[#2eb82e] border-emerald-200 dark:border-emerald-700/60'}`}>
  {s.kalan_ders_hakki} Hak
  </span>
  </span>
@@ -657,7 +666,7 @@ const Kayit = () => {
  <div key={s.id} className="flex justify-between items-center p-2 rounded-lg border">
  <span className="font-bold text-slate-800 dark:text-slate-200">{s.sinif_adi}</span>
  <div className="flex items-center gap-2">
- <span className={`px-2 py-0.5 rounded text-[11px] font-extrabold border ${s.kalan_ders_hakki <= 0 ? 'bg-rose-50 dark:bg-rose-950 text-rose-600 border-rose-200 dark:border-rose-800/80' : 'bg-emerald-50 dark:bg-emerald-950 text-[#2eb82e] border-emerald-200 dark:border-emerald-800/80'}`}>
+ <span className={`px-2 py-0.5 rounded text-[11px] font-extrabold border ${Number(s.kalan_ders_hakki) < 0 ? 'bg-rose-50 dark:bg-rose-950 text-rose-600 border-rose-200 dark:border-rose-800/80' : 'bg-emerald-50 dark:bg-emerald-950 text-[#2eb82e] border-emerald-200 dark:border-emerald-700/80'}`}>
  {s.kalan_ders_hakki} Ders Hakkı
  </span>
  <button
@@ -687,8 +696,137 @@ const Kayit = () => {
  })
  )}
  </tbody>
- </table>
- </div>
+  </table>
+  </div>
+
+  {/* Mobil Kart Görünümü */}
+  <div className="md:hidden space-y-4 mt-4">
+  {loading ? (
+    <div className="text-center py-8 text-slate-400">Öğrenciler Yükleniyor...</div>
+  ) : filteredOgrenciler.length === 0 ? (
+    <div className="py-12 text-center flex flex-col items-center">
+      <Users className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+      <span className="text-sm font-bold text-slate-500">Öğrenci Bulunamadı</span>
+    </div>
+  ) : (
+    filteredOgrenciler.map((o) => {
+      const isExpanded = !!expandedRows[o.id];
+
+      let phoneToUse = o.telefon;
+      let labelToUse = 'Kendisi';
+      if (o.birincil_veli === 'Anne' && o.anne_telefon) { phoneToUse = o.anne_telefon; labelToUse = 'Anne'; }
+      else if (o.birincil_veli === 'Baba' && o.baba_telefon) { phoneToUse = o.baba_telefon; labelToUse = 'Baba'; }
+      else if (o.birincil_veli === 'Kendisi' && !o.telefon && o.anne_telefon) { phoneToUse = o.anne_telefon; labelToUse = 'Anne'; }
+      
+      let waNumber = '';
+      if (phoneToUse) {
+        const cleanPhone = phoneToUse.replace(/\D/g, '');
+        waNumber = cleanPhone.startsWith('90') ? cleanPhone : (cleanPhone.startsWith('0') ? '9' + cleanPhone : '90' + cleanPhone);
+      }
+
+      return (
+        <div key={o.id} className={`neo-card p-4 rounded-xl border space-y-3 shadow-sm transition-all bg-white dark:bg-[#15181e] ${isExpanded ? 'border-emerald-500' : 'border-slate-100 dark:border-slate-800'}`}>
+           <div className="flex justify-between items-center border-b pb-2 border-slate-100 dark:border-slate-800/60" onClick={() => toggleRowExpand(o.id)}>
+             <div className="flex items-center gap-2">
+               <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{o.isim} {o.soyisim}</span>
+               {o.durum === 'Pasif' ? (
+                 <span className="text-[10px] bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded font-semibold border border-sky-200 dark:border-sky-800">Pasif</span>
+               ) : (
+                 <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950 text-[#2eb82e] px-1.5 py-0.5 rounded font-semibold border border-emerald-200 dark:border-emerald-800">Aktif</span>
+               )}
+             </div>
+             <div className="flex items-center gap-2">
+               <span className="text-xs font-bold text-slate-400">#{o.id}</span>
+               {isExpanded ? <ChevronUp className="w-4 h-4 text-[#2eb82e]" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+             </div>
+           </div>
+
+           <div className="text-xs text-slate-600 dark:text-slate-300">
+              <div className="flex justify-between items-center">
+                 <span className="font-semibold">İletişim ({labelToUse}):</span>
+                 <div className="flex items-center gap-2">
+                    <span className="font-bold">{phoneToUse || '-'}</span>
+                    {phoneToUse && (
+                      <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-lg transition-colors cursor-pointer" title="WhatsApp">
+                        <MessageCircle className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                 </div>
+              </div>
+           </div>
+
+           {!isExpanded && (
+             <div className="flex items-center gap-1.5 flex-wrap pt-1">
+               {o.siniflar && o.siniflar.length > 0 ? (
+                 o.siniflar.slice(0, 2).map((s) => (
+                   <span key={s.id} className="text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 text-[10px] px-1.5 py-0.5 rounded font-bold">
+                     {s.sinif_adi}
+                   </span>
+                 ))
+               ) : <span className="text-[10px] text-slate-400 italic">Ders yok</span>}
+             </div>
+           )}
+
+           {isAdmin && !isExpanded && (
+             <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800/60">
+               <span className="text-xs font-semibold text-slate-500">Bakiye</span>
+               <span className="font-bold text-[#2eb82e] text-sm">₺{formatTL(o.bakiye)}</span>
+             </div>
+           )}
+
+           {/* Genişletilmiş Görünüm */}
+           {isExpanded && (
+             <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800/60 space-y-4 text-xs">
+               <div className="space-y-1.5">
+                 <strong className="text-emerald-600 dark:text-emerald-400 block border-b pb-1">Genel Bilgiler</strong>
+                 <div className="flex justify-between"><span>TC:</span> <span className="font-bold">{o.tc || '-'}</span></div>
+                 <div className="flex justify-between"><span>Doğum T:</span> <span className="font-bold">{o.dogum_tarihi ? new Date(o.dogum_tarihi).toLocaleDateString('tr-TR') : '-'}</span></div>
+                 <div className="flex justify-between"><span>E-Posta:</span> <span className="font-bold">{o.eposta || '-'}</span></div>
+               </div>
+
+               <div className="space-y-1.5">
+                 <strong className="text-sky-600 dark:text-sky-400 block border-b pb-1">Veli Bilgileri</strong>
+                 <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded border">
+                   <strong className="block text-[11px]">Anne: {o.anne_isim || '-'}</strong>
+                   <span className="text-slate-500">Tel: {o.anne_telefon || '-'}</span>
+                 </div>
+                 <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded border">
+                   <strong className="block text-[11px]">Baba: {o.baba_isim || '-'}</strong>
+                   <span className="text-slate-500">Tel: {o.baba_telefon || '-'}</span>
+                 </div>
+               </div>
+
+               <div className="space-y-2">
+                 <strong className="text-emerald-600 dark:text-emerald-400 block border-b pb-1">Kayıtlı Dersler</strong>
+                 {o.siniflar && o.siniflar.length > 0 ? o.siniflar.map(s => (
+                   <div key={s.id} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-2 rounded border">
+                     <span className="font-bold">{s.sinif_adi}</span>
+                     <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold border ${Number(s.kalan_ders_hakki) < 0 ? 'text-rose-600 border-rose-200' : 'text-[#2eb82e] border-emerald-200'}`}>
+                       {s.kalan_ders_hakki} Hak
+                     </span>
+                   </div>
+                 )) : <span className="text-slate-400 italic">Ders kaydı yok</span>}
+               </div>
+
+               {/* İşlemler (Mobil) */}
+               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                 <button onClick={() => handleEditOgrenci(o)} className="py-2 flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 rounded-lg font-bold gap-1 transition">
+                   <User className="w-3.5 h-3.5" /> Düzenle
+                 </button>
+                 <button onClick={() => handleEkDersEkle(o)} className="py-2 flex items-center justify-center bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-900/50 rounded-lg font-bold gap-1 transition">
+                   <BookOpen className="w-3.5 h-3.5" /> Ders Ekle
+                 </button>
+                 <button onClick={() => handleToggleDurum(o.id, `${o.isim} ${o.soyisim}`, o.durum)} className="col-span-2 py-2 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/50 rounded-lg font-bold gap-1 transition">
+                   {o.durum === 'Aktif' ? 'Pasife Al' : 'Aktifleştir'}
+                 </button>
+               </div>
+             </div>
+           )}
+        </div>
+      );
+    })
+  )}
+  </div>
  </div>
 
  {/* Modal: Yeni Öğrenci Ekle */}
@@ -742,19 +880,13 @@ const Kayit = () => {
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Branş / Sınıf Seçin</label>
- <select
- name="sinif_adi"
+ <SearchableSelect
  value={formData.sinif_adi}
- onChange={handleInputChange}
- className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:border-[#2eb82e] outline-none cursor-pointer"
- >
- <option value="">-- Mevcut Sınıflardan Seçiniz --</option>
- {siniflar.map((s) => (
- <option key={s.id} value={s.sinif_adi}>
- {s.sinif_adi} (Kapasite: {s.kapasite})
- </option>
- ))}
- </select>
+ onChange={(val) => handleInputChange({ target: { name: 'sinif_adi', value: val } })}
+ options={siniflar.map(s => ({ value: s.sinif_adi, label: `${s.sinif_adi} (Kapasite: ${s.kapasite})` }))}
+ placeholder="-- Mevcut Sınıflardan Seçiniz --"
+ searchPlaceholder="Sınıf ara..."
+ />
  </div>
  <div className="sm:col-span-2">
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Açık Adres</label>
@@ -863,19 +995,13 @@ const Kayit = () => {
  <form onSubmit={handleEkDersSubmit} className="space-y-3">
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Eklenecek Sınıf / Branş Seçin *</label>
- <select
- required
+ <SearchableSelect
  value={ekDersData.sinif_adi}
- onChange={(e) => setEkDersData({ ...ekDersData, sinif_adi: e.target.value })}
- className="w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:border-[#2eb82e] outline-none cursor-pointer neo-input"
- >
- <option value="">-- Sınıf Seçiniz --</option>
- {siniflar.map((s) => (
- <option key={s.id} value={s.sinif_adi}>
- {s.sinif_adi}
- </option>
- ))}
- </select>
+ onChange={(val) => setEkDersData({ ...ekDersData, sinif_adi: val })}
+ options={siniflar.map(s => ({ value: s.sinif_adi, label: s.sinif_adi }))}
+ placeholder="-- Sınıf Seçiniz --"
+ searchPlaceholder="Sınıf ara..."
+ />
  </div>
 
  <div>

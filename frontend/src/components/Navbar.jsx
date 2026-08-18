@@ -54,7 +54,7 @@ const Navbar = ({ currentUser, onLogout }) => {
             </div>
           </div>
           {/* Navigation Links */}
-          <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto py-1">
+          <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto py-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (

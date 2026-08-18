@@ -314,21 +314,21 @@ const Dashboard = () => {
  <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Hoş Geldiniz 👋</h1>
  <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Kurum öğrenci, yoklama ve finans süreçlerinizi buradan yönetin.</p>
  </div>
- <div className="flex gap-3">
- <Link
- to="/kayit"
- className="px-4 py-2.5 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition -emerald-900/20 flex items-center gap-2"
- >
- <span>Yeni Öğrenci Ekle</span>
- <ArrowUpRight className="w-4 h-4" />
- </Link>
- <Link
- to="/finans"
- className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm rounded-xl transition -sky-900/20 flex items-center gap-2"
- >
- <span>Ödeme Girişi</span>
- <Wallet className="w-4 h-4" />
- </Link>
+  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 md:mt-0">
+  <Link
+  to="/kayit"
+  className="px-4 py-2.5 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition -emerald-900/20 flex items-center justify-center gap-2 w-full sm:w-auto"
+  >
+  <span>Yeni Öğrenci Ekle</span>
+  <ArrowUpRight className="w-4 h-4" />
+  </Link>
+  <Link
+  to="/finans"
+  className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm rounded-xl transition -sky-900/20 flex items-center justify-center gap-2 w-full sm:w-auto"
+  >
+  <span>Ödeme Girişi</span>
+  <Wallet className="w-4 h-4" />
+  </Link>
  </div>
  </div>
 
@@ -414,7 +414,7 @@ const Dashboard = () => {
  </Link>
  </div>
 
- <div className="overflow-x-auto">
+  <div className="hidden md:block overflow-x-auto">
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
@@ -458,7 +458,51 @@ const Dashboard = () => {
  )}
  </tbody>
  </table>
- </div>
+  </div>
+
+  {/* Mobil Kart Görünümü */}
+  <div className="md:hidden space-y-4 mt-4">
+  {loading ? (
+    <div className="text-center py-6 text-slate-400 text-sm">Yükleniyor...</div>
+  ) : recentOgrenciler.length === 0 ? (
+    <div className="text-center py-6 text-slate-400 text-sm">Henüz öğrenci kaydı bulunamadı.</div>
+  ) : (
+    recentOgrenciler.map((o) => (
+      <div key={o.id} className="neo-card p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-3 shadow-sm bg-white dark:bg-[#15181e]">
+        <div className="flex justify-between items-center border-b pb-2 border-slate-100 dark:border-slate-800/60">
+          <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{o.isim} {o.soyisim}</span>
+          <span className="text-xs font-bold text-slate-400">#{o.id}</span>
+        </div>
+        <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold w-12 shrink-0">Telefon:</span> 
+            <span>{o.telefon || '-'}</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="font-semibold w-12 shrink-0">Anne:</span> 
+            <div className="flex flex-col">
+              <span>{o.anne_isim || '-'} {o.anne_meslek && <span className="text-sky-600 dark:text-sky-400">({o.anne_meslek})</span>}</span>
+              {o.anne_telefon && <span className="text-slate-500">{o.anne_telefon}</span>}
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="font-semibold w-12 shrink-0">Baba:</span> 
+            <div className="flex flex-col">
+              <span>{o.baba_isim || '-'} {o.baba_meslek && <span className="text-sky-600 dark:text-sky-400">({o.baba_meslek})</span>}</span>
+              {o.baba_telefon && <span className="text-slate-500">{o.baba_telefon}</span>}
+            </div>
+          </div>
+        </div>
+        {isAdmin && (
+          <div className="pt-3 mt-1 border-t border-slate-100 dark:border-slate-800/60 flex justify-between items-center">
+            <span className="text-xs font-semibold text-slate-500">Bakiye:</span>
+            <span className="font-bold text-[#2eb82e] text-sm">₺{formatTL(o.bakiye)}</span>
+          </div>
+        )}
+      </div>
+    ))
+  )}
+  </div>
  </div>
 
  </div>

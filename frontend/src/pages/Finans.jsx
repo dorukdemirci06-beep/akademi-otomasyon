@@ -5,6 +5,7 @@ import { getOgrenciler, createOdeme, getOgrenciSiniflar, getOdemeler, odemeTahsi
 import { useLocation } from 'react-router-dom';
 import CustomDatePicker from '../components/CustomDatePicker';
 import ConfirmModal from '../components/ConfirmModal';
+import SearchableSelect from '../components/SearchableSelect';
 import { formatTL } from '../utils/formatters';
 
 const Finans = () => {
@@ -613,24 +614,13 @@ const Finans = () => {
  <span>Ödeme Yapılan Ders / Branş</span>
  <span className="text-[10px] text-slate-400 font-normal">(İsteğe Bağlı)</span>
  </label>
- <select
+ <SearchableSelect
  value={odemeData.sinif_adi}
- onChange={(e) => setOdemeData({ ...odemeData, sinif_adi: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
- >
- <option value="">-- Genel Ödeme / Cari Bakiye --</option>
- {sinifLoading ? (
- <option disabled>Dersler yükleniyor...</option>
- ) : ogrenciSiniflari.length === 0 ? (
- <option disabled>Bu öğrencinin aktif ders kaydı bulunamadı</option>
- ) : (
- ogrenciSiniflari.map((s) => (
- <option key={s.id} value={s.sinif_adi}>
- {s.sinif_adi} (Mevcut Hak: {s.kalan_ders_hakki} Ders)
- </option>
- ))
- )}
- </select>
+ onChange={(val) => setOdemeData({ ...odemeData, sinif_adi: val })}
+ options={ogrenciSiniflari.map(s => ({ value: s.sinif_adi, label: `${s.sinif_adi} (Mevcut Hak: ${s.kalan_ders_hakki} Ders)` }))}
+ placeholder="-- Genel Ödeme / Cari Bakiye --"
+ searchPlaceholder="Ders ara..."
+ />
  </div>
  )}
 
@@ -712,18 +702,20 @@ const Finans = () => {
  {/* Taksit Seçenekleri (2 - 6 Taksit) */}
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Taksit Seçeneği *</label>
- <select
+ <SearchableSelect
  value={odemeData.taksit_sayisi}
- onChange={(e) => setOdemeData({ ...odemeData, taksit_sayisi: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
- >
- <option value={1}>Tek Çekim / Peşin (1 Taksit)</option>
- <option value={2}>2 Taksit</option>
- <option value={3}>3 Taksit</option>
- <option value={4}>4 Taksit</option>
- <option value={5}>5 Taksit</option>
- <option value={6}>6 Taksit</option>
- </select>
+ onChange={(val) => setOdemeData({ ...odemeData, taksit_sayisi: Number(val) })}
+ options={[
+   { value: 1, label: 'Tek Çekim / Peşin (1 Taksit)' },
+   { value: 2, label: '2 Taksit' },
+   { value: 3, label: '3 Taksit' },
+   { value: 4, label: '4 Taksit' },
+   { value: 5, label: '5 Taksit' },
+   { value: 6, label: '6 Taksit' }
+ ]}
+ placeholder="-- Taksit Seçin --"
+ searchPlaceholder="Taksit ara..."
+ />
  </div>
 
  {/* Özelleştirilebilir Taksit Tarihleri Girişi */}
@@ -759,15 +751,17 @@ const Finans = () => {
 
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Ödeme Yöntemi</label>
- <select
+ <SearchableSelect
  value={odemeData.odeme_yontemi}
- onChange={(e) => setOdemeData({ ...odemeData, odeme_yontemi: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
- >
- <option value="Nakit">Nakit</option>
- <option value="Kredi Kartı">Kredi Kartı</option>
- <option value="Havale/EFT">Havale/EFT</option>
- </select>
+ onChange={(val) => setOdemeData({ ...odemeData, odeme_yontemi: val })}
+ options={[
+   { value: 'Nakit', label: 'Nakit' },
+   { value: 'Kredi Kartı', label: 'Kredi Kartı' },
+   { value: 'Havale/EFT', label: 'Havale/EFT' }
+ ]}
+ placeholder="-- Ödeme Yöntemi Seçin --"
+ searchPlaceholder="Yöntem ara..."
+ />
  </div>
 
  <button
@@ -794,33 +788,37 @@ const Finans = () => {
  {/* Sıralama Seçenekleri */}
  <div className="flex items-center gap-2">
  <ArrowUpDown className="w-4 h-4 text-slate-400" />
- <select
+ <SearchableSelect
  value={sortOption}
- onChange={(e) => setSortOption(e.target.value)}
- className="rounded-lg px-3 py-1.5 text-xs text-slate-200 font-semibold focus:outline-none focus:border-[#0284c7] neo-input"
- >
- <option value="odeme_tarihi_desc">Sırala: Ödeme Tarihi (Yeniden Eskiden)</option>
- <option value="odeme_tarihi_asc">Sırala: Ödeme Tarihi (Eskiden Yeniye)</option>
- <option value="isim_asc">Sırala: İsme Göre (A - Z)</option>
- <option value="isim_desc">Sırala: İsme Göre (Z - A)</option>
- {isAdmin && <option value="bakiye_desc">Sırala: Bakiye (En Yüksek)</option>}
- {isAdmin && <option value="bakiye_asc">Sırala: Bakiye (En Düşük)</option>}
- <option value="tarih_desc">Sırala: Kayıt Tarihi (Yeniden Eskiden)</option>
- <option value="tarih_asc">Sırala: Kayıt Tarihi (Eskiden Yeniye)</option>
- </select>
+ onChange={(val) => setSortOption(val)}
+ options={[
+   { value: 'odeme_tarihi_desc', label: 'Sırala: Ödeme Tarihi (Yeniden Eskiden)' },
+   { value: 'odeme_tarihi_asc', label: 'Sırala: Ödeme Tarihi (Eskiden Yeniye)' },
+   { value: 'isim_asc', label: 'Sırala: İsme Göre (A - Z)' },
+   { value: 'isim_desc', label: 'Sırala: İsme Göre (Z - A)' },
+   ...(isAdmin ? [{ value: 'bakiye_desc', label: 'Sırala: Bakiye (En Yüksek)' }] : []),
+   ...(isAdmin ? [{ value: 'bakiye_asc', label: 'Sırala: Bakiye (En Düşük)' }] : []),
+   { value: 'tarih_desc', label: 'Sırala: Kayıt Tarihi (Yeniden Eskiden)' },
+   { value: 'tarih_asc', label: 'Sırala: Kayıt Tarihi (Eskiden Yeniye)' }
+ ]}
+ placeholder="-- Sıralama Seçin --"
+ searchPlaceholder="Sıralama ara..."
+ />
  </div>
  
  <div className="relative">
- <select
+ <SearchableSelect
  value={vadeFilter}
- onChange={(e) => setVadeFilter(e.target.value)}
- className="rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-[#0284c7] neo-input"
- >
- <option value="hepsi">Tüm Vade Durumları</option>
- <option value="gecikmis">Vadesi Gecikenler</option>
- <option value="bekleyen">Ödeme Bekleyenler</option>
- <option value="sorunsuz">Sorunsuz / Borçsuz</option>
- </select>
+ onChange={(val) => setVadeFilter(val)}
+ options={[
+   { value: 'hepsi', label: 'Tüm Vade Durumları' },
+   { value: 'gecikmis', label: 'Vadesi Gecikenler' },
+   { value: 'bekleyen', label: 'Ödeme Bekleyenler' },
+   { value: 'sorunsuz', label: 'Sorunsuz / Borçsuz' }
+ ]}
+ placeholder="-- Vade Filtresi --"
+ searchPlaceholder="Vade ara..."
+ />
  </div>
  </div>
 
@@ -841,7 +839,7 @@ const Finans = () => {
  </div>
  </div>
 
- <div className="overflow-x-auto">
+ <div className="hidden md:block overflow-x-auto">
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-400 tracking-wider">
@@ -1046,15 +1044,17 @@ const Finans = () => {
  </div>
  <div>
  <span className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Ödeme Yöntemi</span>
- <select
+ <SearchableSelect
  value={tahsilatYontemi}
- onChange={(e) => setTahsilatYontemi(e.target.value)}
- className="w-full px-3 neo-input w-full rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 h-[38px] focus:outline-none focus:border-[#2eb82e]"
- >
- <option value="Nakit">Nakit</option>
- <option value="Kredi Kartı">Kredi Kartı</option>
- <option value="Havale/EFT">Havale/EFT</option>
- </select>
+ onChange={(val) => setTahsilatYontemi(val)}
+ options={[
+   { value: 'Nakit', label: 'Nakit' },
+   { value: 'Kredi Kartı', label: 'Kredi Kartı' },
+   { value: 'Havale/EFT', label: 'Havale/EFT' }
+ ]}
+ placeholder="-- Ödeme Yöntemi --"
+ searchPlaceholder="Yöntem ara..."
+ />
  </div>
  <div>
  <span className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Ödeme Açıklaması</span>
@@ -1095,7 +1095,7 @@ const Finans = () => {
  <p className="text-xs text-slate-500">Tüm ödemeler zamanında tahsil edilmiştir.</p>
  </div>
  ) : (
- <div className="overflow-x-auto neo-card rounded-2xl">
+ <div className="hidden md:block overflow-x-auto neo-card rounded-2xl">
  <table className="w-full text-left text-xs border-collapse">
  <thead>
  <tr className="border-b text-slate-400 font-bold tracking-wider">
@@ -1306,15 +1306,17 @@ const Finans = () => {
 
  <div>
  <label className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Ödeme Yöntemi</label>
- <select
+ <SearchableSelect
  value={editingOdeme.odeme_yontemi}
- onChange={(e) => setEditingOdeme({ ...editingOdeme, odeme_yontemi: e.target.value })}
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100"
- >
- <option value="Nakit">Nakit</option>
- <option value="Kredi Kartı">Kredi Kartı</option>
- <option value="Havale/EFT">Havale/EFT</option>
- </select>
+ onChange={(val) => setEditingOdeme({ ...editingOdeme, odeme_yontemi: val })}
+ options={[
+   { value: 'Nakit', label: 'Nakit' },
+   { value: 'Kredi Kartı', label: 'Kredi Kartı' },
+   { value: 'Havale/EFT', label: 'Havale/EFT' }
+ ]}
+ placeholder="-- Ödeme Yöntemi --"
+ searchPlaceholder="Yöntem ara..."
+ />
  </div>
 
  <div className="flex justify-end gap-2 pt-2 border-t">

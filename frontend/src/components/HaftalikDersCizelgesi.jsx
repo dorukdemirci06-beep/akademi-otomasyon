@@ -101,7 +101,7 @@ const HaftalikDersCizelgesi = ({
  </div>
  ) : (
  Object.entries(timeGroups).map(([time, dersler]) => (
- <div key={time} className="flex flex-row gap-1.5 w-full">
+ <div key={time} className="flex flex-col sm:flex-row gap-1.5 w-full">
  {dersler.map(ders => {
  const isSelected = selectedSinifId === ders.sinif_id.toString();
  const cardStyle = getStyleForRenk(ders.renk);

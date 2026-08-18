@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { getKullanicilar, createKullanici, deleteKullanici, getSiniflar } from '../services/api';
 import ConfirmModal from '../components/ConfirmModal';
+import SearchableSelect from '../components/SearchableSelect';
 
 const INITIAL_TEACHERS = [
  {
@@ -844,7 +845,7 @@ const Kullanicilar = () => {
  </button>
  </div>
 
- <div className="overflow-x-auto">
+ <div className="hidden md:block overflow-x-auto">
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
@@ -2019,21 +2020,16 @@ const Kullanicilar = () => {
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
  Çalışan Seçin (İsteğe Bağlı)
  </label>
- <select
+ <SearchableSelect
  value={evalForm.selectedEmployeeId}
- onChange={(e) => handleSelectEmployeeForEval(e.target.value)}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
- >
- <option value="">-- Listeden Çalışan Seçin veya Manuel Girin --</option>
- {evalForm.tur === 'ogretmen' 
- ? teachers.map(t => (
- <option key={t.id} value={t.id}>{t.isim} ({t.brans})</option>
- ))
- : staff.map(s => (
- <option key={s.id} value={s.id}>{s.isim} ({s.unvan})</option>
- ))
+ onChange={(val) => handleSelectEmployeeForEval(val)}
+ options={evalForm.tur === 'ogretmen' 
+   ? teachers.map(t => ({ value: t.id, label: `${t.isim} (${t.brans})` }))
+   : staff.map(s => ({ value: s.id, label: `${s.isim} (${s.unvan})` }))
  }
- </select>
+ placeholder="-- Listeden Çalışan Seçin veya Manuel Girin --"
+ searchPlaceholder="Çalışan ara..."
+ />
  </div>
 
  <div>

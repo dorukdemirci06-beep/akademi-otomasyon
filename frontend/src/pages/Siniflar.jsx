@@ -364,7 +364,7 @@ const Siniflar = () => {
 
  return (
  <div className="space-y-6 pb-24">
- <div className="neo-card p-6 rounded-2xl flex justify-between items-center transition-colors">
+ <div className="neo-card p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
  <div>
  <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
  <BookOpen className="w-6 h-6 text-sky-500" />
@@ -374,17 +374,17 @@ const Siniflar = () => {
  Sınıflarınızı, öğretmen atamalarını ve ders programlarını yönetin.
  </p>
  </div>
-         <div className="flex gap-3">
+         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 md:mt-0">
           <button
             onClick={() => setShowDerslikModal(true)}
-            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm rounded-xl transition flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
           >
             <BookOpen className="w-5 h-5" />
             <span>Derslikler</span>
           </button>
           <button
             onClick={() => setShowEkleModal(true)}
-            className="px-4 py-2 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition flex items-center gap-2 -emerald-900/30 cursor-pointer"
+            className="px-4 py-2 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 -emerald-900/30 cursor-pointer w-full sm:w-auto"
           >
             <Plus className="w-5 h-5" />
             <span>Yeni Sınıf Ekle</span>
@@ -393,7 +393,7 @@ const Siniflar = () => {
  </div>
  <div className="neo-card rounded-2xl p-6">
 {/* Modal Table */}
- <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700/50">
+ <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700/50">
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
@@ -418,7 +418,7 @@ const Siniflar = () => {
  <tr key={s.id} className="hover: dark:hover: transition">
  <td className="py-3.5 px-4 font-bold text-slate-500">#{s.id}</td>
  <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">
- <span className="bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-300 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1 rounded-lg text-xs font-semibold">
+ <span className="bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-300 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap inline-block">
  {s.sinif_adi}
  </span>
  </td>
@@ -471,6 +471,68 @@ const Siniflar = () => {
  </tbody>
  </table>
  </div>
+
+  {/* Mobil Kart Görünümü */}
+  <div className="md:hidden space-y-4">
+  {siniflarLoading ? (
+  <div className="text-center py-6 text-slate-400">Sınıflar yükleniyor...</div>
+  ) : siniflarList.length === 0 ? (
+  <div className="text-center py-6 text-slate-400">Henüz kayıtlı sınıf yok.</div>
+  ) : (
+  siniflarList.map((s) => (
+  <div key={s.id} className="neo-card p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-3 bg-white dark:bg-[#15181e] shadow-sm">
+      <div className="flex justify-between items-center border-b pb-2 border-slate-100 dark:border-slate-800/60">
+        <span className="bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-300 border border-sky-200 dark:border-sky-800/80 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap inline-block">
+        {s.sinif_adi}
+        </span>
+        <span className="text-xs font-bold text-slate-400">#{s.id}</span>
+      </div>
+      
+      <div className="flex flex-col gap-2.5 text-xs text-slate-600 dark:text-slate-300 mt-1">
+         <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
+           <Users className="w-4 h-4 text-[#2eb82e]" /> {s.ogrenci_sayisi || 0} Kayıtlı Öğrenci
+         </div>
+         <div>
+           <span className="font-semibold block mb-1">Atanan Ders Saatleri:</span>
+           {!s.ders_programi || s.ders_programi.length === 0 ? (
+           <span className="text-slate-400 dark:text-slate-500 italic">Henüz saat atanmadı</span>
+           ) : (
+           <div className="flex flex-wrap gap-1.5">
+           {s.ders_programi.map(dp => (
+           <span key={dp.id} className="bg-emerald-50 dark:bg-emerald-950/90 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/80 text-[10px] px-1.5 py-0.5 rounded font-bold flex items-center gap-1">
+           <Calendar className="w-3 h-3 text-[#2eb82e]" />
+           <span>{dp.gun} ({dp.baslangic_saati}-{dp.bitis_saati}){dp.derslik_adi ? ` - ${dp.derslik_adi}` : ''}</span>
+           </span>
+           ))}
+           </div>
+           )}
+         </div>
+      </div>
+
+      <div className="pt-3 mt-1 border-t border-slate-100 dark:border-slate-800/60 grid grid-cols-2 gap-2">
+         <button
+         onClick={() => openSinifDetayModal(s)}
+         className="col-span-2 px-2.5 py-2 flex items-center justify-center bg-slate-50 dark:bg-[#15181e] hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-100 text-xs font-bold rounded-lg transition gap-1.5 border border-slate-200 dark:border-slate-700/50 shadow-sm"
+         >
+         <Eye className="w-4 h-4 text-sky-500" /> Öğrenciler
+         </button>
+         <button
+         onClick={() => setSelectedSinifSchedule(s)}
+         className="px-2.5 py-2 flex items-center justify-center bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-300 text-xs font-bold rounded-lg transition gap-1 border border-sky-200 dark:border-sky-800/50"
+         >
+         <Clock className="w-3.5 h-3.5 text-sky-500" /> Ders Ata
+         </button>
+         <button
+         onClick={() => handleDeleteSinif(s.id, s.sinif_adi)}
+         className="px-2.5 py-2 flex items-center justify-center bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 text-xs font-bold rounded-lg transition gap-1 cursor-pointer"
+         >
+         <Trash2 className="w-3.5 h-3.5" /> Sınıfı Sil
+         </button>
+      </div>
+  </div>
+  ))
+  )}
+  </div>
  </div>
  
       {/* ================= MODAL: Derslikler ================= */}
@@ -571,15 +633,13 @@ const Siniflar = () => {
                 <div className="space-y-3 p-3 neo-input rounded-xl border border-sky-500/30 text-xs">
                   <div>
                     <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Gün Seçiniz</label>
-                    <select
+                    <SearchableSelect
                       value={scheduleData.gun}
-                      onChange={(e) => setScheduleData({ ...scheduleData, gun: e.target.value })}
-                      className="neo-input w-full px-3 py-2 rounded-lg font-bold"
-                    >
-                      {GUNLER.map(g => (
-                        <option key={g} value={g}>{g}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setScheduleData({ ...scheduleData, gun: val })}
+                      options={GUNLER.map(g => ({ value: g, label: g }))}
+                      placeholder="-- Gün Seçiniz --"
+                      searchPlaceholder="Gün ara..."
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -601,7 +661,7 @@ const Siniflar = () => {
 
                   <div>
                     <label className="block font-bold text-slate-700 dark:text-slate-300 mb-2">Kart Rengi</label>
-                    <div className="flex flex-wrap gap-2.5">
+                    <div className="flex flex-wrap justify-center gap-2.5 max-w-[370px] mx-auto">
                       {RENK_OPTIONS.map(r => {
                         const isSelected = scheduleData.renk === r.value;
                         return (
@@ -690,15 +750,13 @@ const Siniflar = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Gün</label>
-                <select
+                <SearchableSelect
                   value={newScheduleForm.gun}
-                  onChange={(e) => setNewScheduleForm({ ...newScheduleForm, gun: e.target.value })}
-                  className="neo-input w-full px-3 py-2 rounded-xl text-xs font-bold"
-                >
-                  {GUNLER.map(g => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setNewScheduleForm({ ...newScheduleForm, gun: val })}
+                  options={GUNLER.map(g => ({ value: g, label: g }))}
+                  placeholder="-- Gün Seçin --"
+                  searchPlaceholder="Gün ara..."
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -719,16 +777,13 @@ const Siniflar = () => {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Derslik (Opsiyonel)</label>
-                <select
+                <SearchableSelect
                   value={newScheduleForm.derslik_id}
-                  onChange={(e) => setNewScheduleForm({ ...newScheduleForm, derslik_id: e.target.value })}
-                  className="neo-input w-full px-3 py-2.5 rounded-xl text-xs font-bold"
-                >
-                  <option value="">-- Derslik Seçin --</option>
-                  {dersliklerList.map(d => (
-                    <option key={d.id} value={d.id}>{d.ad}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setNewScheduleForm({ ...newScheduleForm, derslik_id: val })}
+                  options={dersliklerList.map(d => ({ value: d.id, label: d.ad }))}
+                  placeholder="-- Derslik Seçin --"
+                  searchPlaceholder="Derslik ara..."
+                />
               </div>
 
               <div>
@@ -743,7 +798,7 @@ const Siniflar = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Kart Rengi</label>
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap justify-center gap-2.5 max-w-[370px] mx-auto">
                   {RENK_OPTIONS.map(r => {
                     const isSelected = newScheduleForm.renk === r.value;
                     return (
@@ -796,7 +851,7 @@ const Siniflar = () => {
               <button onClick={() => setSelectedSinifDetay(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-xl cursor-pointer">&times;</button>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700/50">
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700/50">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider bg-slate-50/50 dark:bg-slate-800/30">
@@ -833,7 +888,11 @@ const Siniflar = () => {
                           <div><strong className="text-slate-700 dark:text-slate-300">Baba:</strong> {o.baba_isim || '-'} ({o.baba_telefon || '-'})</div>
                         </td>
                         <td className="py-3.5 px-4">
-                          <span className="bg-emerald-50 dark:bg-emerald-950/80 text-[#2eb82e] border border-emerald-200 dark:border-emerald-800/80 text-xs px-2.5 py-1 rounded-lg font-bold">
+                          <span className={`text-xs px-2.5 py-1 rounded-lg font-bold border ${
+                            Number(o.kalan_ders_hakki) < 0 
+                              ? 'bg-rose-50 dark:bg-rose-950/80 text-rose-600 border-rose-200 dark:border-rose-800/80' 
+                              : 'bg-emerald-50 dark:bg-emerald-950/80 text-[#2eb82e] border-emerald-200 dark:border-emerald-800/80'
+                          }`}>
                             {o.kalan_ders_hakki} Kalan Hak
                           </span>
                         </td>
@@ -842,6 +901,56 @@ const Siniflar = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobil Kart Görünümü */}
+            <div className="md:hidden space-y-3">
+              {detayLoading ? (
+                <div className="text-center py-6 text-slate-400">Öğrenciler yükleniyor...</div>
+              ) : sinifOgrencileriList.length === 0 ? (
+                <div className="text-center py-6 text-slate-400">Bu sınıfa henüz kayıtlı öğrenci yok.</div>
+              ) : (
+                sinifOgrencileriList.map((o) => (
+                  <div key={o.ogrenci_id} className="neo-card p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-3 bg-white dark:bg-[#15181e] shadow-sm">
+                    <div className="flex justify-between items-center border-b pb-2 border-slate-100 dark:border-slate-800/60">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{o.isim} {o.soyisim}</span>
+                        {o.tc && <span className="text-[10px] text-slate-400 font-mono">TC: {o.tc}</span>}
+                      </div>
+                      <span className="text-xs font-bold text-slate-400">#{o.ogrenci_id}</span>
+                    </div>
+
+                    <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2.5">
+                       <div className="flex justify-between items-start">
+                          <span className="font-semibold text-slate-500">İletişim:</span>
+                          <div className="text-right">
+                            <span className="font-semibold block">{o.telefon || '-'}</span>
+                            {o.eposta && <span className="text-[10px] text-slate-400">{o.eposta}</span>}
+                          </div>
+                       </div>
+                       
+                       <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                         <span className="font-semibold text-slate-500 block mb-1">Veli Bilgisi:</span>
+                         <div className="grid grid-cols-1 gap-1.5 pl-1">
+                           <div className="flex justify-between"><strong className="text-slate-700 dark:text-slate-300">Anne:</strong> <span>{o.anne_isim || '-'} <span className="text-[10px] text-slate-400">({o.anne_telefon || '-'})</span></span></div>
+                           <div className="flex justify-between"><strong className="text-slate-700 dark:text-slate-300">Baba:</strong> <span>{o.baba_isim || '-'} <span className="text-[10px] text-slate-400">({o.baba_telefon || '-'})</span></span></div>
+                         </div>
+                       </div>
+
+                       <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex justify-between items-center">
+                          <span className="font-semibold text-slate-500">Kalan Ders Hakkı:</span>
+                          <span className={`text-xs px-2.5 py-1 rounded-lg font-bold border ${
+                            Number(o.kalan_ders_hakki) < 0 
+                              ? 'bg-rose-50 dark:bg-rose-950/80 text-rose-600 border-rose-200 dark:border-rose-800/80' 
+                              : 'bg-emerald-50 dark:bg-emerald-950/80 text-[#2eb82e] border-emerald-200 dark:border-emerald-800/80'
+                          }`}>
+                            {o.kalan_ders_hakki} Hak
+                          </span>
+                       </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="flex justify-end border-t border-slate-200 dark:border-slate-700 pt-3">

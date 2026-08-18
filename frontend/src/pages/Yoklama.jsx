@@ -557,7 +557,7 @@ const Yoklama = () => {
 
  <button
  onClick={() => setShowAddModal(true)}
- className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2eb82e] to-[#0284c7] hover:from-emerald-600 hover:to-sky-600 text-white font-bold text-sm rounded-xl -emerald-950/20 transition transform hover:-translate-y-0.5 cursor-pointer"
+ className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2eb82e] to-[#0284c7] hover:from-emerald-600 hover:to-sky-600 text-white font-bold text-sm rounded-xl -emerald-950/20 transition transform hover:-translate-y-0.5 cursor-pointer w-full sm:w-auto"
  >
  <Plus className="w-4 h-4" />
  <span>Programa Ders Ekle</span>
@@ -605,18 +605,13 @@ const Yoklama = () => {
  <BookOpen className="w-3.5 h-3.5 text-[#0284c7]" />
  <span>Sınıf Seçimi:</span>
  </label>
- <select
+ <SearchableSelect
  value={selectedSinifId}
- onChange={(e) => setSelectedSinifId(e.target.value)}
- className="w-full px-3.5 py-2 neo-input w-full rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e] h-[40px] cursor-pointer"
- >
- <option value="">-- Sınıf Seçin --</option>
- {siniflar.map(s => (
- <option key={s.id} value={s.id}>
- {s.sinif_adi} ({s.ogrenci_sayisi || 0} Öğrenci)
- </option>
- ))}
- </select>
+ onChange={(val) => setSelectedSinifId(val)}
+ options={siniflar.map(s => ({ value: s.id, label: `${s.sinif_adi} (${s.ogrenci_sayisi || 0} Öğrenci)` }))}
+ placeholder="-- Sınıf Seçin --"
+ searchPlaceholder="Sınıf ara..."
+ />
  </div>
 
  {/* 3. Yoklamayı Kaydet Butonu */}
@@ -662,7 +657,7 @@ const Yoklama = () => {
  )}
 
  {/* ÖĞRENCİ YOKLAMA TABLOSU */}
- <div className="neo-card overflow-x-auto rounded-2xl -slate-200">
+ <div className="hidden md:block neo-card overflow-x-auto rounded-2xl -slate-200">
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
@@ -707,7 +702,7 @@ const Yoklama = () => {
  <td className="py-4 px-4 font-bold text-slate-400 dark:text-slate-500">#{o.ogrenci_id}</td>
  <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-100">{o.isim} {o.soyisim}</td>
  <td className="py-4 px-4">
- <span className={`text-xs px-3 py-1 rounded-lg font-bold border ${o.kalan_ders_hakki <= 0 ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-400 border-rose-300 dark:border-rose-800/80' : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2eb82e] border-emerald-300 dark:border-emerald-800/80'}`}>
+ <span className={`text-xs px-3 py-1 rounded-lg font-bold border ${Number(o.kalan_ders_hakki) < 0 ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-400 border-rose-300 dark:border-rose-800/80' : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2eb82e] border-emerald-300 dark:border-emerald-800/80'}`}>
  {o.kalan_ders_hakki} Ders
  </span>
  </td>
@@ -716,7 +711,7 @@ const Yoklama = () => {
  <div><strong className="text-slate-700 dark:text-slate-300">Baba:</strong> {o.baba_isim || '-'} ({o.baba_telefon || '-'})</div>
  </td>
  <td className="py-4 px-4">
- <div className="flex justify-center items-center gap-3">
+ <div className="flex justify-center items-center gap-3 whitespace-nowrap min-w-max">
  {/* Geldi Butonu */}
  <button
  onClick={() => markAttendance(o.ogrenci_id, 'Geldi')}
@@ -805,16 +800,13 @@ const Yoklama = () => {
  </div>
 
  {/* Sınıf Filtresi */}
- <select
+ <SearchableSelect
  value={gecmisSinifFilter}
- onChange={(e) => setGecmisSinifFilter(e.target.value)}
- className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer neo-input"
- >
- <option value="">-- Tüm Sınıflar --</option>
- {siniflar.map(s => (
- <option key={s.id} value={s.id}>{s.sinif_adi}</option>
- ))}
- </select>
+ onChange={(val) => setGecmisSinifFilter(val)}
+ options={siniflar.map(s => ({ value: s.id, label: s.sinif_adi }))}
+ placeholder="-- Tüm Sınıflar --"
+ searchPlaceholder="Sınıf ara..."
+ />
 
  {/* Tümünü Aç / Daralt Butonu */}
  <button
@@ -894,10 +886,18 @@ const Yoklama = () => {
  className="p-3.5 cursor-pointer flex flex-wrap justify-between items-center gap-3 select-none transition"
  >
  <div className="flex items-center gap-3">
- <div className="bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/60 px-3 py-1 rounded-xl text-xs font-black tracking-tight flex items-center gap-1.5 shrink-0">
- <BookOpen className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
- <span>{oturum.sinif_adi}</span>
- </div>
+ {(() => {
+    const programDers = dersProgrami.find(p => p.sinif_id === oturum.sinif_id);
+    const sinifRenk = programDers?.renk || 'indigo';
+    const renkObj = RENK_OPTIONS.find(r => r.value === sinifRenk) || RENK_OPTIONS.find(r => r.value === 'indigo');
+    
+    return (
+      <div className={`${renkObj.dotClass} text-white px-3 py-1 rounded-xl text-xs font-black tracking-tight flex items-center gap-1.5 shrink-0 shadow-md border border-white/20 dark:border-black/20`}>
+        <BookOpen className="w-3.5 h-3.5 text-white/90" />
+        <span>{oturum.sinif_adi}</span>
+      </div>
+    );
+  })()}
 
  <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
  <Calendar className="w-3.5 h-3.5 text-emerald-500" />
@@ -965,7 +965,7 @@ const Yoklama = () => {
  {/* Oturum Öğrenci Listesi Tablosu (ETKİLEŞİMLİ DÜZENLEME) */}
  <div className={`grid transition-all duration-500 ease-in-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
  <div className="overflow-hidden">
- <div className="p-4 overflow-x-auto border-t">
+  <div className="hidden md:block p-4 overflow-x-auto border-t border-slate-200 dark:border-slate-700/50">
  <table className="w-full text-left text-xs border-collapse">
  <thead>
  <tr className="text-slate-500 dark:text-slate-400 font-bold tracking-wider border-b pb-2">
@@ -1075,30 +1075,24 @@ const Yoklama = () => {
  <form onSubmit={handleAddDersSubmit} className="space-y-4 text-sm">
  <div>
  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Sınıf Seçiniz</label>
- <select
+ <SearchableSelect
  value={newDersForm.sinif_id}
- onChange={(e) => setNewDersForm(prev => ({ ...prev, sinif_id: e.target.value }))}
- required
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
- >
- <option value="">-- Sınıf Seçin --</option>
- {siniflar.map(s => (
- <option key={s.id} value={s.id}>{s.sinif_adi}</option>
- ))}
- </select>
+ onChange={(val) => setNewDersForm(prev => ({ ...prev, sinif_id: val }))}
+ options={siniflar.map(s => ({ value: s.id, label: s.sinif_adi }))}
+ placeholder="-- Sınıf Seçin --"
+ searchPlaceholder="Sınıf ara..."
+ />
  </div>
 
  <div>
  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Gün Seçiniz</label>
- <select
+ <SearchableSelect
  value={newDersForm.gun}
- onChange={(e) => setNewDersForm(prev => ({ ...prev, gun: e.target.value }))}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
- >
- {GUNLER.map(g => (
- <option key={g} value={g}>{g}</option>
- ))}
- </select>
+ onChange={(val) => setNewDersForm(prev => ({ ...prev, gun: val }))}
+ options={GUNLER.map(g => ({ value: g, label: g }))}
+ placeholder="-- Gün Seçin --"
+ searchPlaceholder="Gün ara..."
+ />
  </div>
 
  <div className="grid grid-cols-2 gap-3">
@@ -1142,21 +1136,18 @@ const Yoklama = () => {
 
  <div>
  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Derslik (Opsiyonel)</label>
- <select
+ <SearchableSelect
  value={newDersForm.derslik_id || ''}
- onChange={(e) => setNewDersForm(prev => ({ ...prev, derslik_id: e.target.value }))}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
- >
- <option value="">-- Derslik Seçin --</option>
- {dersliklerList.map(d => (
- <option key={d.id} value={d.id}>{d.ad}</option>
- ))}
- </select>
+ onChange={(val) => setNewDersForm(prev => ({ ...prev, derslik_id: val }))}
+ options={dersliklerList.map(d => ({ value: d.id, label: d.ad }))}
+ placeholder="-- Derslik Seçin --"
+ searchPlaceholder="Derslik ara..."
+ />
  </div>
 
  <div>
  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Kart Rengi</label>
- <div className="flex flex-wrap gap-2.5">
+ <div className="flex flex-wrap justify-center gap-2.5 max-w-[370px] mx-auto">
  {RENK_OPTIONS.map(r => {
  const isSelected = newDersForm.renk === r.value;
  return (
@@ -1217,17 +1208,13 @@ const Yoklama = () => {
  <form onSubmit={handleCreateTelafiSubmit} className="space-y-4 text-sm">
  <div>
  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Telafi Edilecek Sınıf / Branş *</label>
- <select
- required
+ <SearchableSelect
  value={telafiForm.sinif_id}
- onChange={(e) => setTelafiForm({ ...telafiForm, sinif_id: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 font-bold focus:outline-none focus:border-rose-500"
- >
- <option value="">-- Sınıf Seçin --</option>
- {siniflar.map(s => (
- <option key={s.id} value={s.id}>{s.sinif_adi} ({s.ogrenci_sayisi || 0} Öğrenci)</option>
- ))}
- </select>
+ onChange={(val) => setTelafiForm({ ...telafiForm, sinif_id: val })}
+ options={siniflar.map(s => ({ value: s.id, label: `${s.sinif_adi} (${s.ogrenci_sayisi || 0} Öğrenci)` }))}
+ placeholder="-- Sınıf Seçin --"
+ searchPlaceholder="Sınıf ara..."
+ />
  </div>
 
  <div>
