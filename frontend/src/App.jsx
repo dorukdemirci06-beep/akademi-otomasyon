@@ -63,7 +63,7 @@ function App() {
             />{" "}
           </Routes>
         ) : (
-          <div className="min-h-screen text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-[#2eb82e] selection:text-white transition-colors duration-300">
+          <div className="min-h-screen text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-[#2eb82e] selection:text-white duration-300">
             {" "}
             {/* Navigation Bar Component */}{" "}
             <Navbar currentUser={currentUser} onLogout={handleLogout} />{" "}

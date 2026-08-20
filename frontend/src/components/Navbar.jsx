@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon, Users, BookOpen, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon, Users, BookOpen, HelpCircle, Menu, X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 const WhatsappIcon = (props) => (
@@ -10,6 +10,7 @@ const WhatsappIcon = (props) => (
 );
 
 const Navbar = ({ currentUser, onLogout }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const roleLower = (currentUser?.rol || '').toLowerCase();
   const isAdmin = roleLower.includes('yönetici') || roleLower.includes('yonetici') || roleLower.includes('admin') || roleLower.includes('super') || roleLower.includes('süper');
@@ -29,32 +30,42 @@ const Navbar = ({ currentUser, onLogout }) => {
   const displayRole = currentUser?.rol || 'Personel';
 
   return (
-    <header className="neo-card sticky top-0 z-50 mb-6 !rounded-none !border-x-0 !border-t-0 border-b border-[rgba(255,255,255,0.1)] transition-colors">
+    <>
+    <header className="neo-card sticky top-0 z-50 mb-6 !rounded-none !border-x-0 !border-t-0 border-b border-[rgba(255,255,255,0.1)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          {/* Brand Logo & Title */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Mobile Hamburger Toggle & Brand Logo */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-1.5 -ml-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none transition-colors"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
             <div className="w-10 h-10 neo-card !rounded-xl flex items-center justify-center text-[#2eb82e] shrink-0">
               <GraduationCap className="w-6 h-6" />
             </div>
-            <div className="hidden xs:flex sm:flex items-center gap-2">
-              <div className="flex flex-col justify-center">
-                <span className="text-xl font-bold tracking-tight leading-none text-slate-800 dark:text-slate-100">
-                  Kurum<span className="neo-text-primary">SaaS</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center">
+                <span className="text-2xl sm:text-3xl font-black tracking-tighter leading-none text-slate-800 dark:text-slate-100">
+                  KU<span className="text-[#2eb82e]">YO</span>
                 </span>
-                <span className="block text-[10px] font-bold text-[#ff8c1a] uppercase tracking-wider mt-1">
-                  Yönetim Platformu
-                </span>
+                <div className="flex flex-col justify-center text-[7px] sm:text-[9px] font-black text-sky-500 dark:text-sky-400 uppercase tracking-widest leading-[1.1] ml-1 sm:ml-2">
+                  <span>Kurum</span>
+                  <span>Yönetim</span>
+                  <span>Otomasyonu</span>
+                </div>
               </div>
               {currentUser?.akademi_adi && (
-                <span className="neo-input text-xs font-semibold text-slate-500 dark:text-slate-400 border-l pl-2 ml-2">
+                <span className="hidden sm:block neo-input text-xs font-semibold text-slate-500 dark:text-slate-400 border-l pl-2 ml-2">
                   {currentUser.akademi_adi}
                 </span>
               )}
             </div>
           </div>
-          {/* Navigation Links */}
-          <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto py-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-1 sm:gap-2 py-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -101,9 +112,9 @@ const Navbar = ({ currentUser, onLogout }) => {
                 <Moon className="w-5 h-5 text-indigo-400 transition-transform duration-300 hover:-rotate-12" />
               )}
             </button>
-            <div className="hidden sm:flex items-center gap-2 neo-input px-3 py-1.5 !rounded-xl">
+            <div className="hidden sm:flex items-center gap-2 neo-input px-3 py-1.5 !rounded-full">
               {isAdmin ? (
-                <Shield className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
+                <Shield className="w-3.5 h-3.5 text-sky-500" />
               ) : (
                 <UserCheck className="w-3.5 h-3.5 text-[#2eb82e]" />
               )}
@@ -114,7 +125,7 @@ const Navbar = ({ currentUser, onLogout }) => {
             </div>
             <button
               onClick={onLogout}
-              className="w-10 h-10 sm:w-auto sm:px-3 sm:py-2 rounded-xl neo-button text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold"
+              className="w-10 h-10 sm:w-auto sm:px-3 sm:py-2 rounded-full neo-button text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer flex items-center justify-center gap-1.5 text-xs sm:text-sm font-bold"
               title="Oturumu Kapat"
             >
               <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -124,6 +135,59 @@ const Navbar = ({ currentUser, onLogout }) => {
         </div>
       </div>
     </header>
+
+      {/* Mobile Off-Canvas Hamburger Menu */}
+      <div className={`fixed inset-0 z-[100] transition-opacity duration-300 lg:hidden ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+        
+        {/* Sidebar Panel */}
+        <div className={`absolute top-0 left-0 bottom-0 w-72 max-w-[80vw] bg-[#e0e5ec] dark:bg-[#22262e] shadow-2xl transform transition-transform duration-300 flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800/50">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 neo-card !rounded-lg flex items-center justify-center text-[#2eb82e] shrink-0">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              <div className="flex items-center">
+                <span className="text-2xl font-black tracking-tighter leading-none text-slate-800 dark:text-slate-100">
+                  KU<span className="text-[#2eb82e]">YO</span>
+                </span>
+                <div className="flex flex-col justify-center text-[8px] font-black text-sky-500 dark:text-sky-400 uppercase tracking-widest leading-[1.1] ml-1.5">
+                  <span>Kurum</span>
+                  <span>Yönetim</span>
+                  <span>Otomasyonu</span>
+                </div>
+              </div>
+            </div>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      isActive 
+                        ? 'text-[#2eb82e] bg-[#2eb82e]/10 dark:bg-[#2eb82e]/20 font-bold' 
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                    }`
+                  }
+                >
+                  <Icon className="w-5 h-5 shrink-0" />
+                  <span>{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

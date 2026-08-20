@@ -106,7 +106,7 @@ export default function Ayarlar({ showToast, user }) {
       <button 
         type="button" 
         onClick={() => handleToggle(name)}
-        className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors duration-300 shrink-0 ${checked ? 'bg-[#2eb82e]' : 'bg-black/10 dark:bg-white/10'}`}
+        className={`w-10 h-5 flex items-center rounded-full p-1 duration-300 shrink-0 ${checked ? 'bg-[#2eb82e] hover:bg-[#269926] transition-colors' : 'bg-black/10 dark:bg-white/10'}`}
       >
         <div className={`bg-white w-3 h-3 rounded-full shadow-md transform transition-transform duration-300 ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>
@@ -120,9 +120,9 @@ export default function Ayarlar({ showToast, user }) {
         
         {/* SOL KOLON: Entegrasyon Bilgileri */}
         <div className="neo-card md:w-1/3 rounded-3xl p-6 flex flex-col h-fit">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10 dark:border-white/5 ">
-            <div className="w-10 h-10 rounded-xl  dark:bg-emerald-900/30 flex items-center justify-center">
-              <Key className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10 dark:border-white/5">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
+              <Key className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800 dark:text-white">API Entegrasyonu</h2>
@@ -163,7 +163,7 @@ export default function Ayarlar({ showToast, user }) {
                 value={formData.whatsapp_api_key}
                 onChange={handleChange}
                 placeholder="Örn: EAAIxxxx..."
-                className="w-full rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition neo-input"
+                className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition neo-input"
               />
             </div>
 
@@ -178,16 +178,16 @@ export default function Ayarlar({ showToast, user }) {
                 value={formData.whatsapp_phone_number}
                 onChange={handleChange}
                 placeholder={formData.whatsapp_provider === 'meta' ? "Örn: 104xxxxxxxxx" : "Örn: +90532..."}
-                className="w-full rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition neo-input"
+                className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition neo-input"
               />
             </div>
           </div>
           
-          <div className="pt-4 border-t border-white/10 dark:border-white/5  mt-auto">
+          <div className="pt-4 border-t border-white/10 dark:border-white/5 mt-auto">
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-70 neo-button-primary"
+              className="w-full py-2.5 text-white font-bold text-sm rounded-full transition flex items-center justify-center gap-2 disabled:opacity-70 neo-button-primary"
             >
               <Save className="w-4 h-4" />
               {loading ? 'Kaydediliyor...' : 'Tüm Ayarları Kaydet'}
@@ -197,9 +197,9 @@ export default function Ayarlar({ showToast, user }) {
 
         {/* SAĞ KOLON: Mesaj Şablonları */}
         <div className="neo-card md:w-2/3 rounded-3xl p-6 flex flex-col h-fit">
-          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10 dark:border-white/5  shrink-0">
-            <div className="w-10 h-10 rounded-xl  dark:bg-emerald-900/30 flex items-center justify-center">
-              <MessageCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10 dark:border-white/5 shrink-0">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
+              <MessageCircle className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800 dark:text-white">Mesaj Şablonları</h2>
@@ -209,7 +209,7 @@ export default function Ayarlar({ showToast, user }) {
 
           <div className="flex-1 space-y-5">
             {/* Şablon 1: Yeni Kayıt */}
-            <div className={`neo-card space-y-1.5 p-4 transition-colors ${formData.is_msg_kayit_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
+            <div className={`neo-card space-y-1.5 p-4 ${formData.is_msg_kayit_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Type className="w-4 h-4 text-emerald-500" /> Yeni Kayıt (Hoş Geldiniz)
@@ -221,13 +221,13 @@ export default function Ayarlar({ showToast, user }) {
                 value={formData.msg_kayit}
                 onChange={handleChange}
                 placeholder="Sayın {isim} {soyisim}, {akademi_adi} akademisine hoş geldiniz!"
-                className="w-full rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
+                className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
               />
-              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{isim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{soyisim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{akademi_adi}'}</span></p>
+              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{akademi_adi}'}</span></p>
             </div>
 
             {/* Şablon 2: Ders Hatırlatma */}
-            <div className={`neo-card space-y-1.5 p-4 transition-colors ${formData.is_msg_ders_hatirlatma_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
+            <div className={`neo-card space-y-1.5 p-4 ${formData.is_msg_ders_hatirlatma_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Type className="w-4 h-4 text-emerald-500" /> Ders Hatırlatma (Önceki Gün)
@@ -239,13 +239,13 @@ export default function Ayarlar({ showToast, user }) {
                 value={formData.msg_ders_hatirlatma}
                 onChange={handleChange}
                 placeholder="Hatırlatma: Sayın {isim} {soyisim}, Yarın ({gun}) saat {saat}'de {ders_adi} dersiniz bulunmaktadır."
-                className="w-full rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
+                className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
               />
-              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{isim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{soyisim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{ders_adi}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{gun}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{saat}'}</span></p>
+              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ders_adi}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{gun}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{saat}'}</span></p>
             </div>
 
             {/* Şablon 3: Ödeme Hatırlatma */}
-            <div className={`neo-card space-y-1.5 p-4 transition-colors ${formData.is_msg_odeme_hatirlatma_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
+            <div className={`neo-card space-y-1.5 p-4 ${formData.is_msg_odeme_hatirlatma_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Type className="w-4 h-4 text-emerald-500" /> Ödeme Hatırlatma
@@ -257,13 +257,13 @@ export default function Ayarlar({ showToast, user }) {
                 value={formData.msg_odeme_hatirlatma}
                 onChange={handleChange}
                 placeholder="Sayın {isim} {soyisim}, {vade} tarihli {tutar} ₺ tutarındaki ödemenizi hatırlatırız."
-                className="w-full rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
+                className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
               />
-              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{isim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{soyisim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{tutar}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{vade}'}</span></p>
+              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{tutar}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{vade}'}</span></p>
             </div>
 
             {/* Şablon 4: Devamsızlık Bildirimi */}
-            <div className={`neo-card space-y-1.5 p-4 transition-colors ${formData.is_msg_devamsizlik_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
+            <div className={`neo-card space-y-1.5 p-4 ${formData.is_msg_devamsizlik_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Type className="w-4 h-4 text-emerald-500" /> Devamsızlık Bildirimi
@@ -275,13 +275,13 @@ export default function Ayarlar({ showToast, user }) {
                 value={formData.msg_devamsizlik}
                 onChange={handleChange}
                 placeholder="Sayın Veli, öğrenciniz {isim} {soyisim} {tarih} tarihindeki dersine katılmamıştır."
-                className="w-full rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
+                className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
               />
-              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{isim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{soyisim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{tarih}'}</span></p>
+              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{tarih}'}</span></p>
             </div>
 
             {/* Şablon 5: Doğum Günü */}
-            <div className={`neo-card space-y-1.5 p-4 transition-colors ${formData.is_msg_dogum_gunu_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
+            <div className={`neo-card space-y-1.5 p-4 ${formData.is_msg_dogum_gunu_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Type className="w-4 h-4 text-emerald-500" /> Doğum Günü Tebriği
@@ -293,13 +293,13 @@ export default function Ayarlar({ showToast, user }) {
                 value={formData.msg_dogum_gunu}
                 onChange={handleChange}
                 placeholder="İyi ki doğdun {isim} {soyisim}, yeni yaşın mutluluk getirsin!"
-                className="w-full rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
+                className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
               />
-              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{isim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{soyisim}'}</span></p>
+              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span></p>
             </div>
 
             {/* Şablon 6: Türkiye Özel Günleri */}
-            <div className={`neo-card space-y-1.5 p-4 transition-colors ${formData.is_msg_ozel_gun_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
+            <div className={`neo-card space-y-1.5 p-4 ${formData.is_msg_ozel_gun_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Type className="w-4 h-4 text-emerald-500" /> Türkiye Özel Günleri
@@ -311,9 +311,9 @@ export default function Ayarlar({ showToast, user }) {
                 value={formData.msg_ozel_gun}
                 onChange={handleChange}
                 placeholder="Sayın {isim} {soyisim}, {ozel_gun_adi} kutlu olsun!"
-                className="w-full rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
+                className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
               />
-              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{isim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{soyisim}'}</span> <span className="text-emerald-500  dark:bg-emerald-900/30 px-1 py-0.5 rounded">{'{ozel_gun_adi}'}</span></p>
+              <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ozel_gun_adi}'}</span></p>
             </div>
             
             

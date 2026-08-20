@@ -223,7 +223,7 @@ const Login = ({ onLoginSuccess }) => {
  };
 
  return (
- <div className="min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans transition-colors duration-300">
+ <div className="min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans duration-300">
  
  {/* 1. Mouse Tracking Spotlight Gradient */}
  <div 
@@ -282,14 +282,17 @@ const Login = ({ onLoginSuccess }) => {
  <div className="max-w-sm w-full space-y-4 z-10">
  
  {/* Header Branding */}
- <div className="text-center space-y-2">
- <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-tr from-[#2eb82e] to-[#0284c7] text-white -emerald-500/20 mb-0.5">
- <GraduationCap className="w-7 h-7" />
+ <div className="text-center space-y-2 mb-2">
+ <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-[#2eb82e] to-[#0284c7] text-white shadow-lg shadow-emerald-500/20 mb-1">
+ <GraduationCap className="w-9 h-9" />
  </div>
- <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
- Kurum<span className="text-[#2eb82e]">SaaS</span>
+ <h1 className="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tighter leading-none">
+ KU<span className="text-[#2eb82e]">YO</span>
  </h1>
- <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+ <div className="text-xs font-black text-sky-500 uppercase tracking-widest leading-none mt-1.5">
+ Kurum Yönetim Sistemi
+ </div>
+ <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mt-2">
  Yönetici ve Personel Giriş Portalı
  </p>
  </div>
@@ -302,14 +305,14 @@ const Login = ({ onLoginSuccess }) => {
  <ShieldCheck className="w-4 h-4 text-[#2eb82e]" />
  <span>Sisteme Giriş Yapın</span>
  </h2>
- <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full border ">
+ <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full border">
  Güvenli Oturum
  </span>
  </div>
 
  {errorMsg && (
- <div className="p-3 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800/80 rounded-xl flex items-center gap-2.5 text-xs text-rose-800 dark:text-rose-200 font-semibold animate-shake">
- <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+ <div className="p-3 -transparent rounded-full flex items-center gap-2.5 text-xs font-semibold animate-shake bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm">
+ <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
  <span>{errorMsg}</span>
  </div>
  )}
@@ -338,14 +341,14 @@ const Login = ({ onLoginSuccess }) => {
  setAkademiComboboxOpen(true);
  }}
  placeholder="Kurum ismi yazın veya seçin..."
- className="w-full neo-input w-full rounded-xl pl-9 pr-8 py-2.5 text-xs text-slate-900 dark:text-slate-100 font-semibold placeholder-slate-400 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition cursor-pointer"
+ className="w-full neo-input w-full rounded-full pl-9 pr-8 py-2.5 text-xs text-slate-900 dark:text-slate-100 font-semibold placeholder-slate-400 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition cursor-pointer"
  />
  <ChevronDown className={`w-4 h-4 absolute right-3 top-3 text-slate-400 transition-transform duration-200 pointer-events-none ${akademiComboboxOpen ? 'rotate-180 text-[#2eb82e]' : ''}`} />
  </div>
 
  {/* Açılır Arama Listesi */}
  {akademiComboboxOpen && (
- <div className="absolute left-0 right-0 top-full mt-2 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 shadow-xl rounded-xl z-50 max-h-48 overflow-y-auto p-1.5 space-y-0.5 text-xs animate-scale-in custom-scrollbar">
+ <div className="absolute left-0 right-0 top-full mt-2 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 shadow-xl rounded-2xl z-50 max-h-48 overflow-y-auto p-1.5 space-y-0.5 text-xs animate-scale-in custom-scrollbar">
  {akademiler.filter((ak) => ak.name.toLowerCase().includes(akademiSearchQuery.toLowerCase().trim())).length > 0 ? (
  akademiler
  .filter((ak) => ak.name.toLowerCase().includes(akademiSearchQuery.toLowerCase().trim()))
@@ -391,7 +394,7 @@ const Login = ({ onLoginSuccess }) => {
  value={kullaniciAdi}
  onChange={(e) => setKullaniciAdi(e.target.value)}
  placeholder="Kullanıcı adınızı girin"
- className="w-full neo-input w-full rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition "
+ className="w-full neo-input w-full rounded-full pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition"
  />
  </div>
  </div>
@@ -408,7 +411,7 @@ const Login = ({ onLoginSuccess }) => {
  value={sifre}
  onChange={(e) => setSifre(e.target.value)}
  placeholder="Şifrenizi girin"
- className="w-full neo-input w-full rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition "
+ className="w-full neo-input w-full rounded-full pl-9 pr-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition"
  />
  </div>
  </div>
@@ -428,7 +431,7 @@ const Login = ({ onLoginSuccess }) => {
  <button
  type="button"
  onClick={handleQuickFillAdmin}
- className="w-full py-2 px-2.5 neo-button rounded-xl text-[11px] font-semibold transition flex items-center justify-center gap-1.5 group cursor-pointer "
+ className="w-full py-2 px-2.5 neo-button rounded-full text-[11px] font-semibold transition flex items-center justify-center gap-1.5 group cursor-pointer"
  >
  <Sparkles className="w-3.5 h-3.5 text-[#0284c7] group-hover:scale-110 transition shrink-0" />
  <span className="truncate">İlk Yönetici Doldur</span>
@@ -437,9 +440,9 @@ const Login = ({ onLoginSuccess }) => {
  <button
  type="button"
  onClick={handleOpenKurulumClick}
- className="w-full py-2 px-2.5 neo-button rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1.5 group cursor-pointer "
+ className="w-full py-2 px-2.5 neo-button rounded-full text-[11px] font-bold transition flex items-center justify-center gap-1.5 group cursor-pointer"
  >
- <Building2 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 group-hover:scale-110 transition shrink-0" />
+ <Building2 className="w-3.5 h-3.5 text-sky-600 group-hover:scale-110 transition shrink-0" />
  <span className="truncate">Kurulum Ekranı</span>
  </button>
  </div>
@@ -448,7 +451,7 @@ const Login = ({ onLoginSuccess }) => {
 
  {/* Footer info */}
  <div className="text-center text-[11px] text-slate-500 font-medium">
- © 2026 Akademi Otomasyonu • Tüm Hakları Saklıdır
+ © 2026 KUYO Kurum Yönetim Sistemi - Tüm Hakları Saklıdır
  </div>
 
  </div>
@@ -472,7 +475,7 @@ const Login = ({ onLoginSuccess }) => {
  </div>
 
  {pinError && (
- <div className="p-2.5 bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 rounded-xl flex items-center gap-2 text-xs text-rose-800 dark:text-rose-200 font-semibold animate-shake">
+ <div className="p-2.5 -transparent rounded-full flex items-center gap-2 text-xs font-semibold animate-shake bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm">
  <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
  <span>{pinError}</span>
  </div>
@@ -495,16 +498,16 @@ const Login = ({ onLoginSuccess }) => {
  setPinError('');
  }}
  placeholder="Şifreyi giriniz (8888)"
- className="w-full neo-input w-full rounded-xl pl-9 pr-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+ className="w-full neo-input w-full rounded-full pl-9 pr-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
  />
  </div>
  </div>
 
- <div className="flex justify-end gap-2 pt-1 border-t ">
+ <div className="flex justify-end gap-2 pt-1 border-t">
  <button
  type="button"
  onClick={() => setShowPinModal(false)}
- className="px-3 py-1.5 neo-button text-xs font-semibold rounded-xl transition cursor-pointer"
+ className="px-3 py-1.5 neo-button text-xs font-semibold rounded-full transition cursor-pointer"
  >
  İptal
  </button>
@@ -547,8 +550,8 @@ const Login = ({ onLoginSuccess }) => {
 
  {/* Metrics Overview Cards */}
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
- <div className="p-3.5 neo-input rounded-2xl flex items-center gap-3">
- <div className="p-2.5 rounded-xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 shrink-0">
+ <div className="p-3.5 neo-input rounded-full flex items-center gap-3">
+ <div className="p-2.5 rounded-full shrink-0 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  <Building2 className="w-5 h-5" />
  </div>
  <div>
@@ -557,20 +560,20 @@ const Login = ({ onLoginSuccess }) => {
  </div>
  </div>
 
- <div className="p-3.5 neo-input rounded-2xl flex items-center gap-3">
- <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 shrink-0">
+ <div className="p-3.5 neo-input rounded-full flex items-center gap-3">
+ <div className="p-2.5 rounded-full shrink-0 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  <Activity className="w-5 h-5" />
  </div>
  <div>
  <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Sistem Durumu</div>
- <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-0.5">
+ <div className="text-xs font-bold text-emerald-600 flex items-center gap-1.5 mt-0.5">
  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
  <span>Canlı & Aktif</span>
  </div>
  </div>
  </div>
 
- <div className="p-3.5 neo-input rounded-2xl flex items-center justify-between">
+ <div className="p-3.5 neo-input rounded-full flex items-center justify-between">
  <div>
  <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Hızlı Eylem</div>
  <div className="text-xs font-bold text-slate-700 dark:text-slate-300">Yeni Akademi Kur</div>
@@ -578,7 +581,7 @@ const Login = ({ onLoginSuccess }) => {
  <button
  type="button"
  onClick={() => setPanelTab('create')}
- className="p-2 rounded-xl neo-button-primary transition cursor-pointer"
+ className="p-2 rounded-full neo-button-primary transition cursor-pointer"
  >
  <PlusCircle className="w-4 h-4" />
  </button>
@@ -626,13 +629,13 @@ const Login = ({ onLoginSuccess }) => {
  value={panelSearch}
  onChange={(e) => setPanelSearch(e.target.value)}
  placeholder="Akademi ismi veya yönetici kullanıcı adıyla ara..."
- className="w-full neo-input w-full rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
+ className="w-full neo-input w-full rounded-full pl-8 pr-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
  <button
  type="button"
  onClick={fetchAkademilerDetayli}
- className="p-2 hover: dark:hover: text-slate-600 dark:text-slate-300 rounded-xl transition cursor-pointer"
+ className="p-2 hover: dark:hover: text-slate-600 dark:text-slate-300 rounded-full transition cursor-pointer"
  title="Listeyi Yenile"
  >
  <RefreshCw className={`w-3.5 h-3.5 ${panelLoading ? 'animate-spin' : ''}`} />
@@ -678,7 +681,7 @@ const Login = ({ onLoginSuccess }) => {
  <button
  type="button"
  onClick={() => handleSelectAkademiFromPanel(ak.name)}
- className="px-3 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 text-[#2eb82e] border border-emerald-300 dark:border-emerald-700/60 rounded-xl text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+ className="px-3 py-1 dark: text-[#2eb82e] -transparent rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm"
  >
  <ExternalLink className="w-3 h-3" />
  <span>Girişe Aktar</span>
@@ -687,7 +690,7 @@ const Login = ({ onLoginSuccess }) => {
  <button
  type="button"
  onClick={() => handleDeleteAkademi(ak.id, ak.name)}
- className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition cursor-pointer"
+ className="p-1 dark: rounded-full transition cursor-pointer bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  title="Akademiyi Sil"
  >
  <Trash2 className="w-3.5 h-3.5" />
@@ -716,8 +719,8 @@ const Login = ({ onLoginSuccess }) => {
  {kurulumMsg.text && (
  <div className={`p-3 rounded-xl border text-xs font-semibold flex items-center gap-2 ${
  kurulumMsg.type === 'error'
- ? 'bg-rose-50 dark:bg-rose-950/80 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200'
- : 'bg-emerald-50 dark:bg-emerald-950/80 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
+ ? 'bg-rose-50 dark:bg-rose-950/80 border-rose-200 dark:border-rose-800  dark:text-rose-200'
+ : 'bg-emerald-50 dark:bg-emerald-950/80 border-emerald-200 dark:border-emerald-800  dark:text-emerald-200'
  }`}>
  {kurulumMsg.type === 'error' ? (
  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
@@ -728,7 +731,7 @@ const Login = ({ onLoginSuccess }) => {
  </div>
  )}
 
- <form onSubmit={handleKurulumSubmit} className="space-y-3 max-w-lg mx-auto p-4 rounded-2xl border ">
+ <form onSubmit={handleKurulumSubmit} className="space-y-3 max-w-lg mx-auto p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50">
  <div>
  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
  Hizmet Alan Akademi İsmi *
@@ -739,7 +742,7 @@ const Login = ({ onLoginSuccess }) => {
  value={kurulumForm.akademi_adi}
  onChange={(e) => setKurulumForm({ ...kurulumForm, akademi_adi: e.target.value })}
  placeholder="Örn: Pusula Spor Akademisi"
- className="w-full neo-input w-full rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
+ className="w-full neo-input w-full rounded-full px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
 
@@ -752,7 +755,7 @@ const Login = ({ onLoginSuccess }) => {
  value={kurulumForm.ad_soyad}
  onChange={(e) => setKurulumForm({ ...kurulumForm, ad_soyad: e.target.value })}
  placeholder="Örn: Ahmet Yılmaz"
- className="w-full neo-input w-full rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
+ className="w-full neo-input w-full rounded-full px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
 
@@ -767,7 +770,7 @@ const Login = ({ onLoginSuccess }) => {
  value={kurulumForm.kullanici_adi}
  onChange={(e) => setKurulumForm({ ...kurulumForm, kullanici_adi: e.target.value })}
  placeholder="Örn: ahmet"
- className="w-full neo-input w-full rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
+ className="w-full neo-input w-full rounded-full px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
 
@@ -781,23 +784,23 @@ const Login = ({ onLoginSuccess }) => {
  value={kurulumForm.sifre}
  onChange={(e) => setKurulumForm({ ...kurulumForm, sifre: e.target.value })}
  placeholder="Örn: 123456"
- className="w-full neo-input w-full rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
+ className="w-full neo-input w-full rounded-full px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
  </div>
 
- <div className="flex justify-end gap-2 pt-2 border-t ">
+ <div className="flex justify-end gap-2 pt-2 border-t">
  <button
  type="button"
  onClick={() => setPanelTab('list')}
- className="px-3.5 py-2 neo-button text-xs font-semibold rounded-xl transition cursor-pointer"
+ className="px-3.5 py-2 neo-button text-xs font-semibold rounded-full transition cursor-pointer"
  >
  İptal / Listeye Dön
  </button>
  <button
  type="submit"
  disabled={kurulumLoading}
- className="px-4 py-2 bg-gradient-to-r from-[#2eb82e] to-emerald-600 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+ className="px-4 py-2 bg-gradient-to-r from-[#2eb82e] to-emerald-600 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs rounded-full transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
  >
  <span>{kurulumLoading ? 'Kuruluyor...' : 'Akademiyi Oluştur'}</span>
  </button>

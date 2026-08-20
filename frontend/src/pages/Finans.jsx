@@ -87,11 +87,13 @@ const Finans = () => {
  sinif_adi: '',
  eklenecek_ders_hakki: 0,
  tutar: '',
+ odeme_turu: 'Kurs Ücreti',
  odeme_periyodu: 'Aylık',
  taksit_sayisi: 1,
  tarih: getTodayString(),
  odeme_yontemi: 'Nakit',
  durum: 'Ödendi',
+ aciklama: '',
  });
 
  // Taksit Tarihleri State
@@ -221,6 +223,7 @@ const Finans = () => {
  await createOdeme({
  ogrenci_id: targetStudentId,
  tutar: Number(odemeData.tutar),
+ odeme_turu: odemeData.odeme_turu,
  odeme_periyodu: odemeData.odeme_periyodu,
  taksit_sayisi: Number(odemeData.taksit_sayisi),
  tarih: odemeData.tarih,
@@ -229,6 +232,7 @@ const Finans = () => {
  sinif_adi: odemeData.sinif_adi || null,
  eklenecek_ders_hakki: Number(odemeData.eklenecek_ders_hakki || 0),
  taksit_tarihleri: odemeData.taksit_sayisi > 1 ? taksitTarihleri : null,
+ aciklama: odemeData.aciklama || null,
  });
  showToast('✅ Ödeme başarıyla işlendi! Detay & Taksitler açılıyor...');
  setOdemeData({
@@ -236,11 +240,13 @@ const Finans = () => {
  sinif_adi: '',
  eklenecek_ders_hakki: 0,
  tutar: '',
+ odeme_turu: 'Kurs Ücreti',
  odeme_periyodu: 'Aylık',
  taksit_sayisi: 1,
  tarih: getTodayString(),
  odeme_yontemi: 'Nakit',
  durum: 'Ödendi',
+ aciklama: '',
  });
  setOgrenciSiniflari([]);
  setModalTab('bekleyenler');
@@ -388,7 +394,8 @@ const Finans = () => {
  const name = `${o.isim} ${o.soyisim}`.toLowerCase();
  const phone = (o.telefon || '').toLowerCase();
  const tc = (o.tc || '').toLowerCase();
- return name.includes(term) || String(o.id) === term || phone.includes(term) || tc.includes(term);
+ const classes = (o.sinif_isimleri || []).join(' ').toLowerCase();
+ return name.includes(term) || String(o.id) === term || phone.includes(term) || tc.includes(term) || classes.includes(term);
  });
 
  const selectedFormOgrenci = ogrenciler.find(o => String(o.id) === String(odemeData.ogrenci_id));
@@ -478,7 +485,7 @@ const Finans = () => {
  )}
 
  {/* Top Banner */}
- <div className="neo-card p-6 rounded-2xl -slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
+ <div className="neo-card p-6 rounded-2xl -slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
  <div>
  <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
  <Wallet className="w-6 h-6 text-[#0284c7]" />
@@ -488,10 +495,10 @@ const Finans = () => {
  </div>
 
  {isAdmin && (
- <div className="bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/80 px-4 py-2 rounded-xl flex items-center gap-3">
+ <div className="px-4 py-2 rounded-full flex items-center gap-3 bg-gradient-to-r from-sky-500 to-sky-600 transition-colors text-white border-transparent shadow-sm">
  <div className="text-right">
- <span className="block text-[10px] font-bold uppercase text-[#0284c7]">Toplam Cari Kasa</span>
- <span className="text-xl font-bold text-slate-800 dark:text-slate-100">₺{formatTL(totalKasa)}</span>
+ <span className="block text-[10px] font-bold uppercase text-sky-50/90">Toplam Cari Kasa</span>
+ <span className="text-xl font-bold text-white">₺{formatTL(totalKasa)}</span>
  </div>
  </div>
  )}
@@ -568,7 +575,7 @@ const Finans = () => {
 
  {/* Birleşik Açılır Arama Listesi Paneli */}
  {isStudentDropdownOpen && (
- <div className="absolute left-0 right-0 top-full mt-1 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 shadow-xl rounded-xl z-50 max-h-56 overflow-y-auto p-1.5 space-y-0.5 animate-in fade-in duration-150 custom-scrollbar">
+ <div className="absolute left-0 right-0 top-full mt-1 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-slate-200/50 dark:border-white/10 shadow-xl rounded-2xl z-50 max-h-56 overflow-y-auto p-1.5 space-y-0.5 animate-in fade-in duration-150 custom-scrollbar">
  {filteredFormOgrenciler.length === 0 ? (
  <div className="py-4 text-center text-xs text-slate-500 italic">
  Aradığınız kriterlere uygun öğrenci bulunamadı.
@@ -636,7 +643,7 @@ const Finans = () => {
  placeholder="0"
  value={odemeData.eklenecek_ders_hakki}
  onChange={(e) => setOdemeData({ ...odemeData, eklenecek_ders_hakki: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
  )}
@@ -658,48 +665,92 @@ const Finans = () => {
  placeholder="1500.00"
  value={odemeData.tutar}
  onChange={(e) => setOdemeData({ ...odemeData, tutar: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e] placeholder-slate-400 dark:placeholder-slate-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e] placeholder-slate-400 dark:placeholder-slate-500"
  />
  </div>
 
- {/* Ödeme Periyodu: Aylık / Senelik */}
- <div>
- <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Ödeme Periyodu *</label>
- <div className="grid grid-cols-2 gap-2">
- <button
- type="button"
- onClick={() => setOdemeData({ ...odemeData, odeme_periyodu: 'Aylık' })}
- className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border ${
- odemeData.odeme_periyodu === 'Aylık'
- ? 'bg-emerald-100 dark:bg-emerald-950/80 border-[#2eb82e] text-[#2eb82e] '
- : ' text-slate-400 hover:text-slate-200'
- }`}
- >
- <span>📅 Aylık (4 Hafta)</span>
- </button>
- <button
- type="button"
- onClick={() => setOdemeData({ ...odemeData, odeme_periyodu: 'Senelik' })}
- className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border ${
- odemeData.odeme_periyodu === 'Senelik'
- ? 'bg-sky-950/80 border-[#0284c7] text-[#0284c7] '
- : ' text-slate-400 hover:text-slate-200'
- }`}
- >
- <span>📆 Senelik / Peşin</span>
- </button>
- </div>
- </div>
+  {/* Ödeme Türü */}
+  <div>
+  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Ödeme Türü *</label>
+  <div className="grid grid-cols-2 gap-2">
+  <button
+  type="button"
+  onClick={() => setOdemeData({ ...odemeData, odeme_turu: 'Kurs Ücreti' })}
+  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+  odemeData.odeme_turu === 'Kurs Ücreti'
+  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm border-transparent'
+  : 'border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+  }`}
+  >
+  <span>🎓 Kurs Ücreti</span>
+  </button>
+  <button
+  type="button"
+  onClick={() => setOdemeData({ ...odemeData, odeme_turu: 'Diğer' })}
+  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+  odemeData.odeme_turu === 'Diğer'
+  ? 'bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-sm border-transparent'
+  : 'border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+  }`}
+  >
+  <span>📦 Diğer</span>
+  </button>
+  </div>
+  </div>
 
- {/* Aylık Ödeme Bilgilendirmesi */}
- {odemeData.odeme_periyodu === 'Aylık' && taksitNum === 1 && (
- <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-start gap-2.5 text-xs text-emerald-700 dark:text-emerald-300">
- <Info className="w-4 h-4 text-[#2eb82e] shrink-0 mt-0.5" />
- <span>Aylık ödeme alındığında, <strong>4 hafta (28 gün)</strong> sonrası için otomatik olarak <em>"Bekliyor"</em> durumunda gelecek dönem alacak kaydı oluşturulur.</span>
+ {/* Diğer Seçildiyse Açıklama Inputu */}
+ {odemeData.odeme_turu === 'Diğer' && (
+ <div>
+ <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Açıklama (Ne Ödemesi?)</label>
+ <input
+ type="text"
+ placeholder="Örn: Sınav Ücreti"
+ value={odemeData.aciklama}
+ onChange={(e) => setOdemeData({ ...odemeData, aciklama: e.target.value })}
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e] placeholder-slate-400"
+ />
  </div>
  )}
 
- {/* Taksit Seçenekleri (2 - 6 Taksit) */}
+ {/* Ödeme Periyodu: Aylık / Senelik (Sadece Kurs Ücreti için) */}
+ {odemeData.odeme_turu === 'Kurs Ücreti' && (
+  <div>
+  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Ödeme Periyodu *</label>
+  <div className="grid grid-cols-2 gap-2">
+  <button
+  type="button"
+  onClick={() => setOdemeData({ ...odemeData, odeme_periyodu: 'Aylık' })}
+  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+  odemeData.odeme_periyodu === 'Aylık'
+  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm border-transparent'
+  : 'border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+  }`}
+  >
+  <span>📅 Aylık (4 Hafta)</span>
+  </button>
+  <button
+  type="button"
+  onClick={() => setOdemeData({ ...odemeData, odeme_periyodu: 'Senelik' })}
+  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+  odemeData.odeme_periyodu === 'Senelik'
+  ? 'bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-sm border-transparent'
+  : 'border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+  }`}
+  >
+  <span>📆 Senelik / Peşin</span>
+  </button>
+  </div>
+  {/* Aylık Ödeme Bilgilendirmesi */}
+  {odemeData.odeme_periyodu === 'Aylık' && taksitNum === 1 && (
+  <div className="p-3 mt-3 rounded-xl flex items-start gap-2.5 text-xs bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 shadow-sm">
+  <Info className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+  <span>Aylık ödeme alındığında, <strong>4 hafta (28 gün)</strong> sonrası için otomatik olarak <em>"Bekliyor"</em> durumunda gelecek dönem alacak kaydı oluşturulur.</span>
+  </div>
+  )}
+  </div>
+  )}
+
+ {/* Taksit Seçenekleri (2 - 12 Taksit) */}
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Taksit Seçeneği *</label>
  <SearchableSelect
@@ -711,7 +762,13 @@ const Finans = () => {
    { value: 3, label: '3 Taksit' },
    { value: 4, label: '4 Taksit' },
    { value: 5, label: '5 Taksit' },
-   { value: 6, label: '6 Taksit' }
+   { value: 6, label: '6 Taksit' },
+   { value: 7, label: '7 Taksit' },
+   { value: 8, label: '8 Taksit' },
+   { value: 9, label: '9 Taksit' },
+   { value: 10, label: '10 Taksit' },
+   { value: 11, label: '11 Taksit' },
+   { value: 12, label: '12 Taksit' }
  ]}
  placeholder="-- Taksit Seçin --"
  searchPlaceholder="Taksit ara..."
@@ -720,7 +777,7 @@ const Finans = () => {
 
  {/* Özelleştirilebilir Taksit Tarihleri Girişi */}
  {taksitNum > 1 && (
- <div className="p-3.5 border rounded-xl space-y-2.5">
+ <div className="p-3.5 border rounded-full space-y-2.5">
  <div className="flex items-center justify-between border-b pb-2">
  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
  <Calendar className="w-3.5 h-3.5 text-[#0284c7]" />
@@ -739,7 +796,7 @@ const Finans = () => {
  onChange={(newDate) => handleTaksitTarihChange(idx, newDate)}
  />
  {idx === 0 && (
- <span className="text-[10px] bg-emerald-950 text-[#2eb82e] border border-emerald-800 px-1.5 py-0.5 rounded font-bold">
+ <span className="text-[10px] text-[#2eb82e] px-1.5 py-0.5 rounded font-bold bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  Bugün Alınacak
  </span>
  )}
@@ -766,7 +823,7 @@ const Finans = () => {
 
  <button
  type="submit"
- className="w-full py-3 hover:bg-[#269926] text-white font-bold text-sm rounded-xl -emerald-900/30 transition mt-2 flex items-center justify-center gap-2 neo-button-primary"
+ className="w-full py-3 text-white font-bold text-sm rounded-full -emerald-900/30 transition mt-2 flex items-center justify-center gap-2 neo-button-primary"
  >
  <CheckCircle className="w-4 h-4" />
  <span>Ödemeyi İşle</span>
@@ -831,7 +888,7 @@ const Finans = () => {
  placeholder="Öğrenci Adı, ID, Telefon veya TC ile ara..."
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
- className="w-full pl-10 pr-4 py-2 neo-input w-full rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0284c7] transition"
+ className="w-full pl-10 pr-4 py-2 neo-input w-full rounded-full text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#0284c7] transition"
  />
  </div>
  <div className="text-xs text-slate-400 font-semibold">
@@ -879,8 +936,8 @@ const Finans = () => {
  <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
  <span>{o.isim} {o.soyisim}</span>
  {isOverdue && (
- <span className="bg-rose-100 dark:bg-rose-900/80 text-rose-600 dark:text-rose-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 border border-rose-200 dark:border-rose-700 animate-pulse">
- <AlertTriangle className="w-3 h-3 text-rose-500 dark:text-rose-400" />
+ <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 -transparent animate-pulse bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm">
+ <AlertTriangle className="w-3 h-3 text-rose-500" />
  <span>Vadesi Geldi!</span>
  </span>
  )}
@@ -891,17 +948,17 @@ const Finans = () => {
  {isAdmin && <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">₺{formatTL(bakiye)}</td>}
  <td className="py-3.5 px-4">
  {isOverdue ? (
- <span className="bg-rose-50 dark:bg-rose-950/90 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+ <span className="-transparent text-xs px-2.5 py-1 rounded-full font-bold inline-flex items-center gap-1 bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm">
  <AlertTriangle className="w-3.5 h-3.5" />
  <span>Ödeme Vadesi Gecikti</span>
  </span>
  ) : bakiye > 0 ? (
- <span className="bg-emerald-50 dark:bg-emerald-950/80 text-[#2eb82e] border border-emerald-200 dark:border-emerald-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+ <span className="text-[#2eb82e] -transparent text-xs px-2.5 py-1 rounded-full font-bold inline-flex items-center gap-1 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  <CheckCircle className="w-3.5 h-3.5" />
  <span>Tahsil Edildi</span>
  </span>
  ) : (
- <span className="bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+ <span className="-transparent text-xs px-2.5 py-1 rounded-full font-bold inline-flex items-center gap-1 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  <ArrowDownRight className="w-3.5 h-3.5" />
  <span>Ödeme Bekliyor</span>
  </span>
@@ -913,7 +970,7 @@ const Finans = () => {
  e.stopPropagation();
  setSelectedOgrenci(o);
  }}
- className="px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-1"
+ className="px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-full text-xs font-bold transition inline-flex items-center gap-1"
  >
  <span>Detay & Taksitler</span>
  <ChevronRight className="w-3.5 h-3.5" />
@@ -933,7 +990,7 @@ const Finans = () => {
  {/* STUDENT PAYMENT DETAILS MODAL */}
  {selectedOgrenci && (
  <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
- <div className="neo-card -slate-300 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-150">
+ <div className="neo-card rounded-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-150">
  
  {/* Modal Header */}
  <div className="p-5 border-b flex items-center justify-between">
@@ -951,7 +1008,7 @@ const Finans = () => {
  setSelectedOgrenci(null);
  setTahsilatModalOdeme(null);
  }}
- className="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:text-slate-100 hover: transition"
+ className="p-2 rounded-full text-slate-400 hover:text-slate-900 dark:text-slate-100 hover: transition"
  >
  <X className="w-5 h-5" />
  </button>
@@ -959,23 +1016,23 @@ const Finans = () => {
 
  {/* Student Quick Summary Bar */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 border-b text-xs">
- <div className="p-3 border rounded-xl">
+ <div className="p-3 border rounded-full text-center flex flex-col items-center justify-center">
  <span className="text-slate-400 block font-semibold">Toplam Cari Bakiye</span>
  <span className="text-base font-bold text-slate-900 dark:text-slate-100">₺{formatTL(selectedOgrenci.bakiye)}</span>
  </div>
- <div className="p-3 bg-emerald-950/30 border border-emerald-800/50 rounded-xl">
- <span className="text-emerald-400 block font-semibold">Tahsil Edilenler</span>
- <span className="text-base font-bold text-emerald-300">
+ <div className="p-3 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-colors text-white border-transparent shadow-sm flex flex-col items-center justify-center text-center">
+ <span className="text-emerald-50/90 block font-semibold">Tahsil Edilenler</span>
+ <span className="text-base font-bold text-white">
  ₺{formatTL(studentOdenenler.reduce((acc, p) => acc + (p.tutar || 0), 0))} ({studentOdenenler.length} Adet)
  </span>
  </div>
- <div className="p-3 bg-sky-950/30 border border-sky-800/50 rounded-xl">
- <span className="text-sky-400 block font-semibold">Alınacak Taksitler</span>
- <span className="text-base font-bold text-sky-300">
+ <div className="p-3 rounded-full bg-gradient-to-r from-sky-500 to-sky-600 transition-colors text-white border-transparent shadow-sm flex flex-col items-center justify-center text-center">
+ <span className="text-sky-50/90 block font-semibold">Alınacak Taksitler</span>
+ <span className="text-base font-bold text-white">
  ₺{formatTL(studentBekleyenler.reduce((acc, p) => acc + (p.tutar || 0), 0))} ({studentBekleyenler.length} Adet)
  </span>
  </div>
- <div className="p-3 border rounded-xl">
+  <div className="p-3 border rounded-full flex flex-col items-center justify-center text-center">
  <span className="text-slate-400 block font-semibold">Vade Durumu</span>
  {studentBekleyenler.some(p => p.tarih && new Date(p.tarih) <= nowTime) ? (
  <span className="text-red-400 font-bold flex items-center gap-1">
@@ -1018,7 +1075,7 @@ const Finans = () => {
 
  {/* Inline Tahsil Et Dialog Box */}
  {tahsilatModalOdeme && (
- <div className="p-4 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-700/80 rounded-xl space-y-3 animate-in fade-in duration-200">
+ <div className="p-4 rounded-full space-y-3 animate-in fade-in duration-200 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  <div className="flex items-center justify-between border-b border-emerald-800/80 pb-2">
  <h3 className="text-xs font-bold text-emerald-200 flex items-center gap-1.5">
  <Check className="w-4 h-4 text-[#2eb82e]" />
@@ -1031,7 +1088,7 @@ const Finans = () => {
  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
  <div>
  <span className="text-slate-700 dark:text-slate-300 block mb-1 font-semibold">Tutar</span>
- <span className="text-xs font-bold text-white px-3 border rounded-xl flex items-center h-[38px]">
+ <span className="text-xs font-bold text-white px-3 border rounded-full flex items-center h-[38px]">
  ₺{formatTL(tahsilatModalOdeme.tutar)}
  </span>
  </div>
@@ -1063,20 +1120,20 @@ const Finans = () => {
  value={tahsilatAciklama}
  onChange={(e) => setTahsilatAciklama(e.target.value)}
  placeholder="Örn: 2. Taksit"
- className="w-full px-3 neo-input w-full rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 h-[38px] focus:outline-none focus:border-[#2eb82e]"
+ className="w-full px-3 neo-input w-full rounded-full text-xs font-bold text-slate-900 dark:text-slate-100 h-[38px] focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
  </div>
  <div className="flex justify-end gap-2 pt-1">
  <button
  onClick={() => setTahsilatModalOdeme(null)}
- className="px-3 py-1.5 text-slate-700 dark:text-slate-300 hover: text-xs font-semibold rounded-lg"
+ className="px-3 py-1.5 text-slate-700 dark:text-slate-300 hover: text-xs font-semibold rounded-full"
  >
  İptal
  </button>
  <button
  onClick={handleTahsilEtSubmit}
- className="px-4 py-1.5 hover:bg-[#269926] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 neo-button-primary"
+ className="px-4 py-1.5 text-white text-xs font-bold rounded-full flex items-center gap-1.5 neo-button-primary"
  >
  <CheckCircle className="w-3.5 h-3.5" />
  <span>Tahsilatı Onayla</span>
@@ -1102,6 +1159,7 @@ const Finans = () => {
  <th className="py-3 px-3.5">VADE TARİHİ</th>
  <th className="py-3 px-3.5">AÇIKLAMA / TAKSİT NO</th>
  <th className="py-3 px-3.5">TUTAR</th>
+ <th className="py-3 px-3.5">ÖDEME TÜRÜ</th>
  <th className="py-3 px-3.5">DERS / BRANŞ</th>
  <th className="py-3 px-3.5">DURUM</th>
  <th className="py-3 px-3.5 text-right">İŞLEM</th>
@@ -1113,22 +1171,23 @@ const Finans = () => {
  return (
  <tr 
  key={p.id} 
- className={isPastDue ? 'bg-red-950/30 hover:bg-red-950/50 text-red-200' : 'hover: text-slate-200'}
+ className={isPastDue ? 'bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300'}
  >
  <td className="py-3 px-3.5 font-bold">
  {p.tarih ? new Date(p.tarih).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
  </td>
  <td className="py-3 px-3.5">{p.aciklama || (p.taksit_no ? `${p.taksit_no}. Taksit` : 'Taksit')}</td>
  <td className="py-3 px-3.5 font-bold text-sky-400">₺{formatTL(p.tutar)}</td>
+ <td className="py-3 px-3.5 text-slate-400">{p.odeme_turu || 'Kurs Ücreti'}</td>
  <td className="py-3 px-3.5 text-slate-400">{p.sinif_adi || 'Genel'}</td>
  <td className="py-3 px-3.5">
  {isPastDue ? (
- <span className="bg-red-950 text-red-400 border border-red-800 text-[10px] px-2 py-0.5 rounded font-extrabold inline-flex items-center gap-1">
+ <span className="text-[10px] px-2 py-0.5 rounded font-extrabold inline-flex items-center gap-1 bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm">
  <AlertTriangle className="w-3 h-3" />
  <span>Vadesi Gecikti</span>
  </span>
  ) : (
- <span className="bg-sky-950 text-sky-400 border border-sky-800 text-[10px] px-2 py-0.5 rounded font-extrabold inline-flex items-center gap-1">
+ <span className="text-[10px] px-2 py-0.5 rounded font-extrabold inline-flex items-center gap-1 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  <Clock className="w-3 h-3 text-sky-400" />
  <span>Gelecek Vade</span>
  </span>
@@ -1137,7 +1196,7 @@ const Finans = () => {
  <td className="py-3 px-3.5 text-right space-x-1.5 whitespace-nowrap">
  <button
  onClick={() => handleQuickOdendiIsaretle(p)}
- className="px-2.5 py-1 bg-[#2eb82e] hover:bg-[#269926] text-white text-[11px] font-bold rounded-md inline-flex items-center gap-1 transition"
+ className="px-2.5 py-1 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white text-[11px] font-bold rounded-full inline-flex items-center gap-1 transition"
  title="Doğrudan Ödendi olarak işaretle ve bakiyeye ekle"
  >
  <CheckCircle className="w-3 h-3" />
@@ -1145,7 +1204,7 @@ const Finans = () => {
  </button>
  <button
  onClick={() => handleOpenTahsilatModal(p)}
- className="px-2 py-1 hover: text-slate-200 border text-[11px] font-bold rounded-md inline-flex items-center gap-1 transition"
+ className="px-2 py-1 hover: text-slate-200 border text-[11px] font-bold rounded-full inline-flex items-center gap-1 transition"
  title="Tarih, açıklama veya ödeme yöntemi girerek tahsil et"
  >
  <CreditCard className="w-3 h-3 text-[#0284c7]" />
@@ -1192,20 +1251,22 @@ const Finans = () => {
  <th className="py-3 px-3.5">TAHSİLAT TARİHİ</th>
  <th className="py-3 px-3.5">AÇIKLAMA / TAKSİT</th>
  <th className="py-3 px-3.5">TUTAR</th>
+ <th className="py-3 px-3.5">ÖDEME TÜRÜ</th>
  <th className="py-3 px-3.5">ÖDEME YÖNTEMİ</th>
  <th className="py-3 px-3.5">PERİYOT</th>
  <th className="py-3 px-3.5">DERS / BRANŞ</th>
  <th className="py-3 px-3.5 text-right">İŞLEM</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-700/60 font-semibold text-slate-200">
+ <tbody className="divide-y divide-slate-200 dark:divide-slate-700/60 font-semibold text-slate-700 dark:text-slate-200">
  {studentOdenenler.map((p) => (
- <tr key={p.id} className="hover:">
+ <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
  <td className="py-3 px-3.5 font-bold">
  {p.tarih ? new Date(p.tarih).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
  </td>
  <td className="py-3 px-3.5">{p.aciklama || (p.taksit_no ? `${p.taksit_no}. Taksit` : 'Ödeme')}</td>
- <td className="py-3 px-3.5 font-bold text-emerald-400">₺{formatTL(p.tutar)}</td>
+ <td className="py-3 px-3.5 font-bold text-emerald-600 dark:text-emerald-400">₺{formatTL(p.tutar)}</td>
+ <td className="py-3 px-3.5 text-slate-400">{p.odeme_turu || 'Kurs Ücreti'}</td>
  <td className="py-3 px-3.5 text-slate-700 dark:text-slate-300">{p.odeme_yontemi || 'Nakit'}</td>
  <td className="py-3 px-3.5 text-slate-400">{p.odeme_periyodu || 'Aylık'}</td>
  <td className="py-3 px-3.5 text-slate-400">{p.sinif_adi || 'Genel'}</td>
@@ -1248,7 +1309,7 @@ const Finans = () => {
  <span className="text-slate-400">Toplam {selectedStudentPayments.length} ödeme kaydı listeleniyor</span>
  <button
  onClick={() => setSelectedOgrenci(null)}
- className="px-4 py-2 hover: text-slate-900 dark:text-slate-100 font-bold rounded-xl transition"
+ className="px-4 py-2 hover: text-slate-900 dark:text-slate-100 font-bold rounded-full transition"
  >
  Kapat
  </button>
@@ -1288,7 +1349,7 @@ const Finans = () => {
  value={editingOdeme.aciklama}
  onChange={(e) => setEditingOdeme({ ...editingOdeme, aciklama: e.target.value })}
  placeholder="Örn: 2. Taksit, Telafi Ödemesi vb."
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-xs font-bold text-slate-900 dark:text-slate-100"
  />
  </div>
 
@@ -1299,7 +1360,7 @@ const Finans = () => {
  step="0.01"
  value={editingOdeme.tutar}
  onChange={(e) => setEditingOdeme({ ...editingOdeme, tutar: e.target.value })}
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-xs font-bold text-slate-900 dark:text-slate-100"
  required
  />
  </div>
@@ -1323,13 +1384,13 @@ const Finans = () => {
  <button
  type="button"
  onClick={() => setEditingOdeme(null)}
- className="px-4 py-2 text-slate-700 dark:text-slate-300 hover: text-xs font-semibold rounded-xl"
+ className="px-4 py-2 text-slate-700 dark:text-slate-300 hover: text-xs font-semibold rounded-full"
  >
  İptal
  </button>
  <button
  type="submit"
- className="px-4 py-2 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 neo-button"
+ className="px-4 py-2 bg-[#0284c7] hover:bg-[#026aa3] transition-colors hover:bg-[#0369a1] text-white text-xs font-bold rounded-full flex items-center gap-1.5 neo-button"
  >
  <Check className="w-4 h-4" />
  <span>Değişiklikleri Kaydet</span>

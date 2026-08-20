@@ -68,7 +68,7 @@ const TimePicker = ({ value, onChange, label }) => {
       <div
         ref={containerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="neo-input w-full px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between cursor-pointer group hover:text-sky-500 transition-colors"
+        className="neo-input w-full px-4 py-2.5 rounded-full text-sm font-bold flex items-center justify-between cursor-pointer group hover:text-sky-500"
       >
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-sky-500 group-hover:animate-pulse" />

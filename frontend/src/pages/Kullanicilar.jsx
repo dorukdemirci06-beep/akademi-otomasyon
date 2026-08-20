@@ -675,7 +675,7 @@ const Kullanicilar = () => {
  )}
 
  {/* Main Header Banner */}
- <div className="neo-card p-6 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
+ <div className="neo-card p-6 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
  <div className="flex items-center gap-3">
  <div className="neo-card w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#2eb82e] to-[#0284c7] flex items-center justify-center text-white -emerald-900/20 shrink-0">
  <Shield className="w-6 h-6" />
@@ -683,7 +683,7 @@ const Kullanicilar = () => {
  <div>
  <div className="flex items-center gap-2">
  <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Yönetici Paneli</h1>
- <span className="bg-[#2eb82e]/10 border border-[#2eb82e]/30 text-[#2eb82e] text-xs font-bold px-2.5 py-0.5 rounded-lg">
+ <span className="bg-[#2eb82e] hover:bg-[#269926] transition-colors/10 border border-[#2eb82e]/30 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
  {currentAkademi}
  </span>
  </div>
@@ -700,7 +700,7 @@ const Kullanicilar = () => {
  onClick={() => setActiveTab('kullanicilar')}
  className={`flex-1 md:flex-none px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap ${
  activeTab === 'kullanicilar'
- ? 'bg-[#2eb82e] text-white -emerald-900/30'
+ ? 'bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white -emerald-900/30'
  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover: dark:hover:'
  }`}
  >
@@ -756,7 +756,7 @@ const Kullanicilar = () => {
  value={formData.ad_soyad}
  onChange={handleInputChange}
  placeholder="Ahmet Yılmaz"
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
 
@@ -769,7 +769,7 @@ const Kullanicilar = () => {
  value={formData.kullanici_adi}
  onChange={handleInputChange}
  placeholder="ahmet123"
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
 
@@ -782,7 +782,7 @@ const Kullanicilar = () => {
  value={formData.sifre}
  onChange={handleInputChange}
  placeholder="••••••••"
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#2eb82e]"
  />
  </div>
 
@@ -790,36 +790,36 @@ const Kullanicilar = () => {
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Kullanıcı Rolü *</label>
  <div className="grid grid-cols-2 gap-2">
  <button
- type="button"
- onClick={() => setFormData({ ...formData, rol: 'Personel' })}
- className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border cursor-pointer ${
- formData.rol === 'Personel'
- ? 'bg-emerald-100 dark:bg-emerald-950/80 border-[#2eb82e] text-[#2eb82e]'
- : ' text-slate-600 dark:text-slate-400'
- }`}
- >
- <UserCheck className="w-3.5 h-3.5" />
- <span>Personel</span>
- </button>
- <button
- type="button"
- onClick={() => setFormData({ ...formData, rol: 'Yönetici' })}
- className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border cursor-pointer ${
- formData.rol === 'Yönetici'
- ? 'bg-sky-950/80 border-[#0284c7] text-[#0284c7]'
- : ' text-slate-600 dark:text-slate-400'
- }`}
- >
- <Shield className="w-3.5 h-3.5" />
- <span>Yönetici</span>
- </button>
+  type="button"
+  onClick={() => setFormData({ ...formData, rol: 'Personel' })}
+  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border cursor-pointer ${
+  formData.rol === 'Personel'
+  ? 'bg-[#2eb82e] text-white border-transparent shadow-sm hover:bg-[#269926]'
+  : 'border-slate-300 dark:border-slate-700/60 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+  }`}
+  >
+  <UserCheck className="w-3.5 h-3.5" />
+  <span>Personel</span>
+  </button>
+  <button
+  type="button"
+  onClick={() => setFormData({ ...formData, rol: 'Yönetici' })}
+  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border cursor-pointer ${
+  formData.rol === 'Yönetici'
+  ? 'bg-[#0284c7] text-white border-transparent shadow-sm hover:bg-[#026aa3]'
+  : 'border-slate-300 dark:border-slate-700/60 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+  }`}
+  >
+  <Shield className="w-3.5 h-3.5" />
+  <span>Yönetici</span>
+  </button>
  </div>
  </div>
 
  <button
  type="submit"
  disabled={submitting}
- className="w-full py-3 hover:bg-[#269926] text-white font-bold text-sm rounded-xl -emerald-900/30 transition mt-2 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 neo-button-primary"
+ className="w-full py-3 text-white font-bold text-sm rounded-full -emerald-900/30 transition mt-2 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 neo-button-primary"
  >
  <UserPlus className="w-4 h-4" />
  <span>{submitting ? 'Kaydediliyor...' : 'Hesabı Oluştur'}</span>
@@ -838,7 +838,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={fetchKullanicilar}
- className="p-2 hover: dark:hover: text-slate-600 dark:text-slate-300 rounded-xl transition cursor-pointer neo-button"
+ className="p-2 hover: dark:hover: text-slate-600 dark:text-slate-300 rounded-full transition cursor-pointer neo-button"
  title="Yenile"
  >
  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
@@ -866,22 +866,22 @@ const Kullanicilar = () => {
  </tr>
  ) : (
  kullanicilar.map((u) => (
- <tr key={u.id} className="hover: dark:hover: transition-colors">
+ <tr key={u.id} className="hover: dark:hover:">
  <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
  <span>@{u.kullanici_adi}</span>
  {u.kullanici_adi === 'doruk' && (
- <span className="text-[10px] bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/40 px-2 py-0.5 rounded-md font-semibold">Ana Admin</span>
+ <span className="text-[10px] font-bold bg-gradient-to-r from-sky-500 to-indigo-500 text-white px-2.5 py-0.5 rounded-full border-transparent shadow-sm">Ana Admin</span>
  )}
  </td>
  <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300">{u.ad_soyad || '-'}</td>
  <td className="py-3.5 px-4">
  {u.rol === 'Yönetici' ? (
- <span className="bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+ <span className="bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm text-xs px-2.5 py-1 rounded-full font-bold inline-flex items-center gap-1">
  <Shield className="w-3.5 h-3.5" />
  <span>Yönetici</span>
  </span>
  ) : (
- <span className="bg-emerald-100 dark:bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2eb82e] border border-emerald-300 dark:border-emerald-800/80 text-xs px-2.5 py-1 rounded-lg font-bold inline-flex items-center gap-1">
+ <span className="text-xs px-2.5 py-1 rounded-full font-bold inline-flex items-center gap-1 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  <UserCheck className="w-3.5 h-3.5" />
  <span>Personel</span>
  </span>
@@ -892,7 +892,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => handleDeleteUser(u.id, u.kullanici_adi)}
- className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition cursor-pointer"
+ className="p-1.5 rounded-full text-slate-400 dark:hover:bg-rose-500/10 transition cursor-pointer bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  title="Kullanıcıyı Sil"
  >
  <Trash2 className="w-4 h-4" />
@@ -923,7 +923,7 @@ const Kullanicilar = () => {
  </div>
  <div>
  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">Kayıtlı Öğretmen Kadrosu</span>
- <span className="text-2xl font-black text-sky-600 dark:text-sky-300">{teachers.length} Eğitmen</span>
+ <span className="text-2xl font-black text-sky-600">{teachers.length} Eğitmen</span>
  </div>
  </div>
 
@@ -940,7 +940,7 @@ const Kullanicilar = () => {
  <div className="neo-card -indigo-200 dark:-indigo-500/30 rounded-3xl p-5 flex flex-col justify-between gap-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">Hızlı İşlemler</span>
- <span className="text-xs font-bold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50">
+ <span className="text-xs font-bold px-2.5 py-0.5 rounded-full -transparent bg-indigo-500 text-white border-transparent shadow-sm">
  {teacherEvals.length} Değerlendirme Kayıtlı
  </span>
  </div>
@@ -949,7 +949,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={openAddTeacherModal}
- className="w-full py-2 px-2 hover:bg-[#269926] text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1 cursor-pointer truncate neo-button-primary"
+ className="w-full py-2 px-2 text-white font-bold text-xs rounded-full transition flex items-center justify-center gap-1 cursor-pointer truncate neo-button-primary"
  >
  <UserPlus className="w-3.5 h-3.5 shrink-0" />
  <span className="truncate">Öğretmen Ekle</span>
@@ -957,7 +957,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openAddEvalModal('ogretmen')}
- className="w-full py-2 px-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1 cursor-pointer truncate"
+ className="w-full py-2 px-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs rounded-full transition flex items-center justify-center gap-1 cursor-pointer truncate"
  >
  <Plus className="w-3.5 h-3.5 shrink-0" />
  <span className="truncate">Değerlendirme</span>
@@ -1015,7 +1015,7 @@ const Kullanicilar = () => {
  placeholder="Öğretmen ara veya branş..."
  value={teacherSearch}
  onChange={(e) => setTeacherSearch(e.target.value)}
- className="w-full rounded-xl pl-9 pr-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500 neo-input"
+ className="w-full rounded-full pl-9 pr-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500 neo-input"
  />
  </div>
  </div>
@@ -1035,7 +1035,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={openAddTeacherModal}
- className="flex items-center gap-2 px-4 py-2 hover:bg-[#269926] text-white font-bold text-xs rounded-xl transition cursor-pointer neo-button-primary"
+ className="flex items-center gap-2 px-4 py-2 text-white font-bold text-xs rounded-full transition cursor-pointer neo-button-primary"
  >
  <UserPlus className="w-4 h-4" />
  <span>Yeni Öğretmen Ekle</span>
@@ -1065,14 +1065,14 @@ const Kullanicilar = () => {
  {/* Card Header */}
  <div className="flex justify-between items-start gap-2 border-b pb-3">
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-500 font-bold shrink-0 text-base">
+ <div className="w-10 h-10 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-500 font-bold shrink-0 text-base">
  {teacher.isim.charAt(0)}
  </div>
  <div>
  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
  <span>{teacher.isim}</span>
  </h3>
- <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/60 px-2 py-0.5 rounded-md mt-0.5">
+ <span className="inline-flex items-center gap-1 text-[11px] font-semibold -transparent px-2 py-0.5 rounded-full mt-0.5 bg-indigo-500 text-white border-transparent shadow-sm">
  <BookOpen className="w-3 h-3 text-indigo-500" />
  <span>{teacher.brans || 'Genel Eğitmen'}</span>
  </span>
@@ -1083,7 +1083,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openEditTeacherModal(teacher)}
- className="p-1.5 text-slate-400 hover:text-amber-500 hover: dark:hover: rounded-lg transition cursor-pointer"
+ className="p-1.5 text-slate-400 hover:text-amber-500 hover: dark:hover: rounded-full transition cursor-pointer"
  title="Bilgileri Düzenle"
  >
  <Edit3 className="w-4 h-4" />
@@ -1091,7 +1091,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => handleDeleteTeacher(teacher.id, teacher.isim)}
- className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition cursor-pointer"
+ className="p-1.5 text-slate-400 dark: rounded-full transition cursor-pointer bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  title="Öğretmeni Sil"
  >
  <Trash2 className="w-4 h-4" />
@@ -1120,7 +1120,7 @@ const Kullanicilar = () => {
  </div>
  )}
  {teacher.notlar && (
- <p className="text-[11px] text-slate-500 dark:text-slate-400 italic p-2 rounded-lg border">
+ <p className="text-[11px] text-slate-500 dark:text-slate-400 italic p-2 rounded-full border">
  {teacher.notlar}
  </p>
  )}
@@ -1161,7 +1161,7 @@ const Kullanicilar = () => {
  <span>Verdiği Dersler & Sınıflar</span>
  </span>
  {teacherLessons.length > 0 && (
- <span className="text-[10px] font-extrabold bg-sky-500/15 text-sky-600 dark:text-sky-300 px-2 py-0.5 rounded-md border border-sky-500/30">
+ <span className="text-[10px] font-extrabold bg-sky-500/15 text-sky-600 px-2 py-0.5 rounded-full border border-sky-500/30">
  {teacherLessons.length} Aktif Sınıf
  </span>
  )}
@@ -1172,7 +1172,7 @@ const Kullanicilar = () => {
  {teacherLessons.map((l, idx) => (
  <div
  key={idx}
- className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/30 text-sky-900 dark:text-sky-200 rounded-xl text-xs font-semibold"
+ className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/30 text-sky-900 dark:text-sky-200 rounded-full text-xs font-semibold"
  >
  <Clock className="w-3 h-3 text-sky-500 shrink-0" />
  <span className="font-bold">{l.sinif_adi}</span>
@@ -1182,7 +1182,7 @@ const Kullanicilar = () => {
  </div>
  ) : (
  <div className="flex items-center gap-2 pt-0.5">
- <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 text-sky-800 dark:text-sky-300 rounded-lg text-xs font-bold">
+ <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 rounded-full text-xs font-bold">
  <BookOpen className="w-3 h-3 text-sky-500" />
  {teacher.brans || 'Genel Eğitmen'}
  </span>
@@ -1212,7 +1212,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openAddEvalModal('ogretmen', teacher.isim, teacher.brans)}
- className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white border border-amber-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+ className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white border border-amber-500/30 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer"
  >
  <Star className="w-3 h-3" />
  <span>Değerlendirme Yap</span>
@@ -1241,7 +1241,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openAddEvalModal('ogretmen')}
- className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs rounded-xl transition cursor-pointer"
+ className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-bold text-xs rounded-full transition cursor-pointer"
  >
  <Plus className="w-4 h-4" />
  <span>Değerlendirme Ekle</span>
@@ -1274,7 +1274,7 @@ const Kullanicilar = () => {
  <span>{displayName}</span>
  </h3>
  {displayUnvan && (
- <span className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-300 mt-1 bg-indigo-50 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/60 px-2.5 py-0.5 rounded-lg">
+ <span className="inline-flex items-center gap-1 text-xs font-semibold mt-1 -transparent px-2.5 py-0.5 rounded-full bg-indigo-500 text-white border-transparent shadow-sm">
  <BookOpen className="w-3 h-3 text-indigo-500" />
  <span>{displayUnvan}</span>
  </span>
@@ -1285,7 +1285,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openEditEvalModal(item)}
- className="p-1.5 text-slate-400 hover:text-amber-500 hover: dark:hover: rounded-lg transition cursor-pointer"
+ className="p-1.5 text-slate-400 hover:text-amber-500 hover: dark:hover: rounded-full transition cursor-pointer"
  title="Düzenle"
  >
  <Edit3 className="w-4 h-4" />
@@ -1293,7 +1293,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => handleDeleteEval(item.id, displayName)}
- className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition cursor-pointer"
+ className="p-1.5 text-slate-400 dark: rounded-full transition cursor-pointer bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  title="Sil"
  >
  <Trash2 className="w-4 h-4" />
@@ -1302,7 +1302,7 @@ const Kullanicilar = () => {
  </div>
 
  {/* Stars Rating */}
- <div className="flex items-center justify-between mt-3 p-3 rounded-xl border">
+ <div className="flex items-center justify-between mt-3 p-3 rounded-full border">
  <div className="flex items-center gap-1">
  {[1, 2, 3, 4, 5].map((star) => (
  <Star
@@ -1322,7 +1322,7 @@ const Kullanicilar = () => {
 
  {/* Feedback Notes */}
  {item.notlar && (
- <div className="mt-3 text-xs text-slate-700 dark:text-slate-300 p-3 rounded-xl border italic leading-relaxed">
+ <div className="mt-3 text-xs text-slate-700 dark:text-slate-300 p-3 rounded-full border italic leading-relaxed">
  "{item.notlar}"
  </div>
  )}
@@ -1333,7 +1333,7 @@ const Kullanicilar = () => {
  {item.kategoriler.map((cat, idx) => (
  <span
  key={idx}
- className="text-[10px] font-bold bg-emerald-50 dark:bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-[#2eb82e] border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-full flex items-center gap-1"
+ className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white shadow-sm"
  >
  <ThumbsUp className="w-2.5 h-2.5" />
  <span>{cat}</span>
@@ -1372,7 +1372,7 @@ const Kullanicilar = () => {
  </div>
  <div>
  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">Kayıtlı İdari Personel</span>
- <span className="text-2xl font-black text-sky-600 dark:text-sky-300">{staff.length} Personel</span>
+ <span className="text-2xl font-black text-sky-600">{staff.length} Personel</span>
  </div>
  </div>
 
@@ -1389,7 +1389,7 @@ const Kullanicilar = () => {
  <div className="neo-card -emerald-200 dark:-emerald-500/30 rounded-3xl p-5 flex flex-col justify-between gap-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">Hızlı İşlemler</span>
- <span className="text-xs font-bold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-800/50">
+ <span className="text-xs font-bold px-2.5 py-0.5 rounded-full -transparent bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  {staffEvals.length} Değerlendirme Kayıtlı
  </span>
  </div>
@@ -1398,7 +1398,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={openAddStaffModal}
- className="w-full py-2 px-2 hover:bg-[#269926] text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1 cursor-pointer truncate neo-button-primary"
+ className="w-full py-2 px-2 text-white font-bold text-xs rounded-full transition flex items-center justify-center gap-1 cursor-pointer truncate neo-button-primary"
  >
  <UserPlus className="w-3.5 h-3.5 shrink-0" />
  <span className="truncate">Personel Ekle</span>
@@ -1406,7 +1406,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openAddEvalModal('personel')}
- className="w-full py-2 px-2 bg-gradient-to-r from-indigo-500 to-sky-500 hover:from-indigo-400 hover:to-sky-400 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1 cursor-pointer truncate"
+ className="w-full py-2 px-2 bg-gradient-to-r from-indigo-500 to-sky-500 hover:from-indigo-400 hover:to-sky-400 text-white font-bold text-xs rounded-full transition flex items-center justify-center gap-1 cursor-pointer truncate"
  >
  <Plus className="w-3.5 h-3.5 shrink-0" />
  <span className="truncate">Değerlendirme</span>
@@ -1464,7 +1464,7 @@ const Kullanicilar = () => {
  placeholder="Personel ara veya unvan..."
  value={staffSearch}
  onChange={(e) => setStaffSearch(e.target.value)}
- className="w-full rounded-xl pl-9 pr-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500 neo-input"
+ className="w-full rounded-full pl-9 pr-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500 neo-input"
  />
  </div>
  </div>
@@ -1484,7 +1484,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={openAddStaffModal}
- className="flex items-center gap-2 px-4 py-2 hover:bg-[#269926] text-white font-bold text-xs rounded-xl transition cursor-pointer neo-button-primary"
+ className="flex items-center gap-2 px-4 py-2 text-white font-bold text-xs rounded-full transition cursor-pointer neo-button-primary"
  >
  <UserPlus className="w-4 h-4" />
  <span>Yeni Personel Ekle</span>
@@ -1514,14 +1514,14 @@ const Kullanicilar = () => {
  {/* Card Header */}
  <div className="flex justify-between items-start gap-2 border-b pb-3">
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-500 font-bold shrink-0 text-base">
+ <div className="w-10 h-10 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-500 font-bold shrink-0 text-base">
  {item.isim.charAt(0)}
  </div>
  <div>
  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
  <span>{item.isim}</span>
  </h3>
- <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/80 border border-sky-200 dark:border-sky-800/60 px-2 py-0.5 rounded-md mt-0.5">
+ <span className="inline-flex items-center gap-1 text-[11px] font-semibold -transparent px-2 py-0.5 rounded-full mt-0.5 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  <Briefcase className="w-3 h-3 text-sky-500" />
  <span>{item.unvan || 'İdari Personel'}</span>
  </span>
@@ -1532,7 +1532,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openEditStaffModal(item)}
- className="p-1.5 text-slate-400 hover:text-sky-500 hover: dark:hover: rounded-lg transition cursor-pointer"
+ className="p-1.5 text-slate-400 hover:text-sky-500 hover: dark:hover: rounded-full transition cursor-pointer"
  title="Bilgileri Düzenle"
  >
  <Edit3 className="w-4 h-4" />
@@ -1540,7 +1540,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => handleDeleteStaff(item.id, item.isim)}
- className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition cursor-pointer"
+ className="p-1.5 text-slate-400 dark: rounded-full transition cursor-pointer bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  title="Personeli Sil"
  >
  <Trash2 className="w-4 h-4" />
@@ -1569,7 +1569,7 @@ const Kullanicilar = () => {
  </div>
  )}
  {item.notlar && (
- <p className="text-[11px] text-slate-500 dark:text-slate-400 italic p-2 rounded-lg border">
+ <p className="text-[11px] text-slate-500 dark:text-slate-400 italic p-2 rounded-full border">
  {item.notlar}
  </p>
  )}
@@ -1592,7 +1592,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openAddEvalModal('personel', item.isim, item.unvan)}
- className="px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500 text-sky-700 dark:text-sky-300 hover:text-white border border-sky-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+ className="px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500 text-sky-700 hover:text-white border border-sky-500/30 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer"
  >
  <Star className="w-3 h-3" />
  <span>Değerlendirme Yap</span>
@@ -1621,7 +1621,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openAddEvalModal('personel')}
- className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-sky-500 hover:from-indigo-400 hover:to-sky-400 text-white font-bold text-xs rounded-xl transition cursor-pointer"
+ className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-sky-500 hover:from-indigo-400 hover:to-sky-400 text-white font-bold text-xs rounded-full transition cursor-pointer"
  >
  <Plus className="w-4 h-4" />
  <span>Değerlendirme Ekle</span>
@@ -1654,7 +1654,7 @@ const Kullanicilar = () => {
  <span>{displayName}</span>
  </h3>
  {displayUnvan && (
- <span className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-300 mt-1 bg-sky-50 dark:bg-sky-950/80 border border-sky-200 dark:border-sky-800/60 px-2.5 py-0.5 rounded-lg">
+ <span className="inline-flex items-center gap-1 text-xs font-semibold mt-1 -transparent px-2.5 py-0.5 rounded-full bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  <Briefcase className="w-3 h-3 text-sky-500" />
  <span>{displayUnvan}</span>
  </span>
@@ -1665,7 +1665,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openEditEvalModal(item)}
- className="p-1.5 text-slate-400 hover:text-sky-500 hover: dark:hover: rounded-lg transition cursor-pointer"
+ className="p-1.5 text-slate-400 hover:text-sky-500 hover: dark:hover: rounded-full transition cursor-pointer"
  title="Düzenle"
  >
  <Edit3 className="w-4 h-4" />
@@ -1673,7 +1673,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => handleDeleteEval(item.id, displayName)}
- className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition cursor-pointer"
+ className="p-1.5 text-slate-400 dark: rounded-full transition cursor-pointer bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  title="Sil"
  >
  <Trash2 className="w-4 h-4" />
@@ -1682,7 +1682,7 @@ const Kullanicilar = () => {
  </div>
 
  {/* Stars Rating */}
- <div className="flex items-center justify-between mt-3 p-3 rounded-xl border">
+ <div className="flex items-center justify-between mt-3 p-3 rounded-full border">
  <div className="flex items-center gap-1">
  {[1, 2, 3, 4, 5].map((star) => (
  <Star
@@ -1697,12 +1697,12 @@ const Kullanicilar = () => {
  />
  ))}
  </div>
- <span className="font-black text-sky-600 dark:text-sky-300 text-sm">{item.puan} / 5.0</span>
+ <span className="font-black text-sky-600 text-sm">{item.puan} / 5.0</span>
  </div>
 
  {/* Feedback Notes */}
  {item.notlar && (
- <div className="mt-3 text-xs text-slate-700 dark:text-slate-300 p-3 rounded-xl border italic leading-relaxed">
+ <div className="mt-3 text-xs text-slate-700 dark:text-slate-300 p-3 rounded-full border italic leading-relaxed">
  "{item.notlar}"
  </div>
  )}
@@ -1713,7 +1713,7 @@ const Kullanicilar = () => {
  {item.kategoriler.map((cat, idx) => (
  <span
  key={idx}
- className="text-[10px] font-bold bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60 px-2 py-0.5 rounded-full flex items-center gap-1"
+ className="text-[10px] font-bold bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm px-2 py-0.5 rounded-full flex items-center gap-1"
  >
  <ThumbsUp className="w-2.5 h-2.5" />
  <span>{cat}</span>
@@ -1752,7 +1752,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => setShowTeacherModal(false)}
- className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition cursor-pointer"
+ className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-full transition cursor-pointer"
  >
  <X className="w-5 h-5" />
  </button>
@@ -1767,7 +1767,7 @@ const Kullanicilar = () => {
  placeholder="Örn: Ahmet Yılmaz"
  value={teacherForm.isim}
  onChange={(e) => setTeacherForm({ ...teacherForm, isim: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
  />
  </div>
 
@@ -1779,7 +1779,7 @@ const Kullanicilar = () => {
  placeholder="Örn: Piyano & Solfej, Keman, Solfej..."
  value={teacherForm.brans}
  onChange={(e) => setTeacherForm({ ...teacherForm, brans: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
  />
  </div>
 
@@ -1791,7 +1791,7 @@ const Kullanicilar = () => {
  placeholder="05xx xxx xx xx"
  value={teacherForm.telefon}
  onChange={(e) => setTeacherForm({ ...teacherForm, telefon: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
  />
  </div>
 
@@ -1801,7 +1801,7 @@ const Kullanicilar = () => {
  type="date"
  value={teacherForm.baslamaTarihi}
  onChange={(e) => setTeacherForm({ ...teacherForm, baslamaTarihi: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
  />
  </div>
  </div>
@@ -1813,7 +1813,7 @@ const Kullanicilar = () => {
  placeholder="ornek@akademisaas.com"
  value={teacherForm.eposta}
  onChange={(e) => setTeacherForm({ ...teacherForm, eposta: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
  />
  </div>
 
@@ -1824,7 +1824,7 @@ const Kullanicilar = () => {
  placeholder="Eğitmen uzmanlığı, ders günleri veya ekstra notlar..."
  value={teacherForm.notlar}
  onChange={(e) => setTeacherForm({ ...teacherForm, notlar: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
  ></textarea>
  </div>
 
@@ -1832,13 +1832,13 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => setShowTeacherModal(false)}
- className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition cursor-pointer"
+ className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-full transition cursor-pointer"
  >
  İptal
  </button>
  <button
  type="submit"
- className="px-5 py-2 hover:bg-[#269926] text-white text-xs font-black rounded-xl transition cursor-pointer neo-button-primary"
+ className="px-5 py-2 text-white text-xs font-black rounded-full transition cursor-pointer neo-button-primary"
  >
  {editingTeacher ? 'Güncelle' : 'Kaydet'}
  </button>
@@ -1860,7 +1860,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => setShowStaffModal(false)}
- className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition cursor-pointer"
+ className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-full transition cursor-pointer"
  >
  <X className="w-5 h-5" />
  </button>
@@ -1875,7 +1875,7 @@ const Kullanicilar = () => {
  placeholder="Örn: Selin Tekin"
  value={staffForm.isim}
  onChange={(e) => setStaffForm({ ...staffForm, isim: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
  />
  </div>
 
@@ -1887,7 +1887,7 @@ const Kullanicilar = () => {
  placeholder="Örn: Danışma & Ön Büro, İdari İşler, Muhasebe..."
  value={staffForm.unvan}
  onChange={(e) => setStaffForm({ ...staffForm, unvan: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
  />
  </div>
 
@@ -1899,7 +1899,7 @@ const Kullanicilar = () => {
  placeholder="05xx xxx xx xx"
  value={staffForm.telefon}
  onChange={(e) => setStaffForm({ ...staffForm, telefon: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
  />
  </div>
 
@@ -1909,7 +1909,7 @@ const Kullanicilar = () => {
  type="date"
  value={staffForm.baslamaTarihi}
  onChange={(e) => setStaffForm({ ...staffForm, baslamaTarihi: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
  />
  </div>
  </div>
@@ -1921,7 +1921,7 @@ const Kullanicilar = () => {
  placeholder="ornek@akademisaas.com"
  value={staffForm.eposta}
  onChange={(e) => setStaffForm({ ...staffForm, eposta: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
  />
  </div>
 
@@ -1932,7 +1932,7 @@ const Kullanicilar = () => {
  placeholder="Görev tanımı, vardiya bilgileri..."
  value={staffForm.notlar}
  onChange={(e) => setStaffForm({ ...staffForm, notlar: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
  ></textarea>
  </div>
 
@@ -1940,13 +1940,13 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => setShowStaffModal(false)}
- className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition cursor-pointer"
+ className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-full transition cursor-pointer"
  >
  İptal
  </button>
  <button
  type="submit"
- className="px-5 py-2 hover:bg-[#269926] text-white text-xs font-black rounded-xl transition cursor-pointer neo-button-primary"
+ className="px-5 py-2 text-white text-xs font-black rounded-full transition cursor-pointer neo-button-primary"
  >
  {editingStaff ? 'Güncelle' : 'Kaydet'}
  </button>
@@ -1973,7 +1973,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => setShowEvalModal(false)}
- className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition cursor-pointer"
+ className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-full transition cursor-pointer"
  >
  <X className="w-5 h-5" />
  </button>
@@ -2005,7 +2005,7 @@ const Kullanicilar = () => {
  }}
  className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border cursor-pointer ${
  evalForm.tur === 'personel'
- ? 'bg-sky-100 dark:bg-sky-950/80 border-sky-500 text-sky-800 dark:text-sky-300'
+ ? 'bg-sky-100 dark:bg-sky-950/80 border-sky-500  '
  : ' text-slate-600 dark:text-slate-400'
  }`}
  >
@@ -2042,7 +2042,7 @@ const Kullanicilar = () => {
  placeholder={evalForm.tur === 'ogretmen' ? 'Örn: Ahmet Yılmaz' : 'Örn: Selin Tekin'}
  value={evalForm.isim}
  onChange={(e) => setEvalForm({ ...evalForm, isim: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
  />
  </div>
 
@@ -2055,14 +2055,14 @@ const Kullanicilar = () => {
  placeholder={evalForm.tur === 'ogretmen' ? 'Örn: Piyano, Keman...' : 'Örn: Danışma & Ön Büro...'}
  value={evalForm.unvan}
  onChange={(e) => setEvalForm({ ...evalForm, unvan: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
  />
  </div>
 
  {/* Star Rating Picker */}
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Performans Puanı (1 - 5 Yıldız)</label>
- <div className="flex items-center gap-2 p-3 rounded-xl border justify-between">
+ <div className="flex items-center gap-2 p-3 rounded-full border justify-between">
  <div className="flex items-center gap-1.5">
  {[1, 2, 3, 4, 5].map((star) => (
  <button
@@ -2081,7 +2081,7 @@ const Kullanicilar = () => {
  </button>
  ))}
  </div>
- <span className={`font-black text-base ${evalForm.tur === 'personel' ? 'text-sky-600 dark:text-sky-300' : 'text-amber-600 dark:text-amber-300'}`}>
+ <span className={`font-black text-base ${evalForm.tur === 'personel' ? 'text-sky-600 ' : 'text-amber-600 dark:text-amber-300'}`}>
  {evalForm.puan}.0 / 5.0
  </span>
  </div>
@@ -2097,7 +2097,7 @@ const Kullanicilar = () => {
  }
  value={evalForm.notlar}
  onChange={(e) => setEvalForm({ ...evalForm, notlar: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
  ></textarea>
  </div>
 
@@ -2108,7 +2108,7 @@ const Kullanicilar = () => {
  placeholder="Örn: Güler Yüz, Hızlı İletişim, Zaman Yönetimi"
  value={evalForm.kategoriInput}
  onChange={(e) => setEvalForm({ ...evalForm, kategoriInput: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
  />
  </div>
 
@@ -2116,13 +2116,13 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => setShowEvalModal(false)}
- className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition cursor-pointer"
+ className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-full transition cursor-pointer"
  >
  İptal
  </button>
  <button
  type="submit"
- className="px-5 py-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white text-xs font-black rounded-xl transition cursor-pointer neo-button"
+ className="px-5 py-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white text-xs font-black rounded-full transition cursor-pointer neo-button"
  >
  {editingEval ? 'Güncelle' : 'Kaydet'}
  </button>

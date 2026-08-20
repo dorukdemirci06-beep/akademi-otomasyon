@@ -318,7 +318,7 @@ const Kayit = () => {
  return (
  <div className="space-y-6">
  {/* Header Bar */}
- <div className="neo-card flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 rounded-2xl -slate-200 transition-colors">
+ <div className="neo-card flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 rounded-2xl -slate-200">
  <div>
  <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Kayıt Modülü & Öğrenci Yönetimi</h1>
  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Yeni öğrenci kaydı oluşturun veya aktif / pasif öğrencileri yönetin.</p>
@@ -336,7 +336,7 @@ const Kayit = () => {
  });
  setShowModal(true);
  }}
- className="px-4 py-2.5 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition -emerald-900/20 flex items-center gap-2 cursor-pointer"
+ className="px-4 py-2.5 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white font-bold text-sm rounded-full transition -emerald-900/20 flex items-center gap-2 cursor-pointer"
  >
  <UserPlus className="w-4 h-4" />
  <span>Yeni Öğrenci Ekle</span>
@@ -351,23 +351,23 @@ const Kayit = () => {
  <div className="flex items-center gap-2">
  <button
  onClick={() => setActiveTab('Aktif')}
- className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border cursor-pointer ${
- activeTab === 'Aktif'
- ? 'bg-emerald-50 dark:bg-emerald-950/90 border-[#2eb82e] text-[#2eb82e] '
- : ' text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
- }`}
- >
+ className={`px-4 py-2 rounded-full text-xs font-bold transition flex items-center gap-2 border cursor-pointer ${
+  activeTab === 'Aktif'
+  ? 'bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm '
+  : ' text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+  }`}
+  >
  <Users className="w-4 h-4" />
  <span>Aktif Öğrenciler ({aktifSayisi})</span>
  </button>
  <button
  onClick={() => setActiveTab('Pasif')}
- className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border cursor-pointer ${
- activeTab === 'Pasif'
- ? 'bg-sky-50 dark:bg-sky-950/90 border-sky-500 text-sky-600 dark:text-sky-400 '
- : ' text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
- }`}
- >
+ className={`px-4 py-2 rounded-full text-xs font-bold transition flex items-center gap-2 border cursor-pointer ${
+  activeTab === 'Pasif'
+  ? 'bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm '
+  : ' text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+  }`}
+  >
  <UserX className="w-4 h-4" />
  <span>Pasif Öğrenci Listesi ({pasifSayisi})</span>
  </button>
@@ -400,7 +400,7 @@ const Kayit = () => {
  placeholder={`${activeTab} öğrencilerde İsim, TC, Veli veya Telefon ile ara...`}
  value={searchTerm}
  onChange={(e) => setSearchTerm(e.target.value)}
- className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e] transition neo-input"
+ className="w-full pl-10 pr-4 py-2.5 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e] transition neo-input"
  />
  </div>
 
@@ -408,7 +408,7 @@ const Kayit = () => {
  <button
  type="button"
  onClick={toggleExpandAllRows}
- className="px-3 py-1.5 hover: dark:hover: text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer neo-button"
+ className="px-3 py-1.5 hover: dark:hover: text-slate-700 dark:text-slate-300 text-xs font-bold rounded-full transition cursor-pointer neo-button"
  >
  {filteredOgrenciler.length > 0 && filteredOgrenciler.every(o => expandedRows[o.id]) ? 'Tümünü Daralt' : 'Tümünü Genişlet'}
  </button>
@@ -470,7 +470,7 @@ const Kayit = () => {
  >
  {/* ID */}
  <td className="py-3.5 px-4 whitespace-nowrap">
- <span className="font-bold text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-xs border">
+ <span className="font-bold text-slate-600 dark:text-slate-300 px-2 py-1 rounded-full text-xs border">
  #{o.id}
  </span>
  </td>
@@ -480,11 +480,11 @@ const Kayit = () => {
  <div className="flex items-center gap-2">
  <span>{o.isim} {o.soyisim}</span>
  {o.durum === 'Pasif' ? (
- <span className="text-[10px] bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800/80 px-1.5 py-0.5 rounded font-semibold">
+ <span className="text-[10px] -transparent px-1.5 py-0.5 rounded font-semibold bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  Pasif
  </span>
  ) : (
- <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80 px-1.5 py-0.5 rounded font-semibold">
+ <span className="text-[10px] -transparent px-1.5 py-0.5 rounded font-semibold bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  Aktif
  </span>
  )}
@@ -514,7 +514,7 @@ const Kayit = () => {
               <span>{phoneToUse}</span>
             </div>
           </div>
-          <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-lg transition-colors cursor-pointer" title="WhatsApp üzerinden mesaj gönder">
+          <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-full cursor-pointer" title="WhatsApp üzerinden mesaj gönder">
             <MessageCircle className="w-4 h-4" />
           </a>
         </div>
@@ -530,15 +530,15 @@ const Kayit = () => {
  {o.siniflar && o.siniflar.length > 0 ? (
  <div className="flex items-center gap-1.5">
  {o.siniflar.slice(0, 2).map((s) => (
- <span key={s.id} className="text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 text-xs px-2.5 py-0.5 rounded-lg font-bold flex items-center gap-1">
+ <span key={s.id} className="text-emerald-700 border-transparent text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
  <span>{s.sinif_adi}</span>
- <span className={`px-1.5 py-0.2 rounded text-[10px] font-black border ${Number(s.kalan_ders_hakki) < 0 ? 'bg-rose-50 dark:bg-rose-950 text-rose-600 border-rose-200 dark:border-rose-800/80' : 'bg-emerald-50 dark:bg-emerald-950 text-[#2eb82e] border-emerald-200 dark:border-emerald-700/60'}`}>
+ <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border-transparent ${Number(s.kalan_ders_hakki) < 0 ? 'bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm' : 'bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm'}`}>
  {s.kalan_ders_hakki} Hak
  </span>
  </span>
  ))}
  {o.siniflar.length > 2 && (
- <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded-md">
+ <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded-full">
  +{o.siniflar.length - 2} Ders
  </span>
  )}
@@ -561,7 +561,7 @@ const Kayit = () => {
  <button
  type="button"
  onClick={() => handleEkDersEkle(o)}
- className="px-2 py-1.5 bg-indigo-50 dark:bg-indigo-950/80 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-indigo-200 dark:border-indigo-800/80 cursor-pointer"
+ className="px-2 py-1.5 dark: text-xs font-semibold rounded-full transition-colors inline-flex items-center gap-1 -transparent cursor-pointer bg-indigo-500 hover:bg-indigo-600 text-white border-transparent shadow-sm"
  title="Ek Ders / Sınıf Ekle"
  >
  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -571,7 +571,7 @@ const Kayit = () => {
  <button
  type="button"
  onClick={() => handleEditOgrenci(o)}
- className="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/80 cursor-pointer"
+ className="px-2 py-1.5 dark: text-xs font-semibold rounded-full transition inline-flex items-center gap-1 -transparent cursor-pointer bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm"
  title="Öğrenciyi Düzenle"
  >
  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -582,7 +582,7 @@ const Kayit = () => {
  <button
  type="button"
  onClick={() => handleToggleDurum(o.id, `${o.isim} ${o.soyisim}`, o.durum)}
- className="px-2 py-1.5 bg-sky-50 dark:bg-sky-950/80 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-700 dark:text-sky-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-sky-200 dark:border-sky-800/80 cursor-pointer"
+ className="px-2 py-1.5 dark: text-xs font-semibold rounded-full transition inline-flex items-center gap-1 -transparent cursor-pointer bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm"
  title="Öğrenciyi Pasife Al"
  >
  <UserMinus className="w-3.5 h-3.5" />
@@ -592,7 +592,7 @@ const Kayit = () => {
  <button
  type="button"
  onClick={() => handleToggleDurum(o.id, `${o.isim} ${o.soyisim}`, o.durum)}
- className="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-semibold rounded-lg transition inline-flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/80 cursor-pointer"
+ className="px-2 py-1.5 dark: text-xs font-semibold rounded-full transition inline-flex items-center gap-1 -transparent cursor-pointer bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm"
  title="Öğrenciyi Aktifleştir"
  >
  <UserCheck className="w-3.5 h-3.5" />
@@ -636,14 +636,14 @@ const Kayit = () => {
  <span className="uppercase tracking-wider">2. Anne & Baba Veli Bilgileri</span>
  </div>
  <div className="space-y-1.5 text-slate-700 dark:text-slate-300">
- <div className="p-2 rounded-lg border">
+ <div className="p-2 rounded-full border">
  <strong className="text-slate-800 dark:text-slate-200 block text-[11px]">Anne: {o.anne_isim || '-'}</strong>
  <div className="text-[11px] text-slate-500 dark:text-slate-400">
  {o.anne_meslek && <span>Meslek: {o.anne_meslek} • </span>}
  {o.anne_telefon && <span>Tel: {o.anne_telefon}</span>}
  </div>
  </div>
- <div className="p-2 rounded-lg border">
+ <div className="p-2 rounded-full border">
  <strong className="text-slate-800 dark:text-slate-200 block text-[11px]">Baba: {o.baba_isim || '-'}</strong>
  <div className="text-[11px] text-slate-500 dark:text-slate-400">
  {o.baba_meslek && <span>Meslek: {o.baba_meslek} • </span>}
@@ -655,24 +655,24 @@ const Kayit = () => {
 
  {/* 3. KAYITLI DERSLER & KALAN DERS HAKLARI */}
  <div className="space-y-2">
- <div className="font-bold text-[#2eb82e] dark:text-emerald-400 flex items-center gap-1.5 pb-1.5 border-b">
- <BookOpen className="w-4 h-4 text-[#2eb82e] dark:text-emerald-400" />
+ <div className="font-bold text-[#2eb82e] flex items-center gap-1.5 pb-1.5 border-b">
+ <BookOpen className="w-4 h-4 text-[#2eb82e]" />
  <span className="uppercase tracking-wider">3. Kayıtlı Dersler & Kalan Haklar</span>
  </div>
  
  {o.siniflar && o.siniflar.length > 0 ? (
  <div className="space-y-1.5">
  {o.siniflar.map((s) => (
- <div key={s.id} className="flex justify-between items-center p-2 rounded-lg border">
+ <div key={s.id} className="flex justify-between items-center p-2 rounded-full border">
  <span className="font-bold text-slate-800 dark:text-slate-200">{s.sinif_adi}</span>
  <div className="flex items-center gap-2">
- <span className={`px-2 py-0.5 rounded text-[11px] font-extrabold border ${Number(s.kalan_ders_hakki) < 0 ? 'bg-rose-50 dark:bg-rose-950 text-rose-600 border-rose-200 dark:border-rose-800/80' : 'bg-emerald-50 dark:bg-emerald-950 text-[#2eb82e] border-emerald-200 dark:border-emerald-700/80'}`}>
+ <span className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold border-transparent ${Number(s.kalan_ders_hakki) < 0 ? 'bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm' : 'bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm'}`}>
  {s.kalan_ders_hakki} Ders Hakkı
  </span>
  <button
  type="button"
  onClick={() => handleRemoveFromSinif(o, s)}
- className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-200 hover:bg-red-50 dark:hover:bg-red-950 p-1 rounded transition cursor-pointer"
+ className="dark: dark: p-1 rounded transition cursor-pointer bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  title={`Öğrenciyi "${s.sinif_adi}" dersinden çıkar`}
  >
  <X className="w-3.5 h-3.5" />
@@ -730,9 +730,9 @@ const Kayit = () => {
              <div className="flex items-center gap-2">
                <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{o.isim} {o.soyisim}</span>
                {o.durum === 'Pasif' ? (
-                 <span className="text-[10px] bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded font-semibold border border-sky-200 dark:border-sky-800">Pasif</span>
+                 <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold -transparent bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">Pasif</span>
                ) : (
-                 <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950 text-[#2eb82e] px-1.5 py-0.5 rounded font-semibold border border-emerald-200 dark:border-emerald-800">Aktif</span>
+                 <span className="text-[10px] text-[#2eb82e] px-1.5 py-0.5 rounded font-semibold -transparent bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">Aktif</span>
                )}
              </div>
              <div className="flex items-center gap-2">
@@ -747,7 +747,7 @@ const Kayit = () => {
                  <div className="flex items-center gap-2">
                     <span className="font-bold">{phoneToUse || '-'}</span>
                     {phoneToUse && (
-                      <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-lg transition-colors cursor-pointer" title="WhatsApp">
+                      <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white rounded-full cursor-pointer" title="WhatsApp">
                         <MessageCircle className="w-3.5 h-3.5" />
                       </a>
                     )}
@@ -759,7 +759,7 @@ const Kayit = () => {
              <div className="flex items-center gap-1.5 flex-wrap pt-1">
                {o.siniflar && o.siniflar.length > 0 ? (
                  o.siniflar.slice(0, 2).map((s) => (
-                   <span key={s.id} className="text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 text-[10px] px-1.5 py-0.5 rounded font-bold">
+                   <span key={s.id} className="text-emerald-700 border-transparent text-[10px] px-1.5 py-0.5 rounded font-bold">
                      {s.sinif_adi}
                    </span>
                  ))
@@ -778,14 +778,14 @@ const Kayit = () => {
            {isExpanded && (
              <div className="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800/60 space-y-4 text-xs">
                <div className="space-y-1.5">
-                 <strong className="text-emerald-600 dark:text-emerald-400 block border-b pb-1">Genel Bilgiler</strong>
+                 <strong className="text-emerald-600 block border-b pb-1">Genel Bilgiler</strong>
                  <div className="flex justify-between"><span>TC:</span> <span className="font-bold">{o.tc || '-'}</span></div>
                  <div className="flex justify-between"><span>Doğum T:</span> <span className="font-bold">{o.dogum_tarihi ? new Date(o.dogum_tarihi).toLocaleDateString('tr-TR') : '-'}</span></div>
                  <div className="flex justify-between"><span>E-Posta:</span> <span className="font-bold">{o.eposta || '-'}</span></div>
                </div>
 
                <div className="space-y-1.5">
-                 <strong className="text-sky-600 dark:text-sky-400 block border-b pb-1">Veli Bilgileri</strong>
+                 <strong className="text-sky-600 block border-b pb-1">Veli Bilgileri</strong>
                  <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded border">
                    <strong className="block text-[11px]">Anne: {o.anne_isim || '-'}</strong>
                    <span className="text-slate-500">Tel: {o.anne_telefon || '-'}</span>
@@ -797,11 +797,11 @@ const Kayit = () => {
                </div>
 
                <div className="space-y-2">
-                 <strong className="text-emerald-600 dark:text-emerald-400 block border-b pb-1">Kayıtlı Dersler</strong>
+                 <strong className="text-emerald-600 block border-b pb-1">Kayıtlı Dersler</strong>
                  {o.siniflar && o.siniflar.length > 0 ? o.siniflar.map(s => (
                    <div key={s.id} className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-2 rounded border">
                      <span className="font-bold">{s.sinif_adi}</span>
-                     <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold border ${Number(s.kalan_ders_hakki) < 0 ? 'text-rose-600 border-rose-200' : 'text-[#2eb82e] border-emerald-200'}`}>
+                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border-transparent ${Number(s.kalan_ders_hakki) < 0 ? 'bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm' : 'bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm'}`}>
                        {s.kalan_ders_hakki} Hak
                      </span>
                    </div>
@@ -810,13 +810,13 @@ const Kayit = () => {
 
                {/* İşlemler (Mobil) */}
                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
-                 <button onClick={() => handleEditOgrenci(o)} className="py-2 flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 rounded-lg font-bold gap-1 transition">
+                 <button onClick={() => handleEditOgrenci(o)} className="py-2 flex items-center justify-center bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent border-transparent rounded-full font-bold gap-1 transition">
                    <User className="w-3.5 h-3.5" /> Düzenle
                  </button>
-                 <button onClick={() => handleEkDersEkle(o)} className="py-2 flex items-center justify-center bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-900/50 rounded-lg font-bold gap-1 transition">
+                 <button onClick={() => handleEkDersEkle(o)} className="py-2 flex items-center justify-center -transparent rounded-full font-bold gap-1 transition bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
                    <BookOpen className="w-3.5 h-3.5" /> Ders Ekle
                  </button>
-                 <button onClick={() => handleToggleDurum(o.id, `${o.isim} ${o.soyisim}`, o.durum)} className="col-span-2 py-2 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/50 rounded-lg font-bold gap-1 transition">
+                 <button onClick={() => handleToggleDurum(o.id, `${o.isim} ${o.soyisim}`, o.durum)} className="col-span-2 py-2 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/50 rounded-full font-bold gap-1 transition">
                    {o.durum === 'Aktif' ? 'Pasife Al' : 'Aktifleştir'}
                  </button>
                </div>
@@ -836,7 +836,7 @@ const Kayit = () => {
  {/* STICKY FIXED HEADER */}
  <div className="flex justify-between items-center border-b px-6 py-4 shrink-0">
  <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
- <UserPlus className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+ <UserPlus className="w-6 h-6 text-emerald-600" />
  {isEditing ? "Öğrenciyi Düzenle" : "Yeni Öğrenci Ekle"}
  </h2>
  <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-xl cursor-pointer">&times;</button>
@@ -845,21 +845,21 @@ const Kayit = () => {
  {/* SCROLLABLE FORM BODY */}
  <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
  {/* 1. Öğrenci Bilgileri */}
- <h3 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider mb-4 border-b border-emerald-200 dark:border-emerald-800/50 pb-2">
+ <h3 className="text-sm font-bold uppercase tracking-wider mb-4 border-b border-emerald-200 dark:border-emerald-800/50 pb-2">
  {isEditing ? "Öğrenci Bilgilerini Güncelle" : "Öğrenci Temel Bilgileri"}
  </h3>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Adı *</label>
- <input type="text" name="isim" required value={formData.isim} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Ahmet" />
+ <input type="text" name="isim" required value={formData.isim} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Ahmet" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Soyadı *</label>
- <input type="text" name="soyisim" required value={formData.soyisim} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Yılmaz" />
+ <input type="text" name="soyisim" required value={formData.soyisim} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Yılmaz" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Öğrenci TC Kimlik No</label>
- <input type="text" name="tc" value={formData.tc} onChange={handleInputChange} maxLength="11" className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="11122233344" />
+ <input type="text" name="tc" value={formData.tc} onChange={handleInputChange} maxLength="11" className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="11122233344" />
  </div>
  <div>
  <CustomDatePicker
@@ -872,11 +872,11 @@ const Kayit = () => {
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Telefon</label>
- <input type="text" name="telefon" value={formData.telefon} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="05551112233" />
+ <input type="text" name="telefon" value={formData.telefon} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="05551112233" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">E-Posta</label>
- <input type="text" name="eposta" value={formData.eposta} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="ahmet@gmail.com" />
+ <input type="text" name="eposta" value={formData.eposta} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="ahmet@gmail.com" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Branş / Sınıf Seçin</label>
@@ -890,7 +890,7 @@ const Kayit = () => {
  </div>
  <div className="sm:col-span-2">
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Açık Adres</label>
- <textarea name="adres" rows="2" value={formData.adres} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none neo-input" placeholder="Öğrenci açık adresi..."></textarea>
+ <textarea name="adres" rows="2" value={formData.adres} onChange={handleInputChange} className="w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none neo-input" placeholder="Öğrenci açık adresi..."></textarea>
  </div>
  </div>
 
@@ -901,23 +901,23 @@ const Kayit = () => {
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Anne Adı Soyadı</label>
- <input type="text" name="anne_isim" value={formData.anne_isim} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Ayşe Yılmaz" />
+ <input type="text" name="anne_isim" value={formData.anne_isim} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Ayşe Yılmaz" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Anne Mesleği</label>
- <input type="text" name="anne_meslek" value={formData.anne_meslek} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Örn: Öğretmen" />
+ <input type="text" name="anne_meslek" value={formData.anne_meslek} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Örn: Öğretmen" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Anne TC Kimlik No</label>
- <input type="text" name="anne_tc" value={formData.anne_tc} onChange={handleInputChange} maxLength="11" className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="11122233355" />
+ <input type="text" name="anne_tc" value={formData.anne_tc} onChange={handleInputChange} maxLength="11" className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="11122233355" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Anne Telefon</label>
- <input type="text" name="anne_telefon" value={formData.anne_telefon} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="05552223344" />
+ <input type="text" name="anne_telefon" value={formData.anne_telefon} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="05552223344" />
  </div>
  <div className="sm:col-span-2">
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Anne E-Posta</label>
- <input type="text" name="anne_eposta" value={formData.anne_eposta} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="anne@gmail.com" />
+ <input type="text" name="anne_eposta" value={formData.anne_eposta} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="anne@gmail.com" />
  </div>
  </div>
 
@@ -928,23 +928,23 @@ const Kayit = () => {
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Baba Adı Soyadı</label>
- <input type="text" name="baba_isim" value={formData.baba_isim} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Mehmet Yılmaz" />
+ <input type="text" name="baba_isim" value={formData.baba_isim} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Mehmet Yılmaz" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Baba Mesleği</label>
- <input type="text" name="baba_meslek" value={formData.baba_meslek} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Örn: Mühendis" />
+ <input type="text" name="baba_meslek" value={formData.baba_meslek} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Örn: Mühendis" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Baba TC Kimlik No</label>
- <input type="text" name="baba_tc" value={formData.baba_tc} onChange={handleInputChange} maxLength="11" className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="11122233366" />
+ <input type="text" name="baba_tc" value={formData.baba_tc} onChange={handleInputChange} maxLength="11" className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="11122233366" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Baba Telefon</label>
- <input type="text" name="baba_telefon" value={formData.baba_telefon} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="05553334455" />
+ <input type="text" name="baba_telefon" value={formData.baba_telefon} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="05553334455" />
  </div>
  <div className="sm:col-span-2">
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Baba E-Posta</label>
- <input type="text" name="baba_eposta" value={formData.baba_eposta} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="baba@gmail.com" />
+ <input type="text" name="baba_eposta" value={formData.baba_eposta} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="baba@gmail.com" />
  </div>
  </div>
 
@@ -954,7 +954,7 @@ const Kayit = () => {
  <MessageCircle className="w-3.5 h-3.5 text-[#2eb82e]" />
  İletişim Kurulacak Kişi (Birincil Veli)
  </h3>
- <div className="flex bg-slate-100/80 dark:bg-slate-900/40 p-1 rounded-xl w-fit gap-0.5">
+ <div className="flex bg-slate-100/80 dark:bg-slate-900/40 p-1 rounded-full w-fit gap-0.5">
  {['Kendisi', 'Anne', 'Baba'].map(option => (
  <button
  key={option}
@@ -973,8 +973,8 @@ const Kayit = () => {
  </div>
 
  <div className="flex justify-end gap-3 border-t pt-4">
- <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 hover: dark:hover: text-slate-800 dark:text-slate-200 font-semibold text-sm rounded-xl cursor-pointer">İptal</button>
- <button type="submit" className="px-5 py-2 hover:bg-[#269926] text-white font-bold text-sm rounded-xl -emerald-900/30 cursor-pointer neo-button-primary">Kaydet</button>
+ <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 hover: dark:hover: text-slate-800 dark:text-slate-200 font-semibold text-sm rounded-full cursor-pointer">İptal</button>
+ <button type="submit" className="px-5 py-2 text-white font-bold text-sm rounded-full -emerald-900/30 cursor-pointer neo-button-primary">Kaydet</button>
  </div>
  </form>
  </div>
@@ -1006,11 +1006,11 @@ const Kayit = () => {
 
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Ders Hakkı Sayısı</label>
- <input type="number" value={ekDersData.kalan_ders_hakki} onChange={(e) => setEkDersData({ ...ekDersData, kalan_ders_hakki: e.target.value })} className="w-full px-3 py-2 rounded-lg text-sm text-slate-900 dark:text-slate-100 focus:border-[#2eb82e] outline-none neo-input" />
+ <input type="number" value={ekDersData.kalan_ders_hakki} onChange={(e) => setEkDersData({ ...ekDersData, kalan_ders_hakki: e.target.value })} className="w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#2eb82e] outline-none neo-input" />
  </div>
  <div className="flex justify-end gap-2 border-t pt-3">
- <button type="button" onClick={() => setShowEkDersModal(false)} className="px-3 py-1.5 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg cursor-pointer">İptal</button>
- <button type="submit" className="px-4 py-1.5 hover:bg-[#269926] text-white text-xs font-bold rounded-lg cursor-pointer neo-button-primary">Ders Hakkını Kaydet</button>
+ <button type="button" onClick={() => setShowEkDersModal(false)} className="px-3 py-1.5 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-full cursor-pointer">İptal</button>
+ <button type="submit" className="px-4 py-1.5 text-white text-xs font-bold rounded-full cursor-pointer neo-button-primary">Ders Hakkını Kaydet</button>
  </div>
  </form>
  </div>

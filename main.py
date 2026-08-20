@@ -373,7 +373,10 @@ def get_ogrenciler(
     db: Session = Depends(get_db),
     current_user: models.Kullanici = Depends(get_current_user)
 ):
-    query = db.query(models.Ogrenci).options(joinedload(models.Ogrenci.odemeler))
+    query = db.query(models.Ogrenci).options(
+        joinedload(models.Ogrenci.odemeler),
+        joinedload(models.Ogrenci.siniflar).joinedload(models.OgrenciSinif.sinif)
+    )
     if current_user.akademi_adi:
         query = query.filter(models.Ogrenci.akademi_adi == current_user.akademi_adi)
     if durum:
@@ -852,6 +855,7 @@ def create_odeme(
                     tutar=cur_tutar,
                     tarih=cur_tarih,
                     odeme_yontemi=odeme.odeme_yontemi,
+                    odeme_turu=odeme.odeme_turu,
                     durum=cur_durum,
                     odeme_periyodu=odeme.odeme_periyodu,
                     taksit_sayisi=taksit_adedi,
@@ -869,6 +873,7 @@ def create_odeme(
                     tutar=cur_tutar,
                     tarih=cur_tarih,
                     odeme_yontemi=odeme.odeme_yontemi,
+                    odeme_turu=odeme.odeme_turu,
                     durum="Bekliyor",
                     odeme_periyodu=odeme.odeme_periyodu,
                     taksit_sayisi=taksit_adedi,
@@ -879,13 +884,14 @@ def create_odeme(
                 db.add(gelelcekk_odeme)
 
     # Aylık Ödeme Mantığı (Aylık & 1 Taksit): Bugün ödendi + 4 Hafta (28 Gün) Sonrasına Gelecek Alacak Kaydı
-    elif odeme.odeme_periyodu == "Aylık":
+    elif odeme.odeme_periyodu == "Aylık" and odeme.odeme_turu == "Kurs Ücreti":
         cur_aciklama = odeme.aciklama or "Aylık Ödeme (Tahsil Edildi)"
         ilk_odeme = models.Odeme(
             ogrenci_id=odeme.ogrenci_id,
             tutar=odeme.tutar,
             tarih=tarih_val,
             odeme_yontemi=odeme.odeme_yontemi,
+            odeme_turu=odeme.odeme_turu,
             durum=odeme.durum or "Ödendi",
             odeme_periyodu=odeme.odeme_periyodu,
             taksit_sayisi=1,
@@ -904,6 +910,7 @@ def create_odeme(
             tutar=odeme.tutar,
             tarih=gelecek_tarih,
             odeme_yontemi=odeme.odeme_yontemi,
+            odeme_turu=odeme.odeme_turu,
             durum="Bekliyor",
             odeme_periyodu=odeme.odeme_periyodu,
             taksit_sayisi=1,
@@ -913,14 +920,15 @@ def create_odeme(
         )
         db.add(gelecek_alacak)
 
-    # Senelik / Peşin Ödeme
+    # Senelik / Peşin Ödeme veya Diğer Ödemeler
     else:
-        cur_aciklama = odeme.aciklama or "Peşin Ödeme"
+        cur_aciklama = odeme.aciklama or "Peşin / Diğer Ödeme"
         ilk_odeme = models.Odeme(
             ogrenci_id=odeme.ogrenci_id,
             tutar=odeme.tutar,
             tarih=tarih_val,
             odeme_yontemi=odeme.odeme_yontemi,
+            odeme_turu=odeme.odeme_turu,
             durum=odeme.durum or "Ödendi",
             odeme_periyodu=odeme.odeme_periyodu,
             taksit_sayisi=1,

@@ -71,19 +71,19 @@ const HaftalikDersCizelgesi = ({
  onClick={() => setExpandedGun(isExpanded ? null : gun)}
  className={`group rounded-2xl p-2.5 min-h-[170px] flex flex-col space-y-2 cursor-pointer transition-all duration-500 ease-in-out min-w-0 ${
  isExpanded
- ? 'lg:flex-[3] neo-input ring-1 ring-sky-500/50 z-10'
+ ? 'lg:flex-[3] neo-input !rounded-2xl ring-1 ring-sky-500/50 z-10'
  : expandedGun !== null
  ? 'lg:flex-[0.65] opacity-75 hover:opacity-100 neo-card'
  : 'lg:flex-1 neo-card hover:ring-1 hover:ring-sky-500/30'
  }`}
  >
  <div className="flex items-center justify-between border-b pb-1.5">
- <span className={`text-xs font-bold uppercase tracking-wider ${isExpanded ? 'text-[#0284c7] dark:text-sky-400 font-extrabold text-sm' : 'text-slate-600 dark:text-slate-400'}`}>
+ <span className={`text-xs font-bold uppercase tracking-wider ${isExpanded ? 'text-[#0284c7]  font-extrabold text-sm' : 'text-slate-600 dark:text-slate-400'}`}>
  {gun}
  </span>
  <div className="flex items-center gap-1">
  {isExpanded ? (
- <span className="text-[9px] font-extrabold bg-[#0284c7] text-white px-1.5 py-0.5 rounded flex items-center gap-1">
+ <span className="text-[9px] font-extrabold bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white px-1.5 py-0.5 rounded flex items-center gap-1">
  <Minimize2 className="w-3 h-3" /> Geniş
  </span>
  ) : (

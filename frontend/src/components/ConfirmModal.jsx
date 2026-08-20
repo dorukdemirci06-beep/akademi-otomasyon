@@ -20,7 +20,7 @@ const ConfirmModal = ({
  case 'warning':
  return <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />;
  default:
- return <HelpCircle className="w-6 h-6 text-sky-600 dark:text-sky-400" />;
+ return <HelpCircle className="w-6 h-6 text-sky-600" />;
  }
  };
 
@@ -63,7 +63,7 @@ const ConfirmModal = ({
  {/* Header */}
  <div className={`p-4 border-b flex items-center justify-between ${getHeaderBg()}`}>
  <div className="flex items-center gap-3">
- <div className="p-2 rounded-xl border dark:border-white/10">
+ <div className="p-2 rounded-full border dark:border-white/10">
  {getIcon()}
  </div>
  <h3 className={`text-base font-extrabold ${getHeaderTitleColor()}`}>{title}</h3>
@@ -71,7 +71,7 @@ const ConfirmModal = ({
  <button
  type="button"
  onClick={onCancel}
- className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white p-1 rounded-lg transition cursor-pointer neo-button"
+ className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white p-1 rounded-full transition cursor-pointer neo-button"
  >
  <X className="w-5 h-5" />
  </button>
@@ -89,7 +89,7 @@ const ConfirmModal = ({
  <button
  type="button"
  onClick={onCancel}
- className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer neo-button"
+ className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-300 text-xs font-bold rounded-full transition cursor-pointer neo-button"
  >
  {cancelText}
  </button>

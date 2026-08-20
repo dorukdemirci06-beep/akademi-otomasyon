@@ -34,11 +34,11 @@ import {
 } from '../services/api';
 
 const DURUM_OPTIONS = [
- { value: 'Aranacak', label: 'Aranacak', color: 'bg-amber-500/15 text-amber-300 border-amber-500/30' },
- { value: 'Arandı', label: 'Arandı', color: 'bg-sky-500/15 text-sky-300 border-sky-500/30' },
- { value: 'Ulaşılamadı', label: 'Ulaşılamadı', color: 'bg-orange-500/15 text-orange-300 border-orange-500/30' },
- { value: 'Olumsuz', label: 'Olumsuz', color: 'bg-rose-500/15 text-rose-300 border-rose-500/30' },
- { value: 'Kesin Kayıt', label: 'Kesin Kayıt', color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+  { value: 'Aranacak', label: 'Aranacak', color: 'bg-gradient-to-r from-amber-400 to-amber-500 shadow-sm border-none' },
+  { value: 'Arandı', label: 'Arandı', color: 'bg-gradient-to-r from-sky-400 to-sky-500 shadow-sm border-none' },
+  { value: 'Ulaşılamadı', label: 'Ulaşılamadı', color: 'bg-gradient-to-r from-orange-400 to-orange-500 shadow-sm border-none' },
+  { value: 'Olumsuz', label: 'Olumsuz', color: 'bg-gradient-to-r from-rose-500 to-rose-600 shadow-sm border-none' },
+  { value: 'Kesin Kayıt', label: 'Kesin Kayıt', color: 'bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-sm border-none' },
 ];
 
 const OnKayit = () => {
@@ -440,7 +440,7 @@ const OnKayit = () => {
  )}
 
  {/* Header Banner */}
- <div className="neo-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl transition-colors">
+ <div className="neo-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl">
  <div>
  <div className="flex items-center gap-3">
  <div className="neo-card w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#2eb82e] to-[#0284c7] flex items-center justify-center text-white -emerald-900/20">
@@ -457,7 +457,7 @@ const OnKayit = () => {
  
  <button
  onClick={fetchKayitlar}
- className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-xl hover: dark:hover: text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold transition-all duration-200 active:scale-95 cursor-pointer neo-button"
+ className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-full hover: dark:hover: text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-xs font-semibold transition-all duration-200 active:scale-95 cursor-pointer neo-button"
  >
  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
  <span>Listeyi Yenile</span>
@@ -474,7 +474,7 @@ const OnKayit = () => {
  </div>
  </div>
 
- <div className="neo-card -amber-200 dark:-amber-500/30 rounded-2xl p-4 flex flex-col justify-between bg-amber-50/50 dark:bg-amber-500/5">
+ <div className="neo-card -amber-200 dark:-amber-500/30 rounded-2xl p-4 flex flex-col justify-between dark:bg-amber-500/5 bg-amber-500 text-white border-transparent shadow-sm">
  <span className="text-xs text-amber-600 dark:text-amber-400/90 font-medium">Aranacak</span>
  <div className="flex items-baseline justify-between mt-2">
  <span className="text-2xl font-black text-amber-600 dark:text-amber-300">{aranacakCount}</span>
@@ -482,11 +482,11 @@ const OnKayit = () => {
  </div>
  </div>
 
- <div className="neo-card -sky-200 dark:-sky-500/30 rounded-2xl p-4 flex flex-col justify-between bg-sky-50/50 dark:bg-sky-500/5">
- <span className="text-xs text-sky-600 dark:text-sky-400/90 font-medium">Arandı</span>
+ <div className="neo-card -sky-200 dark:-sky-500/30 rounded-2xl p-4 flex flex-col justify-between dark:bg-sky-500/5 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
+ <span className="text-xs text-sky-600 /90 font-medium">Arandı</span>
  <div className="flex items-baseline justify-between mt-2">
- <span className="text-2xl font-black text-sky-600 dark:text-sky-300">{arandiCount}</span>
- <Phone className="w-5 h-5 text-sky-500 dark:text-sky-400" />
+ <span className="text-2xl font-black text-sky-600">{arandiCount}</span>
+ <Phone className="w-5 h-5 text-sky-500" />
  </div>
  </div>
 
@@ -498,19 +498,19 @@ const OnKayit = () => {
  </div>
  </div>
 
- <div className="neo-card col-span-2 sm:col-span-1 -emerald-200 dark:-emerald-500/30 rounded-2xl p-4 flex flex-col justify-between bg-emerald-50/50 dark:bg-emerald-500/5">
- <span className="text-xs text-emerald-600 dark:text-emerald-400/90 font-medium">Kesin Kayıt</span>
+ <div className="neo-card col-span-2 sm:col-span-1 -emerald-200 dark:-emerald-500/30 rounded-2xl p-4 flex flex-col justify-between dark:bg-emerald-500/5 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
+ <span className="text-xs text-emerald-600 /90 font-medium">Kesin Kayıt</span>
  <div className="flex items-baseline justify-between mt-2">
- <span className="text-2xl font-black text-emerald-600 dark:text-emerald-300">{kesinKayitCount}</span>
- <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
+ <span className="text-2xl font-black text-emerald-600">{kesinKayitCount}</span>
+ <CheckCircle2 className="w-5 h-5 text-emerald-500" />
  </div>
  </div>
  </div>
 
  {/* A. ÖN KAYIT FORMU */}
- <div className="neo-card rounded-3xl p-6 sm:p-8 relative overflow-hidden text-slate-800 dark:text-slate-100">
+ <div className="neo-card rounded-3xl p-6 sm:p-8 relative text-slate-800 dark:text-slate-100">
  <div className="flex items-center gap-3 mb-6 pb-4 border-b">
- <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-[#2eb82e]">
+ <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-[#2eb82e]">
  <UserPlus className="w-4 h-4" />
  </div>
  <div>
@@ -535,7 +535,7 @@ const OnKayit = () => {
  onChange={handleInputChange}
  placeholder="Örn: Ahmet"
  required
- className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
+ className="w-full rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
  />
  </div>
  </div>
@@ -554,7 +554,7 @@ const OnKayit = () => {
  onChange={handleInputChange}
  placeholder="Örn: Yılmaz"
  required
- className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
+ className="w-full rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
  />
  </div>
  </div>
@@ -570,7 +570,7 @@ const OnKayit = () => {
  value={formData.telefon}
  onChange={handleInputChange}
  placeholder="Örn: 0555 123 4567"
- className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
+ className="w-full rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
  />
  </div>
  </div>
@@ -586,7 +586,7 @@ const OnKayit = () => {
  value={formData.veli_adi}
  onChange={handleInputChange}
  placeholder="Örn: Mehmet"
- className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
+ className="w-full rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
  />
  </div>
  </div>
@@ -602,7 +602,7 @@ const OnKayit = () => {
  value={formData.veli_soyadi}
  onChange={handleInputChange}
  placeholder="Örn: Yılmaz"
- className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
+ className="w-full rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
  />
  </div>
  </div>
@@ -618,7 +618,7 @@ const OnKayit = () => {
  value={formData.veli_meslek}
  onChange={handleInputChange}
  placeholder="Örn: Öğretmen / Mühendis"
- className="w-full rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
+ className="w-full rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
  />
  </div>
  </div>
@@ -630,7 +630,6 @@ const OnKayit = () => {
  </label>
  <div className="space-y-2">
  <div className="relative">
- <BookOpen className="w-4 h-4 absolute left-3.5 top-3 text-slate-400 z-10" />
  <SearchableSelect
  value={isCustomBrans ? 'DIGER_MANUEL' : formData.ilgilenilen_brans}
  onChange={handleBransSelectChange}
@@ -640,6 +639,7 @@ const OnKayit = () => {
  ]}
  placeholder="-- Mevcut Sınıflardan Seçiniz --"
  searchPlaceholder="Branş ara..."
+ icon={BookOpen}
  />
  </div>
 
@@ -652,7 +652,7 @@ const OnKayit = () => {
  onChange={handleCustomBransTextChange}
  placeholder="İlgilenilen özel branşı giriniz (Örn: Gitar, Resim...)"
  required
- className="w-full border-amber-500/60 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all neo-input"
+ className="w-full border-amber-500/60 rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all neo-input"
  />
  </div>
  )}
@@ -668,7 +668,7 @@ const OnKayit = () => {
  onChange={handleInputChange}
  placeholder="Örn: Hafta sonu müsait olabiliyorlar..."
  rows="2"
- className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all resize-none neo-input"
+ className="w-full rounded-full px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all resize-none neo-input"
  />
  </div>
 
@@ -678,7 +678,7 @@ const OnKayit = () => {
  <button
  type="submit"
  disabled={submitting}
- className="flex items-center gap-2 bg-gradient-to-r to-emerald-600 hover:from-emerald-500 hover:to-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm -emerald-900/40 hover:-emerald-900/60 transition-all duration-200 disabled:opacity-50 neo-button-primary"
+ className="flex items-center gap-2 bg-gradient-to-r to-emerald-600 hover:from-emerald-500 hover:to-emerald-600 text-white px-6 py-2.5 rounded-full font-bold text-sm -emerald-900/40 hover:-emerald-900/60 transition-all duration-200 disabled:opacity-50 neo-button-primary"
  >
  <UserPlus className="w-4 h-4" />
  <span>{submitting ? 'Kaydediliyor...' : 'Ön Kaydı Sisteme Ekle'}</span>
@@ -710,7 +710,7 @@ const OnKayit = () => {
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  placeholder="İsim, telefon veya branş ara..."
- className="w-full rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] neo-input"
+ className="w-full rounded-full pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] neo-input"
  />
  </div>
 
@@ -720,7 +720,7 @@ const OnKayit = () => {
  onChange={(val) => setSelectedDurumFilter(val)}
  options={[
    { value: 'Tümü', label: 'Tüm Durumlar' },
-   ...DURUM_OPTIONS.map(opt => ({ value: opt.value, label: opt.label }))
+   ...DURUM_OPTIONS.map(opt => ({ value: opt.value, label: opt.label, color: opt.color }))
  ]}
  placeholder="-- Durum Filtresi --"
  searchPlaceholder="Durum ara..."
@@ -781,7 +781,7 @@ const OnKayit = () => {
  const currentDurumOpt = DURUM_OPTIONS.find((d) => d.value === item.durum) || DURUM_OPTIONS[0];
 
  return (
- <tr key={item.id} className="hover: dark:hover: transition-colors">
+ <tr key={item.id} className="hover: dark:hover:">
  {/* Öğrenci */}
  <td className="py-3.5 px-4">
  <div className="flex items-center gap-3">
@@ -821,8 +821,8 @@ const OnKayit = () => {
  {/* Branş (Manuel Text) */}
  <td className="py-3.5 px-4">
  {item.ilgilenilen_brans ? (
- <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-semibold text-slate-200">
- <BookOpen className="w-3.5 h-3.5 text-[#0284c7]" />
+ <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-gradient-to-r from-[#0284c7] to-sky-500 text-white border-none text-xs text-center shadow-sm">
+ <BookOpen className="w-3.5 h-3.5" />
  {item.ilgilenilen_brans}
  </span>
  ) : (
@@ -854,7 +854,7 @@ const OnKayit = () => {
       <SearchableSelect
         value={item.durum || 'Aranacak'}
         onChange={(val) => handleDurumChange(item.id, val)}
-        options={DURUM_OPTIONS.map(opt => ({ value: opt.value, label: opt.label }))}
+        options={DURUM_OPTIONS.map(opt => ({ value: opt.value, label: opt.label, color: opt.color }))}
         placeholder="Durum Seçin"
         searchPlaceholder="Durum ara..."
       />
@@ -866,7 +866,7 @@ const OnKayit = () => {
  <div className="flex items-center justify-end gap-2">
  <button
  onClick={() => openConvertModal(item)}
- className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#2eb82e] to-emerald-600 hover:from-emerald-500 hover:to-emerald-600 text-white text-xs font-bold -emerald-900/30 hover:-emerald-900/50 transition-all duration-200 active:scale-95"
+ className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#2eb82e] to-emerald-600 hover:from-emerald-500 hover:to-emerald-600 text-white text-xs font-bold -emerald-900/30 hover:-emerald-900/50 transition-all duration-200 active:scale-95"
  title="Adayı Resmi Öğrenci Olarak Kaydet"
  >
  <UserCheck className="w-3.5 h-3.5" />
@@ -875,7 +875,7 @@ const OnKayit = () => {
 
  <button
  onClick={() => openEditModal(item)}
- className="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+ className="p-1.5 rounded-full text-slate-400 hover:text-blue-400 hover:bg-blue-500/10"
  title="Görüntüle"
  >
  <Eye className="w-4 h-4" />
@@ -883,7 +883,7 @@ const OnKayit = () => {
 
  <button
  onClick={() => handleDelete(item.id, `${item.ogrenci_adi} ${item.ogrenci_soyadi}`)}
- className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+ className="p-1.5 rounded-full text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
  title="Ön Kaydı Sil"
  >
  <Trash2 className="w-4 h-4" />
@@ -922,7 +922,7 @@ const OnKayit = () => {
                 <div className="flex items-center gap-2">
                    <span className="font-bold text-slate-700 dark:text-slate-200">{item.telefon || '-'}</span>
                    {item.telefon && (
-                     <a href={`https://wa.me/${item.telefon.replace(/\D/g, '').startsWith('90') ? item.telefon.replace(/\D/g, '') : (item.telefon.replace(/\D/g, '').startsWith('0') ? '9' + item.telefon.replace(/\D/g, '') : '90' + item.telefon.replace(/\D/g, ''))}`} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#25D366]/10 text-[#25D366] rounded-lg flex items-center justify-center">
+                     <a href={`https://wa.me/${item.telefon.replace(/\D/g, '').startsWith('90') ? item.telefon.replace(/\D/g, '') : (item.telefon.replace(/\D/g, '').startsWith('0') ? '9' + item.telefon.replace(/\D/g, '') : '90' + item.telefon.replace(/\D/g, ''))}`} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-[#25D366]/10 text-[#25D366] rounded-full flex items-center justify-center">
                        <MessageCircle className="w-3.5 h-3.5" />
                      </a>
                    )}
@@ -931,13 +931,13 @@ const OnKayit = () => {
              {item.ilgilenilen_brans && (
                <div className="flex justify-between items-center">
                   <span className="font-semibold">Branş:</span>
-                  <span className="px-2.5 py-0.5 border border-sky-200 dark:border-sky-800/80 bg-sky-50 dark:bg-sky-950/50 rounded-lg font-bold text-[#0284c7] dark:text-sky-400">{item.ilgilenilen_brans}</span>
+                  <span className="inline-flex px-3 py-1.5 rounded-xl font-bold bg-gradient-to-r from-[#0284c7] to-sky-500 text-white border-none shadow-sm text-xs text-center">{item.ilgilenilen_brans}</span>
                </div>
              )}
              {item.notlar && (
                <div className="flex flex-col gap-1 pt-1">
                   <span className="font-semibold">Notlar:</span>
-                  <p className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg italic text-slate-500 border border-slate-100 dark:border-slate-800/50">{item.notlar}</p>
+                  <p className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl italic text-slate-500 border border-slate-100 dark:border-slate-800/50">{item.notlar}</p>
                </div>
              )}
           </div>
@@ -947,20 +947,20 @@ const OnKayit = () => {
                <SearchableSelect
                   value={item.durum || 'Aranacak'}
                   onChange={(val) => handleDurumChange(item.id, val)}
-                  options={DURUM_OPTIONS.map(opt => ({ value: opt.value, label: opt.label }))}
+                  options={DURUM_OPTIONS.map(opt => ({ value: opt.value, label: opt.label, color: opt.color }))}
                   placeholder="Durum Seçin"
                   searchPlaceholder="Durum ara..."
                 />
              </div>
 
              <div className="grid grid-cols-[1fr_auto_auto] gap-2 pt-1">
-               <button onClick={() => openConvertModal(item)} className="py-2.5 rounded-xl bg-gradient-to-r from-[#2eb82e] to-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm -emerald-900/30">
+               <button onClick={() => openConvertModal(item)} className="py-2.5 rounded-full bg-gradient-to-r from-[#2eb82e] to-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm -emerald-900/30">
                  <UserCheck className="w-4 h-4" /> Öğrenci Yap
                </button>
-               <button onClick={() => openEditModal(item)} className="p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 flex items-center justify-center transition">
+               <button onClick={() => openEditModal(item)} className="p-2.5 -slate-200 dark:-slate-700 rounded-full text-slate-500 dark: flex items-center justify-center transition bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
                  <Eye className="w-4 h-4" />
                </button>
-               <button onClick={() => handleDelete(item.id, `${item.ogrenci_adi} ${item.ogrenci_soyadi}`)} className="p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 flex items-center justify-center transition">
+               <button onClick={() => handleDelete(item.id, `${item.ogrenci_adi} ${item.ogrenci_soyadi}`)} className="p-2.5 -slate-200 dark:-slate-700 rounded-full text-slate-500 dark: flex items-center justify-center transition bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm">
                  <Trash2 className="w-4 h-4" />
                </button>
              </div>
@@ -986,7 +986,7 @@ const OnKayit = () => {
  <div>
  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
  <span>Ön Kayıttan Öğrenci Oluştur</span>
- <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-medium">Auto-Fill</span>
+ <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">Auto-Fill</span>
  </h3>
  <p className="text-xs text-slate-400 mt-0.5">
  Ön kayıt bilgileri otomatik aktarıldı. Eksik alanları tamamlayıp kesin kaydı bitirebilirsiniz.
@@ -995,7 +995,7 @@ const OnKayit = () => {
  </div>
  <button
  onClick={() => setShowConvertModal(false)}
- className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover: transition"
+ className="text-slate-400 hover:text-slate-200 p-1 rounded-full hover: transition"
  >
  <X className="w-5 h-5" />
  </button>
@@ -1019,7 +1019,7 @@ const OnKayit = () => {
  required
  value={convertFormData.isim}
  onChange={handleConvertInputChange}
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#2eb82e] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#2eb82e] outline-none"
  />
  </div>
  <div>
@@ -1030,7 +1030,7 @@ const OnKayit = () => {
  required
  value={convertFormData.soyisim}
  onChange={handleConvertInputChange}
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#2eb82e] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#2eb82e] outline-none"
  />
  </div>
  <div>
@@ -1042,7 +1042,7 @@ const OnKayit = () => {
  onChange={handleConvertInputChange}
  maxLength="11"
  placeholder="11122233344"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#2eb82e] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#2eb82e] outline-none"
  />
  </div>
  <div>
@@ -1064,7 +1064,7 @@ const OnKayit = () => {
  value={convertFormData.telefon}
  onChange={handleConvertInputChange}
  placeholder="05551112233"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#2eb82e] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#2eb82e] outline-none"
  />
  </div>
  <div>
@@ -1075,7 +1075,7 @@ const OnKayit = () => {
  value={convertFormData.eposta}
  onChange={handleConvertInputChange}
  placeholder="ogrenci@gmail.com"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#2eb82e] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#2eb82e] outline-none"
  />
  </div>
  <div className="sm:col-span-2">
@@ -1086,7 +1086,7 @@ const OnKayit = () => {
  value={convertFormData.adres}
  onChange={handleConvertInputChange}
  placeholder="Ev adresi..."
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#2eb82e] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#2eb82e] outline-none"
  ></textarea>
  </div>
  </div>
@@ -1101,14 +1101,14 @@ const OnKayit = () => {
  </div>
 
  {/* Veli Türü Seçim Butonları (Annesi mi, Babası mı?) */}
- <div className="flex items-center gap-1 p-1 rounded-xl border">
+ <div className="flex items-center gap-1 p-1 rounded-full border">
  <span className="text-[11px] font-semibold text-slate-400 px-2">Kayıtlı Veli:</span>
  <button
  type="button"
  onClick={() => handleVeliTuruChange('anne')}
  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
  veliTuru === 'anne'
- ? 'bg-[#0284c7] text-white -sky-950/40'
+ ? 'bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white -sky-950/40'
  : 'text-slate-400 hover:text-slate-200'
  }`}
  >
@@ -1119,7 +1119,7 @@ const OnKayit = () => {
  onClick={() => handleVeliTuruChange('baba')}
  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
  veliTuru === 'baba'
- ? 'bg-[#0284c7] text-white -sky-950/40'
+ ? 'bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white -sky-950/40'
  : 'text-slate-400 hover:text-slate-200'
  }`}
  >
@@ -1133,7 +1133,7 @@ const OnKayit = () => {
  <div className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
  <span>👩 Anne Bilgileri</span>
  {veliTuru === 'anne' && (
- <span className="text-[10px] bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-md font-semibold">
+ <span className="text-[10px] bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full font-semibold">
  Ön Kayıt Velisi Anne Olarak İşlendi
  </span>
  )}
@@ -1147,7 +1147,7 @@ const OnKayit = () => {
  value={convertFormData.anne_isim}
  onChange={handleConvertInputChange}
  placeholder="Ayşe Yılmaz"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  <div>
@@ -1158,7 +1158,7 @@ const OnKayit = () => {
  value={convertFormData.anne_meslek}
  onChange={handleConvertInputChange}
  placeholder="Örn: Öğretmen"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  <div>
@@ -1169,7 +1169,7 @@ const OnKayit = () => {
  value={convertFormData.anne_telefon}
  onChange={handleConvertInputChange}
  placeholder="05552223344"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  <div>
@@ -1181,7 +1181,7 @@ const OnKayit = () => {
  onChange={handleConvertInputChange}
  maxLength="11"
  placeholder="11122233355"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  <div className="sm:col-span-2">
@@ -1192,7 +1192,7 @@ const OnKayit = () => {
  value={convertFormData.anne_eposta}
  onChange={handleConvertInputChange}
  placeholder="anne@gmail.com"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  </div>
@@ -1203,7 +1203,7 @@ const OnKayit = () => {
  <div className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
  <span>👨 Baba Bilgileri</span>
  {veliTuru === 'baba' && (
- <span className="text-[10px] bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-md font-semibold">
+ <span className="text-[10px] bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full font-semibold">
  Ön Kayıt Velisi Baba Olarak İşlendi
  </span>
  )}
@@ -1217,7 +1217,7 @@ const OnKayit = () => {
  value={convertFormData.baba_isim}
  onChange={handleConvertInputChange}
  placeholder="Mehmet Yılmaz"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  <div>
@@ -1228,7 +1228,7 @@ const OnKayit = () => {
  value={convertFormData.baba_meslek}
  onChange={handleConvertInputChange}
  placeholder="Örn: Mühendis"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  <div>
@@ -1239,7 +1239,7 @@ const OnKayit = () => {
  value={convertFormData.baba_telefon}
  onChange={handleConvertInputChange}
  placeholder="05553334455"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  <div>
@@ -1251,7 +1251,7 @@ const OnKayit = () => {
  onChange={handleConvertInputChange}
  maxLength="11"
  placeholder="11122233366"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  <div className="sm:col-span-2">
@@ -1262,7 +1262,7 @@ const OnKayit = () => {
  value={convertFormData.baba_eposta}
  onChange={handleConvertInputChange}
  placeholder="baba@gmail.com"
- className="w-full px-3 py-2 neo-input w-full rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 focus:border-[#0284c7] outline-none"
  />
  </div>
  </div>
@@ -1275,14 +1275,14 @@ const OnKayit = () => {
  <button
  type="button"
  onClick={() => setShowConvertModal(false)}
- className="px-4 py-2.5 rounded-xl hover: text-slate-200 font-semibold text-xs transition"
+ className="px-4 py-2.5 rounded-full hover: text-slate-200 font-semibold text-xs transition"
  >
  İptal
  </button>
  <button
  type="submit"
  disabled={submitting}
- className="flex items-center gap-2 bg-gradient-to-r to-emerald-600 hover:from-emerald-500 hover:to-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs -emerald-900/40 hover:-emerald-900/60 transition disabled:opacity-50 neo-button-primary"
+ className="flex items-center gap-2 bg-gradient-to-r to-emerald-600 hover:from-emerald-500 hover:to-emerald-600 text-white px-6 py-2.5 rounded-full font-bold text-xs -emerald-900/40 hover:-emerald-900/60 transition disabled:opacity-50 neo-button-primary"
  >
  <UserCheck className="w-4 h-4" />
  <span>{submitting ? 'Öğrenci Kaydediliyor...' : 'Kesin Kaydı Tamamla'}</span>
@@ -1318,7 +1318,7 @@ const OnKayit = () => {
  </div>
  <button
  onClick={() => setShowEditModal(false)}
- className="w-8 h-8 rounded-full text-slate-500 dark:text-slate-400 hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400 flex items-center justify-center transition-colors"
+ className="w-8 h-8 rounded-full text-slate-500 dark:text-slate-400 dark:hover:bg-rose-500/20 dark: flex items-center justify-center bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  >
  <X className="w-4 h-4" />
  </button>
@@ -1328,39 +1328,39 @@ const OnKayit = () => {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Öğrenci Adı</label>
- <input type="text" name="ogrenci_adi" value={editFormData.ogrenci_adi} onChange={handleEditInputChange} required className="w-full rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ <input type="text" name="ogrenci_adi" value={editFormData.ogrenci_adi} onChange={handleEditInputChange} required className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Öğrenci Soyadı</label>
- <input type="text" name="ogrenci_soyadi" value={editFormData.ogrenci_soyadi} onChange={handleEditInputChange} required className="w-full rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ <input type="text" name="ogrenci_soyadi" value={editFormData.ogrenci_soyadi} onChange={handleEditInputChange} required className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Veli Adı</label>
- <input type="text" name="veli_adi" value={editFormData.veli_adi || ''} onChange={handleEditInputChange} className="w-full rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ <input type="text" name="veli_adi" value={editFormData.veli_adi || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Veli Soyadı</label>
- <input type="text" name="veli_soyadi" value={editFormData.veli_soyadi || ''} onChange={handleEditInputChange} className="w-full rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ <input type="text" name="veli_soyadi" value={editFormData.veli_soyadi || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İletişim Telefonu</label>
- <input type="text" name="telefon" value={editFormData.telefon || ''} onChange={handleEditInputChange} className="w-full rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ <input type="text" name="telefon" value={editFormData.telefon || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İlgilenilen Branş</label>
- <input type="text" name="ilgilenilen_brans" value={editFormData.ilgilenilen_brans || ''} onChange={handleEditInputChange} className="w-full rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ <input type="text" name="ilgilenilen_brans" value={editFormData.ilgilenilen_brans || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div className="md:col-span-2">
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Kayıt Notu</label>
- <textarea name="notlar" value={editFormData.notlar || ''} onChange={handleEditInputChange} rows="3" className="w-full rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ <textarea name="notlar" value={editFormData.notlar || ''} onChange={handleEditInputChange} rows="3" className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  </div>
 
  <div className="flex justify-end pt-4 border-t gap-3">
- <button type="button" onClick={() => setShowEditModal(false)} className="px-5 py-2.5 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-300 hover: dark:hover: transition-colors">
+ <button type="button" onClick={() => setShowEditModal(false)} className="px-5 py-2.5 rounded-full font-bold text-sm text-slate-700 dark:text-slate-300 hover: dark:hover:">
  İptal
  </button>
- <button type="submit" disabled={submitting} className="px-5 py-2.5 rounded-xl font-bold text-sm text-white hover:bg-[#259925] disabled:opacity-50 transition-colors neo-button-primary">
+ <button type="submit" disabled={submitting} className="px-5 py-2.5 rounded-full font-bold text-sm text-white hover:bg-[#259925] disabled:opacity-50 neo-button-primary">
  {submitting ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
  </button>
  </div>

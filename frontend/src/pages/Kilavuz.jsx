@@ -20,7 +20,7 @@ const Kilavuz = () => {
         {/* Dashboard */}
         <div className="neo-card p-5 rounded-2xl space-y-3">
           <div className="flex items-center gap-2 text-[#2eb82e]">
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg">
+            <div className="p-2 rounded-full bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
               <Info className="w-5 h-5" />
             </div>
             <h2 className="font-bold text-slate-800 dark:text-slate-100">Ana Panel (Dashboard)</h2>
@@ -33,7 +33,7 @@ const Kilavuz = () => {
         {/* Kayıt */}
         <div className="neo-card p-5 rounded-2xl space-y-3">
           <div className="flex items-center gap-2 text-sky-500">
-            <div className="p-2 bg-sky-50 dark:bg-sky-950/30 rounded-lg">
+            <div className="p-2 rounded-full bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
               <UserPlus className="w-5 h-5" />
             </div>
             <h2 className="font-bold text-slate-800 dark:text-slate-100">Öğrenci Kayıt</h2>
@@ -46,7 +46,7 @@ const Kilavuz = () => {
         {/* Sınıflar */}
         <div className="neo-card p-5 rounded-2xl space-y-3">
           <div className="flex items-center gap-2 text-indigo-500">
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+            <div className="p-2 rounded-full bg-indigo-500 text-white border-transparent shadow-sm">
               <Users className="w-5 h-5" />
             </div>
             <h2 className="font-bold text-slate-800 dark:text-slate-100">Sınıf Yönetimi</h2>
@@ -59,7 +59,7 @@ const Kilavuz = () => {
         {/* Yoklama */}
         <div className="neo-card p-5 rounded-2xl space-y-3">
           <div className="flex items-center gap-2 text-rose-500">
-            <div className="p-2 bg-rose-50 dark:bg-rose-950/30 rounded-lg">
+            <div className="p-2 rounded-full bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm">
               <ClipboardCheck className="w-5 h-5" />
             </div>
             <h2 className="font-bold text-slate-800 dark:text-slate-100">Yoklama Alma</h2>
@@ -72,7 +72,7 @@ const Kilavuz = () => {
         {/* Finans */}
         <div className="neo-card p-5 rounded-2xl space-y-3">
           <div className="flex items-center gap-2 text-amber-500">
-            <div className="p-2 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+            <div className="p-2 rounded-full bg-amber-500 text-white border-transparent shadow-sm">
               <Wallet className="w-5 h-5" />
             </div>
             <h2 className="font-bold text-slate-800 dark:text-slate-100">Ödemeler ve Finans</h2>

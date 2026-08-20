@@ -544,7 +544,7 @@ const Yoklama = () => {
  return (
  <div className="space-y-8">
  {/* Top Banner */}
- <div className="neo-card flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 rounded-3xl transition-colors">
+ <div className="neo-card flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6 rounded-3xl">
  <div>
  <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3 tracking-tight">
  <ClipboardCheck className="w-7 h-7 text-[#2eb82e]" />
@@ -557,7 +557,7 @@ const Yoklama = () => {
 
  <button
  onClick={() => setShowAddModal(true)}
- className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2eb82e] to-[#0284c7] hover:from-emerald-600 hover:to-sky-600 text-white font-bold text-sm rounded-xl -emerald-950/20 transition transform hover:-translate-y-0.5 cursor-pointer w-full sm:w-auto"
+ className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#2eb82e] to-[#0284c7] hover:from-emerald-600 hover:to-sky-600 text-white font-bold text-sm rounded-full -emerald-950/20 transition transform hover:-translate-y-0.5 cursor-pointer w-full sm:w-auto"
  >
  <Plus className="w-4 h-4" />
  <span>Programa Ders Ekle</span>
@@ -620,7 +620,7 @@ const Yoklama = () => {
  type="button"
  onClick={handleSaveAttendance}
  disabled={savingAttendance || !selectedSinifId}
- className="w-full flex items-center justify-center gap-2 px-4 h-[40px] hover:bg-[#269926] text-white font-black text-xs uppercase tracking-wider rounded-xl -emerald-900/30 transition disabled:opacity-50 cursor-pointer whitespace-nowrap neo-button-primary"
+ className="w-full flex items-center justify-center gap-2 px-4 h-[40px] text-white font-black text-xs uppercase tracking-wider rounded-full -emerald-900/30 transition disabled:opacity-50 cursor-pointer whitespace-nowrap neo-button-primary"
  >
  <Save className="w-4 h-4" />
  <span>{savingAttendance ? 'Kaydediliyor...' : 'Yoklamayı Kaydet'}</span>
@@ -633,7 +633,7 @@ const Yoklama = () => {
  type="button"
  onClick={handleOpenTelafiModal}
  disabled={savingAttendance || !selectedSinifId}
- className="w-full flex items-center justify-center gap-2 px-4 h-[40px] bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-wider rounded-xl -rose-950/30 transition disabled:opacity-50 cursor-pointer whitespace-nowrap neo-button"
+ className="w-full flex items-center justify-center gap-2 px-4 h-[40px] bg-rose-600 hover:bg-rose-700 transition-colors text-white font-black text-xs uppercase tracking-wider rounded-full -rose-950/30 transition disabled:opacity-50 cursor-pointer whitespace-nowrap neo-button"
  title="Seçili Sınıf İçin Telafi Dersi Oluştur"
  >
  <CalendarPlus className="w-4 h-4" />
@@ -645,12 +645,12 @@ const Yoklama = () => {
 
  {/* Bildirim Mesajı */}
  {successMessage && (
- <div className="bg-emerald-100 dark:bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-500/80 text-emerald-900 dark:text-emerald-200 px-4 py-3 rounded-xl flex items-center justify-between text-sm font-bold animate-fade-in">
+ <div className="bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-md px-4 py-3 rounded-full flex items-center justify-between text-sm font-bold animate-fade-in">
  <div className="flex items-center gap-2">
  <Sparkles className="w-5 h-5 text-[#2eb82e]" />
  <span>{successMessage}</span>
  </div>
- <button onClick={() => setSuccessMessage('')} className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-white">
+ <button onClick={() => setSuccessMessage('')} className="text-emerald-700 hover:text-emerald-900 dark:hover:text-white">
  <X className="w-4 h-4" />
  </button>
  </div>
@@ -702,7 +702,7 @@ const Yoklama = () => {
  <td className="py-4 px-4 font-bold text-slate-400 dark:text-slate-500">#{o.ogrenci_id}</td>
  <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-100">{o.isim} {o.soyisim}</td>
  <td className="py-4 px-4">
- <span className={`text-xs px-3 py-1 rounded-lg font-bold border ${Number(o.kalan_ders_hakki) < 0 ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-400 border-rose-300 dark:border-rose-800/80' : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2eb82e] border-emerald-300 dark:border-emerald-800/80'}`}>
+ <span className={`text-xs px-3 py-1 rounded-full font-bold border-transparent ${Number(o.kalan_ders_hakki) < 0 ? 'bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm' : 'bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm'}`}>
  {o.kalan_ders_hakki} Ders
  </span>
  </td>
@@ -715,9 +715,9 @@ const Yoklama = () => {
  {/* Geldi Butonu */}
  <button
  onClick={() => markAttendance(o.ogrenci_id, 'Geldi')}
- className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition cursor-pointer ${
+ className={`px-4 py-2 rounded-full font-bold text-xs flex items-center gap-1.5 transition cursor-pointer ${
  status === 'Geldi'
- ? 'bg-[#2eb82e] text-white -emerald-900/30 scale-105'
+ ? 'bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white -emerald-900/30 scale-105'
  : ' text-slate-600 dark:text-slate-400 border hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-[#2eb82e]'
  }`}
  >
@@ -728,9 +728,9 @@ const Yoklama = () => {
  {/* Gelmedi Butonu */}
  <button
  onClick={() => markAttendance(o.ogrenci_id, 'Gelmedi')}
- className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5 transition cursor-pointer ${
+ className={`px-4 py-2 rounded-full font-bold text-xs flex items-center gap-1.5 transition cursor-pointer ${
  status === 'Gelmedi'
- ? 'bg-[#0284c7] text-white -sky-900/30 scale-105'
+ ? 'bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white -sky-900/30 scale-105'
  : ' text-slate-600 dark:text-slate-400 border hover:bg-sky-50 dark:hover:bg-sky-950/60 hover:text-[#0284c7]'
  }`}
  >
@@ -743,17 +743,17 @@ const Yoklama = () => {
 
  {/* Mazeret / Gelmeme Nedeni Açıklama Alanı (Gelmedi Seçildiğinde Açılır) */}
  {isGelmedi && (
- <tr className="bg-sky-50/70 dark:bg-sky-950/20 border-b border-sky-200 dark:border-sky-800/40">
+ <tr className="-b bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  <td colSpan="5" className="py-2.5 px-6">
  <div className="flex items-center gap-3">
  <FileText className="w-4 h-4 text-[#0284c7] shrink-0" />
- <span className="text-xs font-bold text-sky-800 dark:text-sky-300 shrink-0">Mazeret / Gelmeme Nedeni Açıklaması:</span>
+ <span className="text-xs font-bold shrink-0">Mazeret / Gelmeme Nedeni Açıklaması:</span>
  <input
  type="text"
  value={note}
  onChange={(e) => handleNoteChange(o.ogrenci_id, e.target.value)}
  placeholder="Örn: Sağlık Raporlu, İzinli, Şehir Dışında vb. (Opsiyonel)"
- className="w-full px-3 py-1.5 border-sky-300 dark:border-sky-700/60 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#0284c7] neo-input"
+ className="w-full px-3 py-1.5 border-sky-300 dark:border-sky-700/60 rounded-full text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#0284c7] neo-input"
  />
  </div>
  </td>
@@ -776,7 +776,7 @@ const Yoklama = () => {
  <History className="w-5 h-5 text-[#2eb82e]" />
  <span>Kaydedilen Yoklama Geçmişi</span>
  {yoklamaOturumlari.length > 0 && (
- <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-[#2eb82e] border border-emerald-300 dark:border-emerald-700/60 text-xs px-2.5 py-0.5 rounded-full font-bold">
+ <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  {filteredOturumlar.length} / {yoklamaOturumlari.length} Oturum
  </span>
  )}
@@ -794,7 +794,7 @@ const Yoklama = () => {
  placeholder="Tarih, öğrenci veya sınıf..."
  value={gecmisSearchTerm}
  onChange={(e) => setGecmisSearchTerm(e.target.value)}
- className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 neo-input"
+ className="w-full pl-8 pr-3 py-1.5 rounded-full text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 neo-input"
  />
  <Filter className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
  </div>
@@ -812,7 +812,7 @@ const Yoklama = () => {
  <button
  type="button"
  onClick={toggleExpandAll}
- className="px-3 py-1.5 hover: dark:hover: text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer neo-button"
+ className="px-3 py-1.5 hover: dark:hover: text-slate-700 dark:text-slate-300 text-xs font-bold rounded-full transition cursor-pointer neo-button"
  >
  {expandAll ? 'Tümünü Daralt' : 'Tümünü Genişlet'}
  </button>
@@ -821,7 +821,7 @@ const Yoklama = () => {
  <button
  type="button"
  onClick={loadYoklamaGecmisi}
- className="p-2 hover: dark:hover: text-slate-700 dark:text-slate-300 rounded-xl transition cursor-pointer neo-button"
+ className="p-2 hover: dark:hover: text-slate-700 dark:text-slate-300 rounded-full transition cursor-pointer neo-button"
  title="Geçmişi Yenile"
  >
  <RefreshCw className={`w-4 h-4 ${loadingGecmis ? 'animate-spin text-indigo-400' : ''}`} />
@@ -874,7 +874,7 @@ const Yoklama = () => {
  return (
  <div
  key={oturum.key}
- className={`neo-card transition overflow-hidden mb-4 ${
+ className={`neo-card transition mb-4 ${
  isTelafi 
  ? '!border-l-4 !border-l-rose-500' 
  : ''
@@ -892,7 +892,7 @@ const Yoklama = () => {
     const renkObj = RENK_OPTIONS.find(r => r.value === sinifRenk) || RENK_OPTIONS.find(r => r.value === 'indigo');
     
     return (
-      <div className={`${renkObj.dotClass} text-white px-3 py-1 rounded-xl text-xs font-black tracking-tight flex items-center gap-1.5 shrink-0 shadow-md border border-white/20 dark:border-black/20`}>
+      <div className={`${renkObj.dotClass} text-white px-3 py-1 rounded-full text-xs font-black tracking-tight flex items-center gap-1.5 shrink-0 shadow-md border border-white/20 dark:border-black/20`}>
         <BookOpen className="w-3.5 h-3.5 text-white/90" />
         <span>{oturum.sinif_adi}</span>
       </div>
@@ -915,7 +915,7 @@ const Yoklama = () => {
  }}
  prefix="TELAFİ DERSİ: "
  icon={CalendarPlus}
- buttonClassName="bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700/90 hover:bg-rose-200 dark:hover:bg-rose-900/90 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-between gap-2 transition cursor-pointer min-w-[220px]"
+ buttonClassName="bg-rose-600 hover:bg-rose-700 transition-colors text-white border-none shadow-md px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center justify-between gap-2 transition cursor-pointer min-w-[220px]"
  align="left"
  />
  </div>
@@ -925,19 +925,19 @@ const Yoklama = () => {
  <div className="flex items-center gap-3">
  {/* Katılım Özeti Pill'leri */}
  <div className="flex items-center gap-2 text-[11px] font-bold">
- <span className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-[#2eb82e] border border-emerald-300 dark:border-emerald-800/60 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+ <span className="px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  <CheckCircle2 className="w-3 h-3" />
  <span>{oturum.geldiCount} Geldi</span>
  </span>
 
  {oturum.gelmediCount > 0 && (
- <span className="bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-[#0284c7] border border-sky-300 dark:border-sky-800/60 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+ <span className="px-2.5 py-0.5 rounded-full flex items-center gap-1 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  <XCircle className="w-3 h-3" />
  <span>{oturum.gelmediCount} Gelmedi</span>
  </span>
  )}
 
- <span className="text-slate-600 dark:text-slate-400 px-2.5 py-0.5 rounded-full border">
+ <span className="bg-slate-600 text-white border-transparent px-2.5 py-0.5 rounded-full shadow-sm">
  {oturum.totalCount} Öğrenci
  </span>
  </div>
@@ -949,7 +949,7 @@ const Yoklama = () => {
  e.stopPropagation();
  handleDeleteOturum(oturum.sinif_id, oturum.tarihStr, oturum.sinif_adi);
  }}
- className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-red-400 hover:bg-rose-50 dark:hover:bg-red-950/40 rounded-lg transition cursor-pointer"
+ className="p-1.5 text-slate-400 dark:hover:text-red-400 dark:hover:bg-red-950/40 rounded-full transition cursor-pointer bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  title="Bu Yoklama Oturumunu Sil"
  >
  <Trash2 className="w-4 h-4" />
@@ -987,9 +987,9 @@ const Yoklama = () => {
  <button
  type="button"
  onClick={() => handleUpdateHistoryStudentStatus(oturum, item, 'Geldi')}
- className={`px-2.5 py-1 rounded-lg text-[11px] font-black border transition cursor-pointer flex items-center gap-1 ${
+ className={`px-2.5 py-1 rounded-full text-[11px] font-black border transition cursor-pointer flex items-center gap-1 ${
  item.durum === 'Geldi'
- ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-[#2eb82e] border-emerald-300 dark:border-emerald-700 '
+ ? 'bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm '
  : ' text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
  }`}
  title="Geldi Olarak İşle"
@@ -1001,9 +1001,9 @@ const Yoklama = () => {
  <button
  type="button"
  onClick={() => handleUpdateHistoryStudentStatus(oturum, item, 'Gelmedi')}
- className={`px-2.5 py-1 rounded-lg text-[11px] font-black border transition cursor-pointer flex items-center gap-1 ${
+ className={`px-2.5 py-1 rounded-full text-[11px] font-black border transition cursor-pointer flex items-center gap-1 ${
  item.durum === 'Gelmedi'
- ? 'bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-400 border-rose-300 dark:border-rose-700 '
+ ? 'bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm '
  : ' text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
  }`}
  title="Gelmedi Olarak İşle"
@@ -1015,9 +1015,9 @@ const Yoklama = () => {
  <button
  type="button"
  onClick={() => handleUpdateHistoryStudentStatus(oturum, item, 'Mazeretli')}
- className={`px-2.5 py-1 rounded-lg text-[11px] font-black border transition cursor-pointer flex items-center gap-1 ${
+ className={`px-2.5 py-1 rounded-full text-[11px] font-black border transition cursor-pointer flex items-center gap-1 ${
  item.durum === 'Mazeretli'
- ? 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-400 border-sky-300 dark:border-sky-700 '
+ ? 'bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm '
  : ' text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
  }`}
  title="Mazeretli Olarak İşle"
@@ -1030,10 +1030,10 @@ const Yoklama = () => {
 
  <td className="py-2.5 px-3 text-slate-600 dark:text-slate-400 font-medium">
  {item.aciklama ? (
- <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${
+ <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
  item.aciklama.includes('TELAFİ') 
- ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800/80' 
- : 'bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-800/80'
+ ? 'bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm' 
+ : 'bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm'
  }`}>
  {item.aciklama}
  </span>
@@ -1066,7 +1066,7 @@ const Yoklama = () => {
  </h3>
  <button
  onClick={() => setShowAddModal(false)}
- className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition cursor-pointer"
+ className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-full transition cursor-pointer"
  >
  <X className="w-5 h-5" />
  </button>
@@ -1119,7 +1119,7 @@ const Yoklama = () => {
  placeholder="Örn: Piyano Temel Eğitimi"
  value={newDersForm.ders_adi}
  onChange={(e) => setNewDersForm(prev => ({ ...prev, ders_adi: e.target.value }))}
- className="w-full px-3.5 py-2 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+ className="w-full px-3.5 py-2 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
  />
  </div>
 
@@ -1171,13 +1171,13 @@ const Yoklama = () => {
  <button
  type="button"
  onClick={() => setShowAddModal(false)}
- className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition cursor-pointer"
+ className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-full transition cursor-pointer"
  >
  İptal
  </button>
  <button
  type="submit"
- className="px-5 py-2 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-xl cursor-pointer neo-button"
+ className="px-5 py-2 bg-[#0284c7] hover:bg-[#026aa3] transition-colors hover:bg-[#0369a1] text-white text-xs font-bold rounded-full cursor-pointer neo-button"
  >
  Dersi Kaydet
  </button>
@@ -1199,7 +1199,7 @@ const Yoklama = () => {
  <button
  type="button"
  onClick={() => setShowTelafiModal(false)}
- className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg transition cursor-pointer"
+ className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-full transition cursor-pointer"
  >
  <X className="w-5 h-5" />
  </button>
@@ -1242,7 +1242,7 @@ const Yoklama = () => {
  placeholder="Örn: 1 Ağustos İptal Dersinin Telafisi"
  value={telafiForm.aciklama}
  onChange={(e) => setTelafiForm({ ...telafiForm, aciklama: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-rose-500"
+ className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-rose-500"
  />
  </div>
 
@@ -1250,14 +1250,14 @@ const Yoklama = () => {
  <button
  type="button"
  onClick={() => setShowTelafiModal(false)}
- className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition cursor-pointer"
+ className="px-4 py-2 hover: dark:hover: text-slate-700 dark:text-slate-200 text-xs font-bold rounded-full transition cursor-pointer"
  >
  İptal
  </button>
  <button
  type="submit"
  disabled={savingAttendance}
- className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black rounded-xl -rose-950/40 transition cursor-pointer disabled:opacity-50 neo-button"
+ className="px-5 py-2 bg-rose-600 hover:bg-rose-700 transition-colors text-white text-xs font-black rounded-full -rose-950/40 transition cursor-pointer disabled:opacity-50 neo-button"
  >
  {savingAttendance ? 'Oluşturuluyor...' : 'Telafi Dersini Oluştur & Kaydet'}
  </button>

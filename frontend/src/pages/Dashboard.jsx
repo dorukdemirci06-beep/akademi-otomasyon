@@ -309,7 +309,7 @@ const Dashboard = () => {
  return (
  <div className="space-y-6">
  {/* Header Banner */}
- <div className="neo-card p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
+ <div className="neo-card p-6 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
  <div>
  <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Hoş Geldiniz 👋</h1>
  <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Kurum öğrenci, yoklama ve finans süreçlerinizi buradan yönetin.</p>
@@ -317,14 +317,14 @@ const Dashboard = () => {
   <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 md:mt-0">
   <Link
   to="/kayit"
-  className="px-4 py-2.5 bg-[#2eb82e] hover:bg-[#269926] text-white font-bold text-sm rounded-xl transition -emerald-900/20 flex items-center justify-center gap-2 w-full sm:w-auto"
+  className="px-4 py-2.5 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white font-bold text-sm rounded-full transition -emerald-900/20 flex items-center justify-center gap-2 w-full sm:w-auto"
   >
   <span>Yeni Öğrenci Ekle</span>
   <ArrowUpRight className="w-4 h-4" />
   </Link>
   <Link
   to="/finans"
-  className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm rounded-xl transition -sky-900/20 flex items-center justify-center gap-2 w-full sm:w-auto"
+  className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 transition-colors text-white font-bold text-sm rounded-full transition -sky-900/20 flex items-center justify-center gap-2 w-full sm:w-auto"
   >
   <span>Ödeme Girişi</span>
   <Wallet className="w-4 h-4" />
@@ -338,14 +338,14 @@ const Dashboard = () => {
  {/* Total Ogrenci Card */}
  <Link 
  to="/kayit" 
- className="neo-card p-6 rounded-2xl hover:-[#2eb82e] hover:scale-[1.01] transition block group"
+ className="neo-card p-6 rounded-full hover:-[#2eb82e] hover:scale-[1.01] transition block group"
  >
  <div className="flex justify-between items-center">
  <div>
  <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider group-hover:text-[#2eb82e] transition">TOPLAM ÖĞRENCİ</p>
  <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-2">{loading ? '...' : ogrenciCount}</h3>
  </div>
- <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 text-[#2eb82e] flex items-center justify-center shrink-0">
+ <div className="w-12 h-12 rounded-full -transparent text-[#2eb82e] flex items-center justify-center shrink-0 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  <Users className="w-6 h-6" />
  </div>
  </div>
@@ -357,7 +357,7 @@ const Dashboard = () => {
 
  {/* Aktif Sinif & Brans Card - CLICKABLE */}
  <Link to="/siniflar"
- className="neo-card p-6 rounded-2xl hover:-sky-500 hover:scale-[1.01] transition cursor-pointer group"
+ className="neo-card p-6 rounded-full hover:-sky-500 hover:scale-[1.01] transition cursor-pointer group"
  title="Tıklayarak sınıfları görüntüleyin ve yönetin"
  >
  <div className="flex justify-between items-center">
@@ -365,7 +365,7 @@ const Dashboard = () => {
  <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider group-hover:text-sky-500 transition">AKTİF SINIF & BRANŞ</p>
  <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-2">{loading ? '...' : sinifCount}</h3>
  </div>
- <div className="w-12 h-12 rounded-xl bg-sky-50 dark:bg-sky-950/80 border border-sky-200 dark:border-sky-800/60 text-sky-500 flex items-center justify-center shrink-0">
+ <div className="w-12 h-12 rounded-full -transparent flex items-center justify-center shrink-0 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  <BookOpen className="w-6 h-6" />
  </div>
  </div>
@@ -378,18 +378,18 @@ const Dashboard = () => {
  {/* Ön Kayıt Adaylar Card */}
  <Link 
  to="/on-kayit" 
- className="neo-card p-6 rounded-2xl hover:-emerald-500 hover:scale-[1.01] transition block group"
+ className="neo-card p-6 rounded-full hover:-emerald-500 hover:scale-[1.01] transition block group"
  >
  <div className="flex justify-between items-center">
  <div>
  <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider group-hover:text-emerald-500 transition">ÖN KAYIT ADAY LİSTESİ</p>
  <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-2">{loading ? '...' : onKayitCount}</h3>
  </div>
- <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+ <div className="w-12 h-12 rounded-full -transparent flex items-center justify-center shrink-0 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  <UserPlus className="w-6 h-6" />
  </div>
  </div>
- <div className="mt-4 flex items-center text-xs text-emerald-600 dark:text-emerald-400 font-semibold gap-1">
+ <div className="mt-4 flex items-center text-xs text-emerald-600 font-semibold gap-1">
  </div>
  </Link>
  </div>
@@ -443,12 +443,12 @@ const Dashboard = () => {
  <td className="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400 space-y-0.5 min-w-[220px]">
  <div>
  <strong className="text-slate-700 dark:text-slate-300">Anne:</strong> {o.anne_isim || '-'}
- {o.anne_meslek && <span className="text-sky-600 dark:text-sky-400 font-medium"> ({o.anne_meslek})</span>}
+ {o.anne_meslek && <span className="text-sky-600 font-medium"> ({o.anne_meslek})</span>}
  {o.anne_telefon && <span> ({o.anne_telefon})</span>}
  </div>
  <div>
  <strong className="text-slate-700 dark:text-slate-300">Baba:</strong> {o.baba_isim || '-'}
- {o.baba_meslek && <span className="text-sky-600 dark:text-sky-400 font-medium"> ({o.baba_meslek})</span>}
+ {o.baba_meslek && <span className="text-sky-600 font-medium"> ({o.baba_meslek})</span>}
  {o.baba_telefon && <span> ({o.baba_telefon})</span>}
  </div>
  </td>
@@ -481,14 +481,14 @@ const Dashboard = () => {
           <div className="flex items-start gap-2">
             <span className="font-semibold w-12 shrink-0">Anne:</span> 
             <div className="flex flex-col">
-              <span>{o.anne_isim || '-'} {o.anne_meslek && <span className="text-sky-600 dark:text-sky-400">({o.anne_meslek})</span>}</span>
+              <span>{o.anne_isim || '-'} {o.anne_meslek && <span className="text-sky-600">({o.anne_meslek})</span>}</span>
               {o.anne_telefon && <span className="text-slate-500">{o.anne_telefon}</span>}
             </div>
           </div>
           <div className="flex items-start gap-2">
             <span className="font-semibold w-12 shrink-0">Baba:</span> 
             <div className="flex flex-col">
-              <span>{o.baba_isim || '-'} {o.baba_meslek && <span className="text-sky-600 dark:text-sky-400">({o.baba_meslek})</span>}</span>
+              <span>{o.baba_isim || '-'} {o.baba_meslek && <span className="text-sky-600">({o.baba_meslek})</span>}</span>
               {o.baba_telefon && <span className="text-slate-500">{o.baba_telefon}</span>}
             </div>
           </div>

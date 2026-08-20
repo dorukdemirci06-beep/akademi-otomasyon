@@ -99,6 +99,7 @@ class OgrenciResponse(OgrenciBase):
     son_odeme_tarihi: Optional[datetime] = None
     gecikmis_odeme_var_mi: Optional[bool] = False
     en_yakin_vade_tarihi: Optional[datetime] = None
+    sinif_isimleri: Optional[List[str]] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -107,6 +108,7 @@ class OgrenciResponse(OgrenciBase):
 class OdemeCreate(BaseModel):
     ogrenci_id: int
     tutar: float
+    odeme_turu: Optional[str] = "Kurs Ücreti"
     odeme_yontemi: Optional[str] = "Nakit"
     durum: Optional[str] = "Ödendi"
     odeme_periyodu: Optional[str] = "Aylık"
@@ -123,6 +125,7 @@ class OdemeResponse(BaseModel):
     id: int
     ogrenci_id: int
     tutar: float
+    odeme_turu: Optional[str] = "Kurs Ücreti"
     tarih: Optional[datetime] = None
     odeme_yontemi: Optional[str] = None
     durum: Optional[str] = None
@@ -141,6 +144,7 @@ class OdemeTahsilatCreate(BaseModel):
 
 class OdemeUpdate(BaseModel):
     tutar: Optional[float] = None
+    odeme_turu: Optional[str] = None
     tarih: Optional[str] = None
     odeme_yontemi: Optional[str] = None
     aciklama: Optional[str] = None

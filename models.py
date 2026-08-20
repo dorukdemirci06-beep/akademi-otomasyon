@@ -66,6 +66,12 @@ class Ogrenci(Base):
             return min(vabeler) if vabeler else None
         return None
 
+    @property
+    def sinif_isimleri(self):
+        if self.siniflar:
+            return [s.sinif.sinif_adi for s in self.siniflar if s.sinif]
+        return []
+
 class Sinif(Base):
     __tablename__ = "siniflar"
 
@@ -105,6 +111,7 @@ class Odeme(Base):
     aciklama = Column(String, nullable=True) # "1. Taksit", "4 Hafta Sonraki Ödeme" vb.
     sinif_adi = Column(String, nullable=True)
     akademi_adi = Column(String, nullable=True, default="Test1", index=True)
+    odeme_turu = Column(String, default="Kurs Ücreti")
 
     # İlişkiler
     ogrenci = relationship("Ogrenci", back_populates="odemeler")
