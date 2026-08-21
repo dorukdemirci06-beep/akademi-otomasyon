@@ -418,7 +418,6 @@ const Dashboard = () => {
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
- <th className="py-3 px-4 w-16">ID</th>
  <th className="py-3 px-4 whitespace-nowrap">ÖĞRENCİ ADI SOYADI</th>
  <th className="py-3 px-4 whitespace-nowrap">TELEFON</th>
  <th className="py-3 px-4 min-w-[220px]">ANNE / BABA VELİ</th>
@@ -428,16 +427,15 @@ const Dashboard = () => {
  <tbody className="divide-y divide-slate-200 dark:divide-slate-700/60 text-sm">
  {loading ? (
  <tr>
- <td colSpan={isAdmin ? 5 : 4} className="text-center py-6 text-slate-400">Yükleniyor...</td>
+ <td colSpan={isAdmin ? 4 : 3} className="text-center py-6 text-slate-400">Yükleniyor...</td>
  </tr>
  ) : recentOgrenciler.length === 0 ? (
  <tr>
- <td colSpan={isAdmin ? 5 : 4} className="text-center py-6 text-slate-400">Henüz öğrenci kaydı bulunamadı.</td>
+ <td colSpan={isAdmin ? 4 : 3} className="text-center py-6 text-slate-400">Henüz öğrenci kaydı bulunamadı.</td>
  </tr>
  ) : (
  recentOgrenciler.map((o) => (
  <tr key={o.id} className="hover: dark:hover: transition">
- <td className="py-3.5 px-4 font-bold text-slate-400 dark:text-slate-500 whitespace-nowrap">#{o.id}</td>
  <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap">{o.isim} {o.soyisim}</td>
  <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 whitespace-nowrap">{o.telefon || '-'}</td>
  <td className="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400 space-y-0.5 min-w-[220px]">
@@ -469,10 +467,9 @@ const Dashboard = () => {
   ) : (
     recentOgrenciler.map((o) => (
       <div key={o.id} className="neo-card p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-3 shadow-sm bg-white dark:bg-[#15181e]">
-        <div className="flex justify-between items-center border-b pb-2 border-slate-100 dark:border-slate-800/60">
-          <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{o.isim} {o.soyisim}</span>
-          <span className="text-xs font-bold text-slate-400">#{o.id}</span>
-        </div>
+         <div className="flex justify-between items-center border-b pb-2 border-slate-100 dark:border-slate-800/60">
+           <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{o.isim} {o.soyisim}</span>
+         </div>
         <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">
           <div className="flex items-center gap-2">
             <span className="font-semibold w-12 shrink-0">Telefon:</span> 

@@ -104,6 +104,9 @@ export const updateOnKayit = (id, data) => API.put(`/on-kayitlar/${id}`, data);
 export const updateOnKayitDurum = (id, durum) => API.put(`/on-kayitlar/${id}/durum`, { durum });
 export const deleteOnKayit = (id) => API.delete(`/on-kayitlar/${id}`);
 
+// WhatsApp Endpointleri
+export const sendBulkWhatsAppMessage = (data) => API.post('/whatsapp/toplu-gonder', data);
+
 // Akademi Endpointleri
 export const getAkademiler = () => API.get('/akademiler/');
 export const getAkademilerDetayli = () => API.get('/akademiler/detayli');

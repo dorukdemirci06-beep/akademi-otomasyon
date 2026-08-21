@@ -92,12 +92,31 @@ const Yoklama = () => {
  sinif_id: '',
  gun: 'Pazartesi',
  baslangic_saati: '10:00',
- bitis_saati: '11:30',
+ ders_suresi: '60',
  ders_adi: '',
  ogretmen_adi: '',
  derslik_id: '',
  renk: 'amber'
  });
+
+ const calculateEndTime = (startTime, durationMinutes) => {
+    if (!startTime) return '00:00';
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes + Number(durationMinutes), 0, 0);
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const handleSinifChangeForNewDers = (val) => {
+    let defaultTeacher = newDersForm.ogretmen_adi;
+    if (val) {
+      const classSchedules = dersProgrami.filter(dp => dp.sinif_id && dp.sinif_id.toString() === val.toString());
+      if (classSchedules.length > 0 && classSchedules[0].ogretmen_adi) {
+        defaultTeacher = classSchedules[0].ogretmen_adi;
+      }
+    }
+    setNewDersForm(prev => ({ ...prev, sinif_id: val, ogretmen_adi: defaultTeacher }));
+  };
 
  // Confirm Modal State
  const [confirmModal, setConfirmModal] = useState({
@@ -404,6 +423,7 @@ const Yoklama = () => {
  try {
   await createDersProgrami({
   ...newDersForm,
+  bitis_saati: calculateEndTime(newDersForm.baslangic_saati, newDersForm.ders_suresi),
   sinif_id: parseInt(newDersForm.sinif_id),
   derslik_id: newDersForm.derslik_id ? parseInt(newDersForm.derslik_id) : null
   });
@@ -412,7 +432,7 @@ const Yoklama = () => {
   sinif_id: '',
   gun: 'Pazartesi',
   baslangic_saati: '10:00',
-  bitis_saati: '11:30',
+  ders_suresi: '60',
   ders_adi: '',
   ogretmen_adi: '',
   derslik_id: '',
@@ -661,7 +681,6 @@ const Yoklama = () => {
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
- <th className="py-3.5 px-4">#ID</th>
  <th className="py-3.5 px-4">ÖĞRENCİ ADI SOYADI</th>
  <th className="py-3.5 px-4">KALAN DERS HAKKI</th>
  <th className="py-3.5 px-4">VELİ İLETİŞİM</th>
@@ -699,7 +718,6 @@ const Yoklama = () => {
  return (
  <React.Fragment key={o.ogrenci_id}>
  <tr className="hover: dark:hover: transition">
- <td className="py-4 px-4 font-bold text-slate-400 dark:text-slate-500">#{o.ogrenci_id}</td>
  <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-100">{o.isim} {o.soyisim}</td>
  <td className="py-4 px-4">
  <span className={`text-xs px-3 py-1 rounded-full font-bold border-transparent ${Number(o.kalan_ders_hakki) < 0 ? 'bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm' : 'bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm'}`}>
@@ -885,7 +903,7 @@ const Yoklama = () => {
  onClick={() => toggleOturumExpand(oturum.key)}
  className="p-3.5 cursor-pointer flex flex-wrap justify-between items-center gap-3 select-none transition"
  >
- <div className="flex items-center gap-3">
+ <div className="flex flex-wrap items-center gap-3">
  {(() => {
     const programDers = dersProgrami.find(p => p.sinif_id === oturum.sinif_id);
     const sinifRenk = programDers?.renk || 'indigo';
@@ -913,9 +931,9 @@ const Yoklama = () => {
  handleUpdateTelafiDate(oturum, newDate);
  }
  }}
- prefix="TELAFİ DERSİ: "
+ prefix="TELAFİ: "
  icon={CalendarPlus}
- buttonClassName="bg-rose-600 hover:bg-rose-700 transition-colors text-white border-none shadow-md px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center justify-between gap-2 transition cursor-pointer min-w-[220px]"
+ buttonClassName="bg-rose-600 hover:bg-rose-700 transition-colors text-white border-none shadow-md px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-black uppercase tracking-wider flex items-center justify-between gap-2 transition cursor-pointer max-w-full truncate"
  align="left"
  />
  </div>
@@ -969,7 +987,6 @@ const Yoklama = () => {
  <table className="w-full text-left text-xs border-collapse">
  <thead>
  <tr className="text-slate-500 dark:text-slate-400 font-bold tracking-wider border-b pb-2">
- <th className="pb-2 px-3">#ID</th>
  <th className="pb-2 px-3">ÖĞRENCİ ADI SOYADI</th>
  <th className="pb-2 px-3 text-center">YOKLAMA İŞLE (DURUM)</th>
  <th className="pb-2 px-3">MAZERET / DERS NOTU</th>
@@ -978,8 +995,7 @@ const Yoklama = () => {
  <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
  {oturum.items.map(item => (
  <tr key={item.id} className="transition">
- <td className="py-2.5 px-3 font-semibold text-slate-400 dark:text-slate-500">#{item.ogrenci_id}</td>
- <td className="py-2.5 px-3 font-bold text-slate-800 dark:text-slate-200">{item.ogrenci_adi || `Öğrenci #${item.ogrenci_id}`}</td>
+ <td className="py-2.5 px-3 font-bold text-slate-800 dark:text-slate-200">{item.ogrenci_adi || 'İsimsiz Öğrenci'}</td>
  
  {/* Etkileşimli Yoklama Durum Butonları */}
  <td className="py-2.5 px-3 text-center">
@@ -1076,8 +1092,8 @@ const Yoklama = () => {
  <div>
  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Sınıf Seçiniz</label>
  <SearchableSelect
- value={newDersForm.sinif_id}
- onChange={(val) => setNewDersForm(prev => ({ ...prev, sinif_id: val }))}
+  value={newDersForm.sinif_id}
+  onChange={handleSinifChangeForNewDers}
  options={siniflar.map(s => ({ value: s.id, label: s.sinif_adi }))}
  placeholder="-- Sınıf Seçin --"
  searchPlaceholder="Sınıf ara..."
@@ -1103,13 +1119,22 @@ const Yoklama = () => {
    onChange={(val) => setNewDersForm(prev => ({ ...prev, baslangic_saati: val }))}
  />
  </div>
- <div>
- <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Bitiş Saati</label>
- <TimePicker 
-   value={newDersForm.bitis_saati}
-   onChange={(val) => setNewDersForm(prev => ({ ...prev, bitis_saati: val }))}
- />
- </div>
+  <div>
+  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Ders Süresi (dk)</label>
+  <select
+    value={newDersForm.ders_suresi}
+    onChange={(e) => setNewDersForm(prev => ({ ...prev, ders_suresi: e.target.value }))}
+    className="neo-input w-full px-3 py-2 rounded-full text-sm outline-none"
+  >
+    <option value="30">30 Dakika</option>
+    <option value="40">40 Dakika</option>
+    <option value="45">45 Dakika</option>
+    <option value="50">50 Dakika</option>
+    <option value="60">60 Dakika</option>
+    <option value="90">90 Dakika</option>
+    <option value="120">120 Dakika</option>
+  </select>
+  </div>
  </div>
 
  <div>

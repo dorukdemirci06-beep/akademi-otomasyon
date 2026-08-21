@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
  UserPlus, 
  Search, 
@@ -51,6 +51,35 @@ const OnKayit = () => {
  const [sortOption, setSortOption] = useState('tarih_desc');
  const [toastMessage, setToastMessage] = useState(null);
  const [openDropdownId, setOpenDropdownId] = useState(null);
+ const tableRef = useRef(null);
+
+ const handleCardClick = (durum) => {
+   setSelectedDurumFilter(durum);
+   if (tableRef.current) {
+     const targetPosition = tableRef.current.getBoundingClientRect().top + window.scrollY - 30; // 30px üstten boşluk
+     const startPosition = window.scrollY;
+     const distance = targetPosition - startPosition;
+     const duration = 1200; // 1.2 saniye kayma süresi
+     let startTime = null;
+
+     // Çok daha yumuşak bir ivmelenme (EaseInOutQuart)
+     const easeInOutQuart = (t) => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+
+     const animation = (currentTime) => {
+       if (startTime === null) startTime = currentTime;
+       const timeElapsed = currentTime - startTime;
+       const progress = Math.min(timeElapsed / duration, 1);
+       
+       window.scrollTo(0, startPosition + distance * easeInOutQuart(progress));
+       
+       if (timeElapsed < duration) {
+         requestAnimationFrame(animation);
+       }
+     };
+
+     requestAnimationFrame(animation);
+   }
+ };
 
  // Form State (Yeni Ön Kayıt)
  const [formData, setFormData] = useState({
@@ -466,7 +495,10 @@ const OnKayit = () => {
 
  {/* Stats Cards */}
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
- <div className="neo-card rounded-2xl p-4 flex flex-col justify-between">
+ <div 
+   onClick={() => handleCardClick('Tümü')}
+   className="neo-card rounded-2xl p-4 flex flex-col justify-between cursor-pointer hover:scale-[1.02] transition-transform"
+ >
  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Toplam Ön Kayıt</span>
  <div className="flex items-baseline justify-between mt-2">
  <span className="text-2xl font-black text-slate-800 dark:text-slate-100">{totalCount}</span>
@@ -474,7 +506,10 @@ const OnKayit = () => {
  </div>
  </div>
 
- <div className="neo-card -amber-200 dark:-amber-500/30 rounded-2xl p-4 flex flex-col justify-between dark:bg-amber-500/5 bg-amber-500 text-white border-transparent shadow-sm">
+ <div 
+   onClick={() => handleCardClick('Aranacak')}
+   className="neo-card -amber-200 dark:-amber-500/30 rounded-2xl p-4 flex flex-col justify-between dark:bg-amber-500/5 bg-amber-500 text-white border-transparent shadow-sm cursor-pointer hover:scale-[1.02] transition-transform"
+ >
  <span className="text-xs text-amber-600 dark:text-amber-400/90 font-medium">Aranacak</span>
  <div className="flex items-baseline justify-between mt-2">
  <span className="text-2xl font-black text-amber-600 dark:text-amber-300">{aranacakCount}</span>
@@ -482,7 +517,10 @@ const OnKayit = () => {
  </div>
  </div>
 
- <div className="neo-card -sky-200 dark:-sky-500/30 rounded-2xl p-4 flex flex-col justify-between dark:bg-sky-500/5 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
+ <div 
+   onClick={() => handleCardClick('Arandı')}
+   className="neo-card -sky-200 dark:-sky-500/30 rounded-2xl p-4 flex flex-col justify-between dark:bg-sky-500/5 bg-[#0284c7] hover:bg-[#026aa3] transition-all text-white border-transparent shadow-sm cursor-pointer hover:scale-[1.02]"
+ >
  <span className="text-xs text-sky-600 /90 font-medium">Arandı</span>
  <div className="flex items-baseline justify-between mt-2">
  <span className="text-2xl font-black text-sky-600">{arandiCount}</span>
@@ -490,7 +528,10 @@ const OnKayit = () => {
  </div>
  </div>
 
- <div className="neo-card -orange-200 dark:-orange-500/30 rounded-2xl p-4 flex flex-col justify-between bg-orange-50/50 dark:bg-orange-500/5">
+ <div 
+   onClick={() => handleCardClick('Ulaşılamadı')}
+   className="neo-card -orange-200 dark:-orange-500/30 rounded-2xl p-4 flex flex-col justify-between bg-orange-50/50 dark:bg-orange-500/5 cursor-pointer hover:scale-[1.02] transition-transform"
+ >
  <span className="text-xs text-orange-600 dark:text-orange-400/90 font-medium">Ulaşılamadı</span>
  <div className="flex items-baseline justify-between mt-2">
  <span className="text-2xl font-black text-orange-600 dark:text-orange-300">{ulasilamadiCount}</span>
@@ -498,7 +539,10 @@ const OnKayit = () => {
  </div>
  </div>
 
- <div className="neo-card col-span-2 sm:col-span-1 -emerald-200 dark:-emerald-500/30 rounded-2xl p-4 flex flex-col justify-between dark:bg-emerald-500/5 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
+ <div 
+   onClick={() => handleCardClick('Kesin Kayıt')}
+   className="neo-card col-span-2 sm:col-span-1 -emerald-200 dark:-emerald-500/30 rounded-2xl p-4 flex flex-col justify-between dark:bg-emerald-500/5 bg-[#2eb82e] hover:bg-[#269926] transition-all text-white border-transparent shadow-sm cursor-pointer hover:scale-[1.02]"
+ >
  <span className="text-xs text-emerald-600 /90 font-medium">Kesin Kayıt</span>
  <div className="flex items-baseline justify-between mt-2">
  <span className="text-2xl font-black text-emerald-600">{kesinKayitCount}</span>
@@ -688,7 +732,7 @@ const OnKayit = () => {
  </div>
 
  {/* B. KAYIT TABLOSU & ARAMA/FİLTRE */}
- <div className="neo-card rounded-3xl p-6 sm:p-8 space-y-6">
+ <div className="neo-card rounded-3xl p-6 sm:p-8 space-y-6" ref={tableRef}>
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b">
  <div>
  <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -792,7 +836,6 @@ const OnKayit = () => {
  <div className="font-bold text-slate-900 dark:text-slate-100">
  {item.ogrenci_adi} {item.ogrenci_soyadi}
  </div>
- <div className="text-[11px] text-slate-500">ID: #{item.id}</div>
  </div>
  </div>
  </td>
@@ -909,7 +952,6 @@ const OnKayit = () => {
             <div className="flex items-center gap-2">
               <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{item.ogrenci_adi} {item.ogrenci_soyadi}</span>
             </div>
-            <span className="text-xs font-bold text-slate-400">#{item.id}</span>
           </div>
 
           <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">

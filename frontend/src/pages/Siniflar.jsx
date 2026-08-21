@@ -96,7 +96,7 @@ const Siniflar = () => {
  const [scheduleData, setScheduleData] = useState({
  gun: 'Pazartesi',
  baslangic_saati: '10:00',
- bitis_saati: '11:30',
+ ders_suresi: '60',
  ogretmen_adi: '',
  renk: 'indigo'
  });
@@ -106,7 +106,7 @@ const Siniflar = () => {
  const [newScheduleForm, setNewScheduleForm] = useState({
  gun: 'Pazartesi',
  baslangic_saati: '10:00',
- bitis_saati: '11:30',
+ ders_suresi: '60',
  ders_adi: '',
  ogretmen_adi: '',
  renk: 'indigo',
@@ -201,6 +201,23 @@ const Siniflar = () => {
  }
  };
 
+ const calculateEndTime = (startTime, durationMinutes) => {
+   if (!startTime) return '00:00';
+   const [hours, minutes] = startTime.split(':').map(Number);
+   const date = new Date();
+   date.setHours(hours, minutes + Number(durationMinutes), 0, 0);
+   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+ };
+
+ const handleOpenScheduleModal = (s) => {
+   setSelectedSinifSchedule(s);
+   const existingTeacher = s.ders_programi && s.ders_programi.length > 0 ? s.ders_programi[0].ogretmen_adi : '';
+   setNewScheduleForm(prev => ({
+     ...prev,
+     ogretmen_adi: existingTeacher || prev.ogretmen_adi
+   }));
+ };
+
  const handleCreateDerslik = async (e) => {
    e.preventDefault();
    if(!yeniDerslik.ad.trim()) return;
@@ -239,16 +256,16 @@ const Siniflar = () => {
  const payload = { sinif_adi: yeniSinifAdi.trim() };
  const teacherName = scheduleData.ogretmen_adi ? scheduleData.ogretmen_adi.trim() : null;
 
- if (addSchedule && scheduleData.gun && scheduleData.baslangic_saati && scheduleData.bitis_saati) {
+ if (addSchedule && scheduleData.gun && scheduleData.baslangic_saati && scheduleData.ders_suresi) {
  payload.gun = scheduleData.gun;
  payload.baslangic_saati = scheduleData.baslangic_saati;
- payload.bitis_saati = scheduleData.bitis_saati;
+ payload.bitis_saati = calculateEndTime(scheduleData.baslangic_saati, scheduleData.ders_suresi);
  payload.ogretmen_adi = teacherName;
  payload.renk = scheduleData.renk;
  } else if (teacherName) {
  payload.gun = 'Pazartesi';
  payload.baslangic_saati = '10:00';
- payload.bitis_saati = '11:30';
+ payload.bitis_saati = calculateEndTime('10:00', '60');
  payload.ogretmen_adi = teacherName;
  payload.renk = 'indigo';
  }
@@ -259,7 +276,7 @@ const Siniflar = () => {
  setScheduleData({
  gun: 'Pazartesi',
  baslangic_saati: '10:00',
- bitis_saati: '11:30',
+ ders_suresi: '60',
  ogretmen_adi: '',
  renk: 'indigo'
  });
@@ -298,7 +315,7 @@ const Siniflar = () => {
  sinif_id: selectedSinifSchedule.id,
  gun: newScheduleForm.gun,
  baslangic_saati: newScheduleForm.baslangic_saati,
- bitis_saati: newScheduleForm.bitis_saati,
+ bitis_saati: calculateEndTime(newScheduleForm.baslangic_saati, newScheduleForm.ders_suresi),
  ders_adi: newScheduleForm.ders_adi || selectedSinifSchedule.sinif_adi,
  ogretmen_adi: newScheduleForm.ogretmen_adi,
  renk: newScheduleForm.renk,
@@ -311,7 +328,7 @@ const Siniflar = () => {
  setNewScheduleForm({
  gun: 'Pazartesi',
  baslangic_saati: '10:00',
- bitis_saati: '11:30',
+ ders_suresi: '60',
  ders_adi: '',
  ogretmen_adi: '',
  renk: 'indigo',
@@ -397,7 +414,6 @@ const Siniflar = () => {
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
- <th className="py-3 px-4">SINIF ID</th>
  <th className="py-3 px-4">SINIF / BRANŞ ADI</th>
  <th className="py-3 px-4">TÜM ATANAN DERS SAATLERİ</th>
  <th className="py-3 px-4">KAYITLI ÖĞRENCİ</th>
@@ -416,7 +432,6 @@ const Siniflar = () => {
  ) : (
  siniflarList.map((s) => (
  <tr key={s.id} className="hover: dark:hover: transition">
- <td className="py-3.5 px-4 font-bold text-slate-500">#{s.id}</td>
  <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">
  <span className="-transparent px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap inline-block bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  {s.sinif_adi}
@@ -441,7 +456,7 @@ const Siniflar = () => {
  </td>
  <td className="py-3.5 px-4 text-right space-x-2 whitespace-nowrap">
  <button
- onClick={() => setSelectedSinifSchedule(s)}
+ onClick={() => handleOpenScheduleModal(s)}
  className="px-2.5 py-1.5 dark: text-xs font-bold rounded-full transition inline-flex items-center gap-1 -transparent cursor-pointer bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm"
  title="Ders Gün/Saat Ata & Yönet"
  >
@@ -485,7 +500,6 @@ const Siniflar = () => {
         <span className="-transparent px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap inline-block bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
         {s.sinif_adi}
         </span>
-        <span className="text-xs font-bold text-slate-400">#{s.id}</span>
       </div>
       
       <div className="flex flex-col gap-2.5 text-xs text-slate-600 dark:text-slate-300 mt-1">
@@ -517,7 +531,7 @@ const Siniflar = () => {
          <Eye className="w-4 h-4 text-sky-500" /> Öğrenciler
          </button>
          <button
-         onClick={() => setSelectedSinifSchedule(s)}
+         onClick={() => handleOpenScheduleModal(s)}
          className="px-2.5 py-2 flex items-center justify-center dark: text-xs font-bold rounded-full transition gap-1 -transparent bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm"
          >
          <Clock className="w-3.5 h-3.5 text-sky-500" /> Ders Ata
@@ -651,11 +665,20 @@ const Siniflar = () => {
                         />
                     </div>
                     <div>
-                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Bitiş Saati</label>
-                      <TimePicker 
-                          value={scheduleData.bitis_saati}
-                          onChange={(val) => setScheduleData({ ...scheduleData, bitis_saati: val })}
-                        />
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Ders Süresi (dk)</label>
+                      <select
+                        value={scheduleData.ders_suresi}
+                        onChange={(e) => setScheduleData({ ...scheduleData, ders_suresi: e.target.value })}
+                        className="neo-input w-full px-3 py-2 rounded-full text-sm outline-none"
+                      >
+                        <option value="30">30 Dakika</option>
+                        <option value="40">40 Dakika</option>
+                        <option value="45">45 Dakika</option>
+                        <option value="50">50 Dakika</option>
+                        <option value="60">60 Dakika</option>
+                        <option value="90">90 Dakika</option>
+                        <option value="120">120 Dakika</option>
+                      </select>
                     </div>
                   </div>
 
@@ -768,11 +791,20 @@ const Siniflar = () => {
                     />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Bitiş Saati</label>
-                  <TimePicker 
-                      value={newScheduleForm.bitis_saati}
-                      onChange={(val) => setNewScheduleForm({ ...newScheduleForm, bitis_saati: val })}
-                    />
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Ders Süresi (dk)</label>
+                  <select
+                    value={newScheduleForm.ders_suresi}
+                    onChange={(e) => setNewScheduleForm({ ...newScheduleForm, ders_suresi: e.target.value })}
+                    className="neo-input w-full px-3 py-2 rounded-full text-sm outline-none"
+                  >
+                    <option value="30">30 Dakika</option>
+                    <option value="40">40 Dakika</option>
+                    <option value="45">45 Dakika</option>
+                    <option value="50">50 Dakika</option>
+                    <option value="60">60 Dakika</option>
+                    <option value="90">90 Dakika</option>
+                    <option value="120">120 Dakika</option>
+                  </select>
                 </div>
               </div>
               <div>
@@ -855,7 +887,6 @@ const Siniflar = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider bg-slate-50/50 dark:bg-slate-800/30">
-                    <th className="py-3 px-4">ÖĞRENCİ ID / TC</th>
                     <th className="py-3 px-4">ADI SOYADI</th>
                     <th className="py-3 px-4">İLETİŞİM</th>
                     <th className="py-3 px-4">VELİ BİLGİSİ</th>
@@ -865,20 +896,19 @@ const Siniflar = () => {
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700/60 text-sm">
                   {detayLoading ? (
                     <tr>
-                      <td colSpan="5" className="text-center py-6 text-slate-400">Öğrenciler yükleniyor...</td>
+                      <td colSpan="4" className="text-center py-6 text-slate-400">Öğrenciler yükleniyor...</td>
                     </tr>
                   ) : sinifOgrencileriList.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="text-center py-6 text-slate-400">Bu sınıfa henüz kayıtlı öğrenci yok.</td>
+                      <td colSpan="4" className="text-center py-6 text-slate-400">Bu sınıfa henüz kayıtlı öğrenci yok.</td>
                     </tr>
                   ) : (
                     sinifOgrencileriList.map((o) => (
                       <tr key={o.ogrenci_id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
-                        <td className="py-3.5 px-4 font-bold text-slate-500">
-                          #{o.ogrenci_id}
+                        <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">
+                          {o.isim} {o.soyisim}
                           {o.tc && <div className="text-[11px] text-slate-400 font-mono">TC: {o.tc}</div>}
                         </td>
-                        <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">{o.isim} {o.soyisim}</td>
                         <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-300">
                           <div>{o.telefon || '-'}</div>
                           <div className="text-slate-400">{o.eposta || '-'}</div>
@@ -917,7 +947,6 @@ const Siniflar = () => {
                         <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{o.isim} {o.soyisim}</span>
                         {o.tc && <span className="text-[10px] text-slate-400 font-mono">TC: {o.tc}</span>}
                       </div>
-                      <span className="text-xs font-bold text-slate-400">#{o.ogrenci_id}</span>
                     </div>
 
                     <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2.5">

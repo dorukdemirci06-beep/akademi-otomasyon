@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, RotateCcw, X, Check } from 'lucide-react';
 
 const AYLAR = [
@@ -38,6 +39,7 @@ const CustomDatePicker = ({
  const [viewDate, setViewDate] = useState(() => selectedDate || new Date());
  
  const containerRef = useRef(null);
+ const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
  // Update viewDate when value changes
  useEffect(() => {
@@ -46,19 +48,44 @@ const CustomDatePicker = ({
  }
  }, [value]);
 
- // Handle click outside to close dropdown
+ const updatePosition = () => {
+   if (containerRef.current) {
+     const rect = containerRef.current.getBoundingClientRect();
+     const spaceBelow = window.innerHeight - rect.bottom;
+     const spaceAbove = rect.top;
+     const popupHeight = 350;
+     let finalTop = rect.bottom + window.scrollY;
+     if (spaceBelow < popupHeight && spaceAbove > spaceBelow) {
+       finalTop = rect.top + window.scrollY - popupHeight;
+     }
+     setDropdownPosition({
+       top: finalTop,
+       left: rect.left + window.scrollX,
+       width: rect.width
+     });
+   }
+ };
+
  useEffect(() => {
- const handleClickOutside = (event) => {
- if (containerRef.current && !containerRef.current.contains(event.target)) {
- setIsOpen(false);
- }
- };
- if (isOpen) {
- document.addEventListener('mousedown', handleClickOutside);
- }
- return () => {
- document.removeEventListener('mousedown', handleClickOutside);
- };
+   if (isOpen) {
+     const handleScroll = (e) => {
+       if (e.target.closest && e.target.closest('.date-picker-popup')) return;
+       updatePosition();
+     };
+     const handleClickOutside = (event) => {
+       if (containerRef.current && !containerRef.current.contains(event.target) && (!event.target.closest || !event.target.closest('.date-picker-popup'))) {
+         setIsOpen(false);
+       }
+     };
+     document.addEventListener('mousedown', handleClickOutside);
+     window.addEventListener('scroll', handleScroll, true);
+     window.addEventListener('resize', updatePosition);
+     return () => {
+       document.removeEventListener('mousedown', handleClickOutside);
+       window.removeEventListener('scroll', handleScroll, true);
+       window.removeEventListener('resize', updatePosition);
+     };
+   }
  }, [isOpen]);
 
  const viewYear = viewDate.getFullYear();
@@ -163,6 +190,7 @@ const CustomDatePicker = ({
  type="button"
  onClick={(e) => {
  e.stopPropagation();
+ if (!isOpen) updatePosition();
  setIsOpen(!isOpen);
  }}
  className={buttonClassName || "w-full flex items-center justify-between gap-2 px-3 py-2 border rounded-lg text-sm text-slate-900 dark:text-slate-100 transition cursor-pointer min-w-0 h-[38px]"}
@@ -175,12 +203,15 @@ const CustomDatePicker = ({
  </button>
 
  {/* STANDARD SIZE POPUP CALENDAR MODAL */}
- {isOpen && (
+ {isOpen && createPortal(
  <div 
- className={`absolute top-full mt-2 z-50 neo-card p-4 w-[280px] sm:w-[320px] animate-scale-in text-slate-100 ${
- align === 'right' ? 'right-0' : 'left-0'
- }`}
- style={{ minWidth: '280px' }}
+ className={`absolute z-[99999] date-picker-popup neo-card p-4 w-[280px] sm:w-[320px] animate-scale-in text-slate-100`}
+ style={{ 
+   top: `${dropdownPosition.top + 8}px`, 
+   left: align === 'right' ? `${dropdownPosition.left + dropdownPosition.width - 280}px` : `${dropdownPosition.left}px`,
+   minWidth: '280px',
+   transitionProperty: 'opacity, transform'
+ }}
  >
  {/* Header Bar */}
  <div className="flex justify-between items-center border-b pb-3 mb-4">
@@ -304,7 +335,7 @@ const CustomDatePicker = ({
  </button>
  </div>
  </div>
- )}
+ , document.body)}
  </div>
  );
 };

@@ -204,6 +204,7 @@ class AkademiUpdate(BaseModel):
     whatsapp_provider: Optional[str] = "callmebot"
     whatsapp_api_key: Optional[str] = None
     whatsapp_phone_number: Optional[str] = None
+    google_sheet_id: Optional[str] = None
     msg_kayit: Optional[str] = None
     msg_ders_hatirlatma: Optional[str] = None
     msg_odeme_hatirlatma: Optional[str] = None
@@ -222,6 +223,7 @@ class AkademiResponse(AkademiBase):
     whatsapp_provider: Optional[str] = None
     whatsapp_api_key: Optional[str] = None
     whatsapp_phone_number: Optional[str] = None
+    google_sheet_id: Optional[str] = None
     msg_kayit: Optional[str] = None
     msg_ders_hatirlatma: Optional[str] = None
     msg_odeme_hatirlatma: Optional[str] = None
@@ -329,3 +331,8 @@ class YoklamaResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+
+class WhatsAppBulkRequest(BaseModel):
+    target_type: str
+    target_ids: List[str] = []
+    message: str

@@ -424,7 +424,6 @@ const Kayit = () => {
  <table className="w-full text-left border-collapse min-w-[900px]">
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
- <th className="py-3 px-4 w-16">#ID</th>
  <th className="py-3 px-4">ÖĞRENCİ ADI SOYADI</th>
  <th className="py-3 px-4">İLETİŞİM TELEFONU</th>
  <th className="py-3 px-4">KAYITLI DERSLER</th>
@@ -435,11 +434,11 @@ const Kayit = () => {
  <tbody className="divide-y divide-slate-200 dark:divide-slate-700/60 text-sm">
  {loading ? (
  <tr>
- <td colSpan={isAdmin ? 6 : 5} className="text-center py-8 text-slate-400">Öğrenciler Yükleniyor...</td>
+ <td colSpan={isAdmin ? 5 : 4} className="text-center py-8 text-slate-400">Öğrenciler Yükleniyor...</td>
  </tr>
  ) : filteredOgrenciler.length === 0 ? (
                       <tr>
-                        <td colSpan={isAdmin ? 6 : 5} className="py-16">
+                        <td colSpan={isAdmin ? 5 : 4} className="py-16">
                           <div className="flex flex-col items-center justify-center text-center">
                             <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
                               <Users className="w-8 h-8 text-slate-400" />
@@ -468,13 +467,6 @@ const Kayit = () => {
  isExpanded ? ' border-l-4 border-l-[#2eb82e]' : ''
  }`}
  >
- {/* ID */}
- <td className="py-3.5 px-4 whitespace-nowrap">
- <span className="font-bold text-slate-600 dark:text-slate-300 px-2 py-1 rounded-full text-xs border">
- #{o.id}
- </span>
- </td>
-
  {/* İsim & Durum */}
  <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap">
  <div className="flex items-center gap-2">
@@ -736,7 +728,7 @@ const Kayit = () => {
                )}
              </div>
              <div className="flex items-center gap-2">
-               <span className="text-xs font-bold text-slate-400">#{o.id}</span>
+               
                {isExpanded ? <ChevronUp className="w-4 h-4 text-[#2eb82e]" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
              </div>
            </div>
@@ -786,12 +778,12 @@ const Kayit = () => {
 
                <div className="space-y-1.5">
                  <strong className="text-sky-600 block border-b pb-1">Veli Bilgileri</strong>
-                 <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded border">
-                   <strong className="block text-[11px]">Anne: {o.anne_isim || '-'}</strong>
+                 <div className="p-3 neo-input rounded-xl border border-transparent dark:border-slate-800/40">
+                   <strong className="block text-[11px] text-slate-700 dark:text-slate-300">Anne: {o.anne_isim || '-'}</strong>
                    <span className="text-slate-500">Tel: {o.anne_telefon || '-'}</span>
                  </div>
-                 <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded border">
-                   <strong className="block text-[11px]">Baba: {o.baba_isim || '-'}</strong>
+                 <div className="p-3 neo-input rounded-xl border border-transparent dark:border-slate-800/40">
+                   <strong className="block text-[11px] text-slate-700 dark:text-slate-300">Baba: {o.baba_isim || '-'}</strong>
                    <span className="text-slate-500">Tel: {o.baba_telefon || '-'}</span>
                  </div>
                </div>
