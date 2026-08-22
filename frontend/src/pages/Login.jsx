@@ -106,7 +106,12 @@ const Login = ({ onLoginSuccess }) => {
  }
  } catch (err) {
  console.error('Giriş hatası:', err);
- const detail = err.response?.data?.detail || 'Giriş başarısız. Kullanıcı adı veya şifre hatalı!';
+ let detail = 'Giriş başarısız. Kullanıcı adı veya şifre hatalı!';
+ if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+   detail = 'Sunucuya bağlanılamadı (Zaman Aşımı). Lütfen arka plan servislerinin çalıştığından emin olun.';
+ } else if (err.response?.data?.detail) {
+   detail = err.response.data.detail;
+ }
  setErrorMsg(detail);
  } finally {
  setLoading(false);
@@ -208,7 +213,12 @@ const Login = ({ onLoginSuccess }) => {
 
  } catch (err) {
  console.error('Kurulum hatası:', err);
- const detail = err.response?.data?.detail || 'Kurulum başarısız oldu.';
+ let detail = 'Kurulum başarısız oldu.';
+ if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+   detail = 'Sunucuya bağlanılamadı (Zaman Aşımı). Lütfen arka plan servislerinin çalıştığından emin olun.';
+ } else if (err.response?.data?.detail) {
+   detail = err.response.data.detail;
+ }
  setKurulumMsg({ type: 'error', text: detail });
  } finally {
  setKurulumLoading(false);

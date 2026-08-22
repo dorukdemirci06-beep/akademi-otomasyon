@@ -10,6 +10,7 @@ const getApiUrl = () => {
 
 const API = axios.create({
   baseURL: getApiUrl(),
+  timeout: 10000, // 10 seconds timeout to prevent infinite hang
   headers: {
     'Content-Type': 'application/json',
   },
