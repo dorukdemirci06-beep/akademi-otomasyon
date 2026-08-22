@@ -41,6 +41,8 @@ function App() {
     roleLower.includes("admin") ||
     roleLower.includes("super") ||
     roleLower.includes("süper");
+  const isPersonel = roleLower.includes("personel");
+  const canAccessSettings = isAdmin || isPersonel;
   return (
     <ThemeProvider>
       {" "}
@@ -88,7 +90,7 @@ function App() {
                 <Route
                   path="/ayarlar"
                   element={
-                    isAdmin ? (
+                    canAccessSettings ? (
                       <Ayarlar showToast={() => {}} user={currentUser} />
                     ) : (
                       <Navigate to="/" replace />

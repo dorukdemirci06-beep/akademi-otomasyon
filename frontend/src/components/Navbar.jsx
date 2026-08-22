@@ -14,6 +14,9 @@ const Navbar = ({ currentUser, onLogout }) => {
   const { theme, toggleTheme } = useTheme();
   const roleLower = (currentUser?.rol || '').toLowerCase();
   const isAdmin = roleLower.includes('yönetici') || roleLower.includes('yonetici') || roleLower.includes('admin') || roleLower.includes('super') || roleLower.includes('süper');
+  const isPersonel = roleLower.includes('personel');
+  const canAccessSettings = isAdmin || isPersonel;
+
   const navItems = [
     { path: '/', label: 'Ana Panel', icon: LayoutDashboard },
     { path: '/kayit', label: 'Kayıt', icon: UserPlus },
@@ -22,9 +25,13 @@ const Navbar = ({ currentUser, onLogout }) => {
     { path: '/yoklama', label: 'Yoklama', icon: ClipboardCheck },
     { path: '/finans', label: 'Ödemeler', icon: Wallet },
   ];
+  
+  if (canAccessSettings) {
+    navItems.push({ path: '/ayarlar', label: 'WhatsApp', icon: WhatsappIcon });
+  }
+
   if (isAdmin) {
     navItems.push({ path: '/kullanicilar', label: 'Yönetim', icon: Users });
-    navItems.push({ path: '/ayarlar', label: 'WhatsApp', icon: WhatsappIcon });
   }
   const displayName = currentUser?.ad_soyad || currentUser?.kullanici_adi || 'Kullanıcı';
   const displayRole = currentUser?.rol || 'Personel';
