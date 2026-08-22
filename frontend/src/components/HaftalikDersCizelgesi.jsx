@@ -34,6 +34,7 @@ const HaftalikDersCizelgesi = ({
  selectedSinifId,
  setSelectedSinifId,
  handleDeleteDers,
+ onTelafiClick,
  readonly = false
 }) => {
  return (
@@ -112,6 +113,9 @@ const HaftalikDersCizelgesi = ({
  e.stopPropagation();
  if (setSelectedSinifId && ders.sinif_id) {
  setSelectedSinifId(ders.sinif_id.toString());
+ }
+ if (onTelafiClick && ders.ders_adi && ders.ders_adi.includes('[TELAFİ]')) {
+ onTelafiClick(ders);
  }
  setExpandedGun(gun);
  }}

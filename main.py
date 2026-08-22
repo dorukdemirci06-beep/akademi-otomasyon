@@ -1390,6 +1390,8 @@ def update_akademi_ayarlar(
         akademi.msg_dogum_gunu = ayarlar.msg_dogum_gunu
     if ayarlar.msg_ozel_gun is not None:
         akademi.msg_ozel_gun = ayarlar.msg_ozel_gun
+    if ayarlar.msg_ogretmen_hatirlatma is not None:
+        akademi.msg_ogretmen_hatirlatma = ayarlar.msg_ogretmen_hatirlatma
         
     if ayarlar.is_msg_kayit_active is not None:
         akademi.is_msg_kayit_active = ayarlar.is_msg_kayit_active
@@ -1403,6 +1405,8 @@ def update_akademi_ayarlar(
         akademi.is_msg_dogum_gunu_active = ayarlar.is_msg_dogum_gunu_active
     if ayarlar.is_msg_ozel_gun_active is not None:
         akademi.is_msg_ozel_gun_active = ayarlar.is_msg_ozel_gun_active
+    if ayarlar.is_msg_ogretmen_hatirlatma_active is not None:
+        akademi.is_msg_ogretmen_hatirlatma_active = ayarlar.is_msg_ogretmen_hatirlatma_active
         
     db.commit()
     db.refresh(akademi)
@@ -1494,6 +1498,247 @@ def delete_kullanici(
     return {"mesaj": "Kullanıcı başarıyla silindi."}
 
 
+# ==================== ÖĞRETMENLER ENDPOINTLERİ ====================
+@app.get("/ogretmenler/", response_model=List[schemas.OgretmenResponse])
+def get_ogretmenler(
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    query = db.query(models.Ogretmen)
+    if current_user.akademi_adi:
+        query = query.filter(models.Ogretmen.akademi_adi == current_user.akademi_adi)
+    return query.all()
+
+@app.post("/ogretmenler/", response_model=schemas.OgretmenResponse, status_code=status.HTTP_201_CREATED)
+def create_ogretmen(
+    ogretmen: schemas.OgretmenCreate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    yeni_ogretmen = models.Ogretmen(
+        isim=ogretmen.isim,
+        brans=ogretmen.brans,
+        telefon=ogretmen.telefon,
+        eposta=ogretmen.eposta,
+        baslama_tarihi=ogretmen.baslama_tarihi,
+        durum=ogretmen.durum,
+        notlar=ogretmen.notlar,
+        akademi_adi=current_user.akademi_adi
+    )
+    db.add(yeni_ogretmen)
+    db.commit()
+    db.refresh(yeni_ogretmen)
+    return yeni_ogretmen
+
+@app.put("/ogretmenler/{ogretmen_id}", response_model=schemas.OgretmenResponse)
+def update_ogretmen(
+    ogretmen_id: int,
+    ogretmen_update: schemas.OgretmenUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    ogretmen = db.query(models.Ogretmen).filter(models.Ogretmen.id == ogretmen_id).first()
+    if not ogretmen:
+        raise HTTPException(status_code=404, detail="Öğretmen bulunamadı.")
+    
+    if current_user.akademi_adi and ogretmen.akademi_adi != current_user.akademi_adi:
+        raise HTTPException(status_code=403, detail="Başka bir akademiye ait öğretmeni güncelleyemezsiniz.")
+
+    if ogretmen_update.isim is not None:
+        ogretmen.isim = ogretmen_update.isim
+    if ogretmen_update.brans is not None:
+        ogretmen.brans = ogretmen_update.brans
+    if ogretmen_update.telefon is not None:
+        ogretmen.telefon = ogretmen_update.telefon
+    if ogretmen_update.eposta is not None:
+        ogretmen.eposta = ogretmen_update.eposta
+    if ogretmen_update.baslama_tarihi is not None:
+        ogretmen.baslama_tarihi = ogretmen_update.baslama_tarihi
+    if ogretmen_update.durum is not None:
+        ogretmen.durum = ogretmen_update.durum
+    if ogretmen_update.notlar is not None:
+        ogretmen.notlar = ogretmen_update.notlar
+
+    db.commit()
+    db.refresh(ogretmen)
+    return ogretmen
+
+@app.delete("/ogretmenler/{ogretmen_id}", status_code=status.HTTP_200_OK)
+def delete_ogretmen(
+    ogretmen_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    ogretmen = db.query(models.Ogretmen).filter(models.Ogretmen.id == ogretmen_id).first()
+    if not ogretmen:
+        raise HTTPException(status_code=404, detail="Öğretmen bulunamadı.")
+
+    if current_user.akademi_adi and ogretmen.akademi_adi != current_user.akademi_adi:
+        raise HTTPException(status_code=403, detail="Başka bir akademiye ait öğretmeni silemezsiniz.")
+
+    db.delete(ogretmen)
+    db.commit()
+    return {"mesaj": "Öğretmen başarıyla silindi."}
+
+
+# ==================== PERSONELLER ENDPOINTLERİ ====================
+@app.get("/personeller/", response_model=List[schemas.PersonelResponse])
+def get_personeller(
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    query = db.query(models.Personel)
+    if current_user.akademi_adi:
+        query = query.filter(models.Personel.akademi_adi == current_user.akademi_adi)
+    return query.all()
+
+@app.post("/personeller/", response_model=schemas.PersonelResponse, status_code=status.HTTP_201_CREATED)
+def create_personel(
+    personel: schemas.PersonelCreate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    yeni_personel = models.Personel(
+        isim=personel.isim,
+        unvan=personel.unvan,
+        telefon=personel.telefon,
+        eposta=personel.eposta,
+        baslama_tarihi=personel.baslama_tarihi,
+        durum=personel.durum,
+        notlar=personel.notlar,
+        akademi_adi=current_user.akademi_adi
+    )
+    db.add(yeni_personel)
+    db.commit()
+    db.refresh(yeni_personel)
+    return yeni_personel
+
+@app.put("/personeller/{personel_id}", response_model=schemas.PersonelResponse)
+def update_personel(
+    personel_id: int,
+    personel_update: schemas.PersonelUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    personel = db.query(models.Personel).filter(models.Personel.id == personel_id).first()
+    if not personel:
+        raise HTTPException(status_code=404, detail="Personel bulunamadı.")
+    
+    if current_user.akademi_adi and personel.akademi_adi != current_user.akademi_adi:
+        raise HTTPException(status_code=403, detail="Başka bir akademiye ait personeli güncelleyemezsiniz.")
+
+    if personel_update.isim is not None:
+        personel.isim = personel_update.isim
+    if personel_update.unvan is not None:
+        personel.unvan = personel_update.unvan
+    if personel_update.telefon is not None:
+        personel.telefon = personel_update.telefon
+    if personel_update.eposta is not None:
+        personel.eposta = personel_update.eposta
+    if personel_update.baslama_tarihi is not None:
+        personel.baslama_tarihi = personel_update.baslama_tarihi
+    if personel_update.durum is not None:
+        personel.durum = personel_update.durum
+    if personel_update.notlar is not None:
+        personel.notlar = personel_update.notlar
+
+    db.commit()
+    db.refresh(personel)
+    return personel
+
+@app.delete("/personeller/{personel_id}", status_code=status.HTTP_200_OK)
+def delete_personel(
+    personel_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    personel = db.query(models.Personel).filter(models.Personel.id == personel_id).first()
+    if not personel:
+        raise HTTPException(status_code=404, detail="Personel bulunamadı.")
+
+    if current_user.akademi_adi and personel.akademi_adi != current_user.akademi_adi:
+        raise HTTPException(status_code=403, detail="Başka bir akademiye ait personeli silemezsiniz.")
+
+    db.delete(personel)
+    db.commit()
+    return {"mesaj": "Personel başarıyla silindi."}
+
+
+# ==================== DEGERLENDIRMELER ENDPOINTLERİ ====================
+@app.get("/degerlendirmeler/", response_model=List[schemas.DegerlendirmeResponse])
+def get_degerlendirmeler(
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    query = db.query(models.Degerlendirme)
+    if current_user.akademi_adi:
+        query = query.filter(models.Degerlendirme.akademi_adi == current_user.akademi_adi)
+    return query.all()
+
+@app.post("/degerlendirmeler/", response_model=schemas.DegerlendirmeResponse, status_code=status.HTTP_201_CREATED)
+def create_degerlendirme(
+    deg: schemas.DegerlendirmeCreate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    yeni_deg = models.Degerlendirme(
+        tur=deg.tur,
+        calisan_id=deg.calisan_id,
+        isim=deg.isim,
+        unvan=deg.unvan,
+        puan=deg.puan,
+        notlar=deg.notlar,
+        kategori=deg.kategori,
+        akademi_adi=current_user.akademi_adi
+    )
+    db.add(yeni_deg)
+    db.commit()
+    db.refresh(yeni_deg)
+    return yeni_deg
+
+@app.put("/degerlendirmeler/{deg_id}", response_model=schemas.DegerlendirmeResponse)
+def update_degerlendirme(
+    deg_id: int,
+    deg_update: schemas.DegerlendirmeUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    deg = db.query(models.Degerlendirme).filter(models.Degerlendirme.id == deg_id).first()
+    if not deg:
+        raise HTTPException(status_code=404, detail="Değerlendirme bulunamadı.")
+    
+    if current_user.akademi_adi and deg.akademi_adi != current_user.akademi_adi:
+        raise HTTPException(status_code=403, detail="Başka bir akademiye ait değerlendirmeyi güncelleyemezsiniz.")
+
+    if deg_update.puan is not None:
+        deg.puan = deg_update.puan
+    if deg_update.notlar is not None:
+        deg.notlar = deg_update.notlar
+    if deg_update.kategori is not None:
+        deg.kategori = deg_update.kategori
+
+    db.commit()
+    db.refresh(deg)
+    return deg
+
+@app.delete("/degerlendirmeler/{deg_id}", status_code=status.HTTP_200_OK)
+def delete_degerlendirme(
+    deg_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    deg = db.query(models.Degerlendirme).filter(models.Degerlendirme.id == deg_id).first()
+    if not deg:
+        raise HTTPException(status_code=404, detail="Değerlendirme bulunamadı.")
+
+    if current_user.akademi_adi and deg.akademi_adi != current_user.akademi_adi:
+        raise HTTPException(status_code=403, detail="Başka bir akademiye ait değerlendirmeyi silemezsiniz.")
+
+    db.delete(deg)
+    db.commit()
+    return {"mesaj": "Değerlendirme başarıyla silindi."}
+
+
 # ==================== DERSLİKLER ENDPOINTLERİ ====================
 @app.get("/derslikler/", response_model=List[schemas.DerslikResponse])
 def get_derslikler(
@@ -1565,6 +1810,65 @@ def get_ders_programi(
             sinif_adi=sinif_adi,
             derslik_adi=derslik_adi
         ))
+        
+    # --- TELAFİ DERSLERİ (Current Week) ---
+    import re
+    from datetime import datetime, timedelta
+    
+    today = datetime.now()
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+    
+    y_query = db.query(models.Yoklama).filter(models.Yoklama.aciklama.like('%[TELAFİ DERSİ | Telafi Tarihi:%'))
+    if current_user.akademi_adi:
+        y_query = y_query.filter(models.Yoklama.akademi_adi == current_user.akademi_adi)
+    
+    yoklamalar = y_query.all()
+    
+    days_tr = {0: 'Pazartesi', 1: 'Salı', 2: 'Çarşamba', 3: 'Perşembe', 4: 'Cuma', 5: 'Cumartesi', 6: 'Pazar'}
+    telafi_dersleri_dict = {}
+    
+    for y in yoklamalar:
+        match = re.search(r'Telafi Tarihi:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})', y.aciklama or "")
+        if match:
+            telafi_date_str = match.group(1)
+            try:
+                telafi_date = datetime.strptime(telafi_date_str, '%Y-%m-%d')
+                if start_of_week.date() <= telafi_date.date() <= end_of_week.date():
+                    sinif_id = y.sinif_id
+                    key = f"{sinif_id}_{telafi_date_str}"
+                    if key not in telafi_dersleri_dict:
+                        sinif = db.query(models.Sinif).filter(models.Sinif.id == sinif_id).first()
+                        if sinif:
+                            prog = db.query(models.DersProgrami).filter(models.DersProgrami.sinif_id == sinif_id).first()
+                            baslangic = prog.baslangic_saati if prog and prog.baslangic_saati else "10:00"
+                            bitis = prog.bitis_saati if prog and prog.bitis_saati else "11:00"
+                            ogretmen = prog.ogretmen_adi if prog and prog.ogretmen_adi else "Bilinmiyor"
+                            d_id = prog.derslik_id if prog else None
+                            d_adi = prog.derslik.ad if prog and prog.derslik else None
+                            
+                            # Fake ID avoiding collision with normal integers (using large negative offset)
+                            fake_id = -int(y.id) - 100000 
+                            
+                            telafi_dersleri_dict[key] = schemas.DersProgramiResponse(
+                                id=fake_id,
+                                sinif_id=sinif_id,
+                                gun=days_tr.get(telafi_date.weekday(), "Pazartesi"),
+                                baslangic_saati=baslangic,
+                                bitis_saati=bitis,
+                                ders_adi=f"[TELAFİ] {sinif.sinif_adi}",
+                                ogretmen_adi=ogretmen,
+                                renk="orange",
+                                derslik_id=d_id,
+                                sinif_adi=sinif.sinif_adi,
+                                derslik_adi=d_adi
+                            )
+            except Exception:
+                pass
+                
+    for td in telafi_dersleri_dict.values():
+        res.append(td)
+        
     return res
 
 @app.post("/ders-programi/", response_model=schemas.DersProgramiResponse, status_code=status.HTTP_201_CREATED)
@@ -1858,6 +2162,39 @@ def run_daily_reminders(
                         background_tasks.add_task(
                             send_whatsapp_message, 
                             ogrenci.telefon, 
+                            mesaj,
+                            ak_record.whatsapp_provider,
+                            ak_record.whatsapp_api_key,
+                            ak_record.whatsapp_phone_number
+                        )
+                        mesaj_gonderilenler += 1
+                    except Exception:
+                        pass
+                
+        # Öğretmene Hatırlatma Gönder
+        if ders.ogretmen_adi:
+            ogretmen = db.query(models.Ogretmen).filter(
+                models.Ogretmen.isim == ders.ogretmen_adi,
+                models.Ogretmen.akademi_adi == (ders.akademi_adi or "Test1")
+            ).first()
+            
+            if ogretmen and ogretmen.telefon and ogretmen.durum == "Aktif":
+                ak_name = ogretmen.akademi_adi or "Test1"
+                if ak_name not in akademi_cache:
+                    akademi_cache[ak_name] = db.query(models.Akademi).filter(models.Akademi.name == ak_name).first()
+                
+                ak_record = akademi_cache.get(ak_name)
+                if ak_record and getattr(ak_record, 'msg_ogretmen_hatirlatma', None) and getattr(ak_record, 'is_msg_ogretmen_hatirlatma_active', False):
+                    try:
+                        mesaj = ak_record.msg_ogretmen_hatirlatma.format(
+                            ogretmen_adi=ogretmen.isim,
+                            ders_adi=ders.ders_adi or "Ders",
+                            tarih=yarin_gun_str,
+                            saat=ders.baslangic_saati
+                        )
+                        background_tasks.add_task(
+                            send_whatsapp_message, 
+                            ogretmen.telefon, 
                             mesaj,
                             ak_record.whatsapp_provider,
                             ak_record.whatsapp_api_key,

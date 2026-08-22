@@ -4,7 +4,7 @@ import {
  Star, Award, Edit3, GraduationCap, ThumbsUp, Calendar, Plus, X, BookOpen,
  Briefcase, User, Phone, Mail, Search, CheckCircle, Clock, Filter, Layers, Users
 } from 'lucide-react';
-import { getKullanicilar, createKullanici, deleteKullanici, getSiniflar } from '../services/api';
+import { getKullanicilar, createKullanici, deleteKullanici, getSiniflar, getOgretmenler, createOgretmen, updateOgretmen, deleteOgretmen, getPersoneller, createPersonel, updatePersonel, deletePersonel, getDegerlendirmeler, createDegerlendirme, updateDegerlendirme, deleteDegerlendirme } from '../services/api';
 import ConfirmModal from '../components/ConfirmModal';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -188,13 +188,13 @@ const Kullanicilar = () => {
  };
 
  // Öğretmen Kadrosu State (Akademiye Özel)
- const [teachers, setTeachers] = useState(() => getInitialTeachers(currentAkademi));
+ const [teachers, setTeachers] = useState([]);
 
  // Personel Kadrosu State (Akademiye Özel)
- const [staff, setStaff] = useState(() => getInitialStaff(currentAkademi));
+ const [staff, setStaff] = useState([]);
 
  // Değerlendirmeler State (Hem Öğretmen Hem Personel - Akademiye Özel)
- const [evaluations, setEvaluations] = useState(() => getInitialEvaluations(currentAkademi));
+ const [evaluations, setEvaluations] = useState([]);
 
  // Search filter states
  const [teacherSearch, setTeacherSearch] = useState('');
@@ -250,38 +250,12 @@ const Kullanicilar = () => {
  useEffect(() => {
  fetchKullanicilar();
  fetchSiniflar();
+ fetchOgretmenler();
+ fetchPersoneller();
+ fetchDegerlendirmeler();
  }, []);
 
- useEffect(() => {
- setTeachers(getInitialTeachers(currentAkademi));
- setStaff(getInitialStaff(currentAkademi));
- setEvaluations(getInitialEvaluations(currentAkademi));
- }, [currentAkademi]);
-
- // Sync to LocalStorage per academy
- useEffect(() => {
- try {
- localStorage.setItem(`system_teachers_${currentAkademi}`, JSON.stringify(teachers));
- } catch (e) {
- console.error('Teachers LocalStorage kaydı başarısız:', e);
- }
- }, [teachers, currentAkademi]);
-
- useEffect(() => {
- try {
- localStorage.setItem(`system_staff_${currentAkademi}`, JSON.stringify(staff));
- } catch (e) {
- console.error('Staff LocalStorage kaydı başarısız:', e);
- }
- }, [staff, currentAkademi]);
-
- useEffect(() => {
- try {
- localStorage.setItem(`system_evaluations_${currentAkademi}`, JSON.stringify(evaluations));
- } catch (e) {
- console.error('Evaluations LocalStorage kaydı başarısız:', e);
- }
- }, [evaluations, currentAkademi]);
+ // Removed LocalStorage syncing for all resources
 
  const fetchSiniflar = async () => {
  try {
@@ -289,6 +263,33 @@ const Kullanicilar = () => {
  setSiniflar(res.data || []);
  } catch (e) {
  console.error('Sınıflar yüklenemedi:', e);
+ }
+ };
+
+ const fetchOgretmenler = async () => {
+ try {
+ const res = await getOgretmenler();
+ setTeachers(res.data || []);
+ } catch (e) {
+ console.error('Öğretmenler yüklenemedi:', e);
+ }
+ };
+
+ const fetchPersoneller = async () => {
+ try {
+ const res = await getPersoneller();
+ setStaff(res.data || []);
+ } catch (e) {
+ console.error('Personeller yüklenemedi:', e);
+ }
+ };
+
+ const fetchDegerlendirmeler = async () => {
+ try {
+ const res = await getDegerlendirmeler();
+ setEvaluations(res.data || []);
+ } catch (e) {
+ console.error('Değerlendirmeler yüklenemedi:', e);
  }
  };
 
@@ -424,25 +425,29 @@ const Kullanicilar = () => {
  setShowTeacherModal(true);
  };
 
- const handleSaveTeacher = (e) => {
+ const handleSaveTeacher = async (e) => {
  e.preventDefault();
  if (!teacherForm.isim.trim()) {
  showToast('Öğretmen adı ve soyadı zorunludur.', 'error');
  return;
  }
 
+ setSubmitting(true);
+ try {
  if (editingTeacher) {
- setTeachers(prev => prev.map(t => t.id === editingTeacher.id ? { ...t, ...teacherForm } : t));
+ await updateOgretmen(editingTeacher.id, teacherForm);
  showToast(`"${teacherForm.isim}" öğretmen bilgileri güncellendi.`);
  } else {
- const newTeacher = {
- id: Date.now(),
- ...teacherForm
- };
- setTeachers(prev => [newTeacher, ...prev]);
+ await createOgretmen(teacherForm);
  showToast(`Yeni öğretmen "${teacherForm.isim}" kadroya başarıyla eklendi!`);
  }
+ fetchOgretmenler();
  setShowTeacherModal(false);
+ } catch (err) {
+ showToast('Öğretmen kaydedilirken hata oluştu.', 'error');
+ } finally {
+ setSubmitting(false);
+ }
  };
 
  const handleDeleteTeacher = (id, teacherName) => {
@@ -452,8 +457,13 @@ const Kullanicilar = () => {
  type: 'danger',
  confirmText: 'Öğretmeni Sil',
  onConfirm: async () => {
- setTeachers(prev => prev.filter(t => t.id !== id));
+ try {
+ await deleteOgretmen(id);
+ fetchOgretmenler();
  showToast('Öğretmen kaydı başarıyla silindi.');
+ } catch (err) {
+ showToast('Öğretmen silinirken hata oluştu.', 'error');
+ }
  }
  });
  };
@@ -487,25 +497,29 @@ const Kullanicilar = () => {
  setShowStaffModal(true);
  };
 
- const handleSaveStaff = (e) => {
+ const handleSaveStaff = async (e) => {
  e.preventDefault();
  if (!staffForm.isim.trim()) {
  showToast('Personel adı ve soyadı zorunludur.', 'error');
  return;
  }
 
+ setSubmitting(true);
+ try {
  if (editingStaff) {
- setStaff(prev => prev.map(s => s.id === editingStaff.id ? { ...s, ...staffForm } : s));
+ await updatePersonel(editingStaff.id, staffForm);
  showToast(`"${staffForm.isim}" personel bilgileri güncellendi.`);
  } else {
- const newStaffItem = {
- id: Date.now(),
- ...staffForm
- };
- setStaff(prev => [newStaffItem, ...prev]);
+ await createPersonel(staffForm);
  showToast(`Yeni personel "${staffForm.isim}" kadroya başarıyla eklendi!`);
  }
+ fetchPersoneller();
  setShowStaffModal(false);
+ } catch (err) {
+ showToast('Personel kaydedilirken hata oluştu.', 'error');
+ } finally {
+ setSubmitting(false);
+ }
  };
 
  const handleDeleteStaff = (id, staffName) => {
@@ -515,8 +529,13 @@ const Kullanicilar = () => {
  type: 'danger',
  confirmText: 'Personeli Sil',
  onConfirm: async () => {
- setStaff(prev => prev.filter(s => s.id !== id));
+ try {
+ await deletePersonel(id);
+ fetchPersoneller();
  showToast('Personel kaydı başarıyla silindi.');
+ } catch (err) {
+ showToast('Personel silinirken hata oluştu.', 'error');
+ }
  }
  });
  };
@@ -545,7 +564,7 @@ const Kullanicilar = () => {
  unvan: item.unvan || item.brans || item.gorev || '',
  puan: item.puan || 5,
  notlar: item.notlar || '',
- kategoriInput: (item.kategoriler || []).join(', ')
+ kategoriInput: item.kategori || ''
  });
  setShowEvalModal(true);
  };
@@ -579,7 +598,7 @@ const Kullanicilar = () => {
  }
  };
 
- const handleSaveEval = (e) => {
+ const handleSaveEval = async (e) => {
  e.preventDefault();
  if (!evalForm.isim.trim()) {
  showToast(`${evalForm.tur === 'ogretmen' ? 'Öğretmen' : 'Personel'} adı zorunludur.`, 'error');
@@ -589,38 +608,37 @@ const Kullanicilar = () => {
  const tags = evalForm.kategoriInput
  .split(',')
  .map(t => t.trim())
- .filter(t => t.length > 0);
+ .filter(t => t.length > 0)
+ .join(', ');
 
- const todayStr = new Date().toISOString().split('T')[0];
-
+ setSubmitting(true);
+ try {
  if (editingEval) {
- setEvaluations(prev => prev.map(item => item.id === editingEval.id ? {
- ...item,
- tur: evalForm.tur,
- isim: evalForm.isim.trim(),
- unvan: evalForm.unvan.trim(),
+ await updateDegerlendirme(editingEval.id, {
  puan: parseFloat(evalForm.puan),
  notlar: evalForm.notlar.trim(),
- kategoriler: tags,
- tarih: todayStr
- } : item));
+ kategori: tags
+ });
  showToast(`${evalForm.isim} değerlendirmesi güncellendi.`);
  } else {
- const newEval = {
- id: Date.now(),
+ await createDegerlendirme({
  tur: evalForm.tur,
+ calisan_id: evalForm.selectedEmployeeId ? parseInt(evalForm.selectedEmployeeId) : 0,
  isim: evalForm.isim.trim(),
  unvan: evalForm.unvan.trim(),
  puan: parseFloat(evalForm.puan),
  notlar: evalForm.notlar.trim(),
- kategoriler: tags,
- tarih: todayStr
- };
- setEvaluations(prev => [newEval, ...prev]);
+ kategori: tags
+ });
  showToast(`${evalForm.isim} için ${evalForm.tur === 'ogretmen' ? 'öğretmen' : 'personel'} değerlendirmesi eklendi!`);
  }
-
+ fetchDegerlendirmeler();
  setShowEvalModal(false);
+ } catch (err) {
+ showToast('Değerlendirme kaydedilirken hata oluştu.', 'error');
+ } finally {
+ setSubmitting(false);
+ }
  };
 
  const handleDeleteEval = (id, targetName) => {
@@ -630,8 +648,13 @@ const Kullanicilar = () => {
  type: 'danger',
  confirmText: 'Değerlendirmeyi Sil',
  onConfirm: async () => {
- setEvaluations(prev => prev.filter(e => e.id !== id));
+ try {
+ await deleteDegerlendirme(id);
+ fetchDegerlendirmeler();
  showToast('Değerlendirme başarıyla silindi.');
+ } catch (err) {
+ showToast('Değerlendirme silinirken hata oluştu.', 'error');
+ }
  }
  });
  };

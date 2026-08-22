@@ -120,6 +120,24 @@ export const getKullanicilar = () => API.get('/kullanicilar/');
 export const createKullanici = (data) => API.post('/kullanicilar/', data);
 export const deleteKullanici = (id) => API.delete(`/kullanicilar/${id}`);
 
+// Öğretmen Endpointleri
+export const getOgretmenler = () => API.get('/ogretmenler/');
+export const createOgretmen = (data) => API.post('/ogretmenler/', data);
+export const updateOgretmen = (id, data) => API.put(`/ogretmenler/${id}`, data);
+export const deleteOgretmen = (id) => API.delete(`/ogretmenler/${id}`);
+
+// Personel Endpointleri
+export const getPersoneller = () => API.get('/personeller/');
+export const createPersonel = (data) => API.post('/personeller/', data);
+export const updatePersonel = (id, data) => API.put(`/personeller/${id}`, data);
+export const deletePersonel = (id) => API.delete(`/personeller/${id}`);
+
+// Değerlendirme Endpointleri
+export const getDegerlendirmeler = () => API.get('/degerlendirmeler/');
+export const createDegerlendirme = (data) => API.post('/degerlendirmeler/', data);
+export const updateDegerlendirme = (id, data) => API.put(`/degerlendirmeler/${id}`, data);
+export const deleteDegerlendirme = (id) => API.delete(`/degerlendirmeler/${id}`);
+
 // Ders Programı Endpointleri (CACHED)
 export const getDersProgrami = (bypass = false) => withCache('/ders-programi/', () => API.get('/ders-programi/'), bypass);
 export const createDersProgrami = (data) => API.post('/ders-programi/', data);

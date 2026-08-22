@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Users, BookOpen, Wallet, ArrowUpRight, TrendingUp, Plus, Trash2, X, Eye, UserPlus, Calendar, Clock } from 'lucide-react';
-import { getOgrenciler, getSiniflar, createSinif, deleteSinif, getSinifOgrencileri, getOnKayitlar, createDersProgrami, deleteDersProgrami } from '../services/api';
+import { getOgrenciler, getSiniflar, createSinif, deleteSinif, getSinifOgrencileri, getOnKayitlar, createDersProgrami, deleteDersProgrami, getDersProgrami } from '../services/api';
 import { Link } from 'react-router-dom';
 import ConfirmModal from '../components/ConfirmModal';
 import HaftalikDersCizelgesi from '../components/HaftalikDersCizelgesi';
@@ -111,37 +111,27 @@ const Dashboard = () => {
  const loadDashboardData = async () => {
  try {
  setLoading(true);
- const [ogrenciRes, sinifRes, onKayitRes] = await Promise.all([
+ const [ogrenciRes, sinifRes, onKayitRes, dersRes] = await Promise.all([
  getOgrenciler(),
  getSiniflar(),
- getOnKayitlar()
+ getOnKayitlar(),
+ getDersProgrami()
  ]);
  
  const ogrenciler = ogrenciRes.data || [];
  const siniflar = sinifRes.data || [];
  const onKayitlar = onKayitRes.data || [];
+ const dersler = dersRes.data || [];
 
  setOgrenciCount(ogrenciler.length);
  setSinifCount(siniflar.length);
  setOnKayitCount(onKayitlar.length);
  setSiniflarList(siniflar);
 
- const dersler = [];
- siniflar.forEach(sinif => {
- if (sinif.ders_programi && Array.isArray(sinif.ders_programi)) {
- sinif.ders_programi.forEach(dp => {
- dersler.push({
- ...dp,
- sinif_adi: sinif.sinif_adi,
- renk: sinif.renk || 'indigo',
- ogretmen_adi: sinif.ogretmen_adi || dp.ogretmen_adi || '-'
- });
- });
- }
- });
  setDersProgrami(dersler);
 
- setRecentOgrenciler(ogrenciler.slice(-5).reverse());
+ const sortedOgrenciler = [...ogrenciler].sort((a, b) => new Date(b.kayit_tarihi) - new Date(a.kayit_tarihi));
+ setRecentOgrenciler(sortedOgrenciler.slice(0, 5));
  } catch (err) {
  console.error('Dashboard veri yükleme hatası:', err);
  } finally {

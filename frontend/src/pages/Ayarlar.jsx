@@ -17,12 +17,14 @@ export default function Ayarlar({ showToast, user }) {
     msg_devamsizlik: '',
     msg_dogum_gunu: '',
     msg_ozel_gun: '',
+    msg_ogretmen_hatirlatma: '',
     is_msg_kayit_active: false,
     is_msg_ders_hatirlatma_active: false,
     is_msg_odeme_hatirlatma_active: false,
     is_msg_devamsizlik_active: false,
     is_msg_dogum_gunu_active: false,
-    is_msg_ozel_gun_active: false
+    is_msg_ozel_gun_active: false,
+    is_msg_ogretmen_hatirlatma_active: false
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -91,12 +93,14 @@ export default function Ayarlar({ showToast, user }) {
         msg_devamsizlik: data.msg_devamsizlik || '',
         msg_dogum_gunu: data.msg_dogum_gunu || '',
         msg_ozel_gun: data.msg_ozel_gun || '',
+        msg_ogretmen_hatirlatma: data.msg_ogretmen_hatirlatma || '',
         is_msg_kayit_active: data.is_msg_kayit_active || false,
         is_msg_ders_hatirlatma_active: data.is_msg_ders_hatirlatma_active || false,
         is_msg_odeme_hatirlatma_active: data.is_msg_odeme_hatirlatma_active || false,
         is_msg_devamsizlik_active: data.is_msg_devamsizlik_active || false,
         is_msg_dogum_gunu_active: data.is_msg_dogum_gunu_active || false,
-        is_msg_ozel_gun_active: data.is_msg_ozel_gun_active || false
+        is_msg_ozel_gun_active: data.is_msg_ozel_gun_active || false,
+        is_msg_ogretmen_hatirlatma_active: data.is_msg_ogretmen_hatirlatma_active || false
       });
     } catch (err) {
       if (err.response?.status !== 403) {
@@ -349,6 +353,24 @@ export default function Ayarlar({ showToast, user }) {
                 <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ders_adi}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{gun}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{saat}'}</span></p>
               </div>
 
+              {/* Şablon 7: Öğretmene Ders Hatırlatma */}
+              <div className={`neo-card space-y-1.5 p-4 ${formData.is_msg_ogretmen_hatirlatma_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <Type className="w-4 h-4 text-emerald-500" /> Öğretmene Ders Hatırlatma
+                  </label>
+                  <ToggleSwitch name="is_msg_ogretmen_hatirlatma_active" checked={formData.is_msg_ogretmen_hatirlatma_active} label={true} />
+                </div>
+                <textarea
+                  name="msg_ogretmen_hatirlatma"
+                  value={formData.msg_ogretmen_hatirlatma}
+                  onChange={handleChange}
+                  placeholder="Sayın {ogretmen_adi}, {tarih} saat {saat}'de {ders_adi} dersiniz bulunmaktadır."
+                  className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
+                />
+                <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ogretmen_adi}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{tarih}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{saat}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ders_adi}'}</span></p>
+              </div>
+
               {/* Şablon 3: Ödeme Hatırlatma */}
               <div className={`neo-card space-y-1.5 p-4 ${formData.is_msg_odeme_hatirlatma_active ? '  border-emerald-200 dark:border-emerald-800/50' : '  border-white/10 dark:border-white/5 '}`}>
                 <div className="flex justify-between items-center mb-2">
@@ -420,7 +442,8 @@ export default function Ayarlar({ showToast, user }) {
                 />
                 <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ozel_gun_adi}'}</span></p>
               </div>
-              
+
+
             </div>
           </div>
         </form>
@@ -551,8 +574,13 @@ export default function Ayarlar({ showToast, user }) {
 
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2">
             {targetType === 'tumu' ? (
-              <div className="p-4 bg-sky-500/10 text-sky-700 dark:text-sky-400 rounded-2xl text-center text-sm font-bold border border-sky-500/20">
-                Sistemdeki tüm aktif öğrencilere mesaj gönderilecek.
+              <div className="p-4 rounded-2xl neo-card !border-l-4 !border-l-sky-500 bg-gradient-to-r from-sky-500/10 to-transparent flex items-center justify-center gap-3">
+                <div className="p-2 bg-sky-100 dark:bg-sky-900/50 rounded-full shrink-0">
+                  <Users className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                </div>
+                <div className="text-sky-800 dark:text-sky-200 text-sm font-bold">
+                  Sistemdeki tüm aktif öğrencilere mesaj gönderilecek.
+                </div>
               </div>
             ) : selectedTarget.length === 0 ? (
               <div className="py-8 text-slate-400 text-center text-sm italic border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl">

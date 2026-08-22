@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Users, BookOpen, 
  Calendar, Clock, Plus, Trash2, Save, FileText, X, Sparkles, User,
- History, ChevronDown, ChevronUp, Filter, RefreshCw, CalendarPlus, Maximize2, Minimize2, MessageCircle, Check } from 'lucide-react';
+ History, ChevronDown, ChevronUp, Filter, RefreshCw, CalendarPlus, Maximize2, Minimize2, MessageCircle, Check, AlertTriangle } from 'lucide-react';
 import { 
  getSiniflar, getSiniflarBasic, getSinifOgrencileri, getDersProgrami, 
  createDersProgrami, deleteDersProgrami, getYoklama, saveYoklamaToplu,
@@ -50,6 +50,7 @@ const Yoklama = () => {
 
  const [siniflar, setSiniflar] = useState([]);
  const [selectedSinifId, setSelectedSinifId] = useState('');
+ const [isTelafiWarningOpen, setIsTelafiWarningOpen] = useState(false);
  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
  const [sinifOgrencileri, setSinifOgrencileri] = useState([]);
  
@@ -561,6 +562,11 @@ const Yoklama = () => {
  return matchesClass || matchesDate || matchesStudent;
  });
 
+ const handleTelafiClick = (ders) => {
+    setSelectedSinifId(ders.sinif_id.toString());
+    setIsTelafiWarningOpen(true);
+ };
+
  return (
  <div className="space-y-8">
  {/* Top Banner */}
@@ -592,10 +598,40 @@ const Yoklama = () => {
  selectedSinifId={selectedSinifId}
  setSelectedSinifId={setSelectedSinifId}
  handleDeleteDers={handleDeleteDers}
+ onTelafiClick={handleTelafiClick}
  />
  
  {/* YOKLAMA ALMA ALANI */}
  <div className="neo-card rounded-3xl p-6 space-y-6">
+ 
+ {isTelafiWarningOpen && (
+     <div 
+         onClick={() => {
+             setIsTelafiWarningOpen(false);
+             if (historySectionRef.current) {
+                 historySectionRef.current.scrollIntoView({ behavior: 'smooth' });
+             }
+         }}
+         className="cursor-pointer group relative overflow-hidden flex items-start gap-4 p-5 rounded-2xl neo-card !border-l-4 !border-l-orange-500 bg-gradient-to-r from-orange-500/10 to-transparent hover:from-orange-500/20 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg"
+     >
+         <div className="absolute -top-4 -right-4 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+             <AlertTriangle className="w-32 h-32 text-orange-500" />
+         </div>
+         <div className="p-3 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl shrink-0 group-hover:scale-110 transition-transform shadow-md z-10">
+             <AlertTriangle className="w-6 h-6 text-white" />
+         </div>
+         <div className="flex-1 z-10">
+             <h3 className="text-lg font-black text-orange-600 dark:text-orange-400 tracking-tight">Bu bir Telafi Dersidir!</h3>
+             <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
+                 Lütfen yeni yoklama kaydetmek yerine, <strong className="text-orange-600 dark:text-orange-400 font-extrabold">Geçmiş Kayıtlardan</strong> telafi tarihli satırı bulup öğrencilerin durumunu güncelleyin. Aksi takdirde öğrenciden fazladan ders hakkı düşülecektir.
+             </p>
+             <div className="text-sm font-extrabold mt-3 text-orange-600 dark:text-orange-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform inline-flex">
+                 Geçmiş Kayıtlara Git &rarr;
+             </div>
+         </div>
+     </div>
+ )}
+
  {/* Filtre ve Tarih Düzenleme BARI */}
  <div className="space-y-4 border-b pb-5">
  <div>
@@ -627,7 +663,10 @@ const Yoklama = () => {
  </label>
  <SearchableSelect
  value={selectedSinifId}
- onChange={(val) => setSelectedSinifId(val)}
+ onChange={(val) => {
+     setSelectedSinifId(val);
+     setIsTelafiWarningOpen(false);
+ }}
  options={siniflar.map(s => ({ value: s.id, label: `${s.sinif_adi} (${s.ogrenci_sayisi || 0} Öğrenci)` }))}
  placeholder="-- Sınıf Seçin --"
  searchPlaceholder="Sınıf ara..."

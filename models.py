@@ -180,12 +180,14 @@ class Akademi(Base):
     msg_devamsizlik = Column(String, nullable=True)
     msg_dogum_gunu = Column(String, nullable=True)
     msg_ozel_gun = Column(String, nullable=True)
+    msg_ogretmen_hatirlatma = Column(String, nullable=True)
     is_msg_kayit_active = Column(Boolean, default=False)
     is_msg_ders_hatirlatma_active = Column(Boolean, default=False)
     is_msg_odeme_hatirlatma_active = Column(Boolean, default=False)
     is_msg_devamsizlik_active = Column(Boolean, default=False)
     is_msg_dogum_gunu_active = Column(Boolean, default=False)
     is_msg_ozel_gun_active = Column(Boolean, default=False)
+    is_msg_ogretmen_hatirlatma_active = Column(Boolean, default=False)
     eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
 
 
@@ -207,3 +209,47 @@ class Derslik(Base):
     ad = Column(String, nullable=False, index=True)
     kapasite = Column(Integer, default=20)
     akademi_adi = Column(String, nullable=True, default="Test1", index=True)
+
+class Ogretmen(Base):
+    __tablename__ = "ogretmenler"
+
+    id = Column(Integer, primary_key=True, index=True)
+    isim = Column(String, nullable=False)
+    brans = Column(String, nullable=True)
+    telefon = Column(String, nullable=True)
+    eposta = Column(String, nullable=True)
+    baslama_tarihi = Column(String, nullable=True)
+    durum = Column(String, default="Aktif")
+    notlar = Column(String, nullable=True)
+    akademi_adi = Column(String, nullable=True, default="Test1", index=True)
+    eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
+
+
+class Personel(Base):
+    __tablename__ = "personeller"
+
+    id = Column(Integer, primary_key=True, index=True)
+    isim = Column(String, nullable=False)
+    unvan = Column(String, nullable=True)
+    telefon = Column(String, nullable=True)
+    eposta = Column(String, nullable=True)
+    baslama_tarihi = Column(String, nullable=True)
+    durum = Column(String, default="Aktif")
+    notlar = Column(String, nullable=True)
+    akademi_adi = Column(String, nullable=True, default="Test1", index=True)
+    eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
+
+
+class Degerlendirme(Base):
+    __tablename__ = "degerlendirmeler"
+
+    id = Column(Integer, primary_key=True, index=True)
+    tur = Column(String, nullable=False) # 'ogretmen' veya 'personel'
+    calisan_id = Column(Integer, nullable=False)
+    isim = Column(String, nullable=True)
+    unvan = Column(String, nullable=True)
+    puan = Column(Integer, default=5)
+    notlar = Column(String, nullable=True)
+    kategori = Column(String, nullable=True)
+    akademi_adi = Column(String, nullable=True, default="Test1", index=True)
+    tarih = Column(DateTime, default=datetime.utcnow)

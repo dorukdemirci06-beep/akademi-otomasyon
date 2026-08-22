@@ -100,7 +100,7 @@ const SearchableSelect = ({
             : (selectedOption?.color ? selectedOption.color : 'neo-input border-transparent')
         }`}
       >
-        <div className="flex items-center gap-2.5 flex-1 min-w-0 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <Icon className="w-4 h-4 text-slate-400 shrink-0" />
           {isOpen ? (
             <input

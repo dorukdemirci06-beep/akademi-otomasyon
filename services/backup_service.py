@@ -158,6 +158,69 @@ def backup_all_to_sheets():
             if data:
                 ws.update(values=data, range_name=f"A1:D{len(data)}")
 
+            # 7. ÖĞRETMENLER
+            ws = get_or_create_worksheet(sheet, "Öğretmenler")
+            data = []
+            headers = ["Akademi Adı", "Öğretmen ID", "İsim", "Branş", "Telefon", "E-posta", "Başlama Tarihi", "Durum", "Notlar", "Eklenme Tarihi"]
+            for akademi in akademiler:
+                items = db.query(models.Ogretmen).filter(models.Ogretmen.akademi_adi == akademi.name).all()
+                append_academy_data(data, akademi.name, headers, items, lambda o: [
+                    o.akademi_adi or "", str(o.id), o.isim or "", o.brans or "", o.telefon or "", o.eposta or "", 
+                    o.baslama_tarihi or "", o.durum or "", o.notlar or "", 
+                    o.eklenme_tarihi.strftime("%Y-%m-%d %H:%M") if o.eklenme_tarihi else ""
+                ])
+            ws.clear()
+            if data:
+                ws.update(values=data, range_name=f"A1:J{len(data)}")
+
+            # 8. PERSONELLER
+            ws = get_or_create_worksheet(sheet, "Personeller")
+            data = []
+            headers = ["Akademi Adı", "Personel ID", "İsim", "Ünvan", "Telefon", "E-posta", "Başlama Tarihi", "Durum", "Notlar", "Eklenme Tarihi"]
+            for akademi in akademiler:
+                items = db.query(models.Personel).filter(models.Personel.akademi_adi == akademi.name).all()
+                append_academy_data(data, akademi.name, headers, items, lambda p: [
+                    p.akademi_adi or "", str(p.id), p.isim or "", p.unvan or "", p.telefon or "", p.eposta or "", 
+                    p.baslama_tarihi or "", p.durum or "", p.notlar or "", 
+                    p.eklenme_tarihi.strftime("%Y-%m-%d %H:%M") if p.eklenme_tarihi else ""
+                ])
+            ws.clear()
+            if data:
+                ws.update(values=data, range_name=f"A1:J{len(data)}")
+
+            # 9. DEĞERLENDİRMELER
+            ws = get_or_create_worksheet(sheet, "Değerlendirmeler")
+            data = []
+            headers = ["Akademi Adı", "Değerlendirme ID", "Tür", "Çalışan ID", "İsim", "Ünvan", "Puan", "Kategori", "Notlar", "Tarih"]
+            for akademi in akademiler:
+                items = db.query(models.Degerlendirme).filter(models.Degerlendirme.akademi_adi == akademi.name).all()
+                append_academy_data(data, akademi.name, headers, items, lambda d: [
+                    d.akademi_adi or "", str(d.id), d.tur or "", str(d.calisan_id), d.isim or "", d.unvan or "", 
+                    str(d.puan), d.kategori or "", d.notlar or "", 
+                    d.tarih.strftime("%Y-%m-%d %H:%M") if d.tarih else ""
+                ])
+            ws.clear()
+            if data:
+                ws.update(values=data, range_name=f"A1:J{len(data)}")
+
+            # 10. DERS PROGRAMI
+            ws = get_or_create_worksheet(sheet, "Ders Programı")
+            data = []
+            headers = ["Akademi Adı", "Program ID", "Sınıf Adı", "Derslik Adı", "Gün", "Başlangıç Saati", "Bitiş Saati", "Ders Adı", "Öğretmen Adı", "Renk"]
+            for akademi in akademiler:
+                # We need to join with Sinif to get akademi_adi since DersProgrami doesn't have it directly.
+                items = db.query(models.DersProgrami).join(models.Sinif).filter(models.Sinif.akademi_adi == akademi.name).all()
+                append_academy_data(data, akademi.name, headers, items, lambda dp: [
+                    akademi.name or "", str(dp.id), 
+                    dp.sinif.sinif_adi if dp.sinif else "Bilinmiyor",
+                    dp.derslik.ad if dp.derslik else "Belirtilmedi",
+                    dp.gun or "", dp.baslangic_saati or "", dp.bitis_saati or "", 
+                    dp.ders_adi or "", dp.ogretmen_adi or "", dp.renk or ""
+                ])
+            ws.clear()
+            if data:
+                ws.update(values=data, range_name=f"A1:J{len(data)}")
+
             print(f"[{datetime.now()}] Yedekleme Tamamlandı! Tüm tablolar başarıyla Google Sheets'e aktarıldı.")
             
         finally:

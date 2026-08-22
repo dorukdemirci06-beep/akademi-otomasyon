@@ -211,12 +211,14 @@ class AkademiUpdate(BaseModel):
     msg_devamsizlik: Optional[str] = None
     msg_dogum_gunu: Optional[str] = None
     msg_ozel_gun: Optional[str] = None
+    msg_ogretmen_hatirlatma: Optional[str] = None
     is_msg_kayit_active: Optional[bool] = None
     is_msg_ders_hatirlatma_active: Optional[bool] = None
     is_msg_odeme_hatirlatma_active: Optional[bool] = None
     is_msg_devamsizlik_active: Optional[bool] = None
     is_msg_dogum_gunu_active: Optional[bool] = None
     is_msg_ozel_gun_active: Optional[bool] = None
+    is_msg_ogretmen_hatirlatma_active: Optional[bool] = None
 
 class AkademiResponse(AkademiBase):
     id: int
@@ -230,12 +232,14 @@ class AkademiResponse(AkademiBase):
     msg_devamsizlik: Optional[str] = None
     msg_dogum_gunu: Optional[str] = None
     msg_ozel_gun: Optional[str] = None
+    msg_ogretmen_hatirlatma: Optional[str] = None
     is_msg_kayit_active: Optional[bool] = False
     is_msg_ders_hatirlatma_active: Optional[bool] = False
     is_msg_odeme_hatirlatma_active: Optional[bool] = False
     is_msg_devamsizlik_active: Optional[bool] = False
     is_msg_dogum_gunu_active: Optional[bool] = False
     is_msg_ozel_gun_active: Optional[bool] = False
+    is_msg_ogretmen_hatirlatma_active: Optional[bool] = False
     eklenme_tarihi: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -303,6 +307,92 @@ class DerslikCreate(DerslikBase):
 class DerslikResponse(DerslikBase):
     id: int
     akademi_adi: Optional[str] = "Test1"
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==================== ÖĞRETMEN SCHEMAS ====================
+class OgretmenBase(BaseModel):
+    isim: str
+    brans: Optional[str] = None
+    telefon: Optional[str] = None
+    eposta: Optional[str] = None
+    baslama_tarihi: Optional[str] = None
+    durum: Optional[str] = "Aktif"
+    notlar: Optional[str] = None
+    akademi_adi: Optional[str] = "Test1"
+
+class OgretmenCreate(OgretmenBase):
+    pass
+
+class OgretmenUpdate(BaseModel):
+    isim: Optional[str] = None
+    brans: Optional[str] = None
+    telefon: Optional[str] = None
+    eposta: Optional[str] = None
+    baslama_tarihi: Optional[str] = None
+    durum: Optional[str] = None
+    notlar: Optional[str] = None
+
+class OgretmenResponse(OgretmenBase):
+    id: int
+    eklenme_tarihi: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==================== PERSONEL SCHEMAS ====================
+class PersonelBase(BaseModel):
+    isim: str
+    unvan: Optional[str] = None
+    telefon: Optional[str] = None
+    eposta: Optional[str] = None
+    baslama_tarihi: Optional[str] = None
+    durum: Optional[str] = "Aktif"
+    notlar: Optional[str] = None
+    akademi_adi: Optional[str] = "Test1"
+
+class PersonelCreate(PersonelBase):
+    pass
+
+class PersonelUpdate(BaseModel):
+    isim: Optional[str] = None
+    unvan: Optional[str] = None
+    telefon: Optional[str] = None
+    eposta: Optional[str] = None
+    baslama_tarihi: Optional[str] = None
+    durum: Optional[str] = None
+    notlar: Optional[str] = None
+
+class PersonelResponse(PersonelBase):
+    id: int
+    eklenme_tarihi: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==================== DEGERLENDIRME SCHEMAS ====================
+class DegerlendirmeBase(BaseModel):
+    tur: str
+    calisan_id: int
+    isim: Optional[str] = None
+    unvan: Optional[str] = None
+    puan: Optional[int] = 5
+    notlar: Optional[str] = None
+    kategori: Optional[str] = None
+    akademi_adi: Optional[str] = "Test1"
+
+class DegerlendirmeCreate(DegerlendirmeBase):
+    pass
+
+class DegerlendirmeUpdate(BaseModel):
+    puan: Optional[int] = None
+    notlar: Optional[str] = None
+    kategori: Optional[str] = None
+
+class DegerlendirmeResponse(DegerlendirmeBase):
+    id: int
+    tarih: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
