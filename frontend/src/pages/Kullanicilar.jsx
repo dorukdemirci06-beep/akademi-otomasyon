@@ -1088,7 +1088,7 @@ const Kullanicilar = () => {
  {/* Card Header */}
  <div className="flex justify-between items-start gap-2 border-b pb-3">
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-500 font-bold shrink-0 text-base">
+ <div className="neo-card w-10 h-10 rounded-full flex items-center justify-center text-sky-500 font-bold shrink-0 text-base">
  {teacher.isim.charAt(0)}
  </div>
  <div>
@@ -1184,7 +1184,7 @@ const Kullanicilar = () => {
  <span>Verdiği Dersler & Sınıflar</span>
  </span>
  {teacherLessons.length > 0 && (
- <span className="text-[10px] font-extrabold bg-sky-500/15 text-sky-600 px-2 py-0.5 rounded-full border border-sky-500/30">
+ <span className="neo-card text-[10px] font-extrabold text-sky-600 px-2 py-0.5 rounded-full">
  {teacherLessons.length} Aktif Sınıf
  </span>
  )}
@@ -1195,7 +1195,7 @@ const Kullanicilar = () => {
  {teacherLessons.map((l, idx) => (
  <div
  key={idx}
- className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/30 text-sky-900 dark:text-sky-200 rounded-full text-xs font-semibold"
+ className="neo-card flex items-center gap-1.5 px-2.5 py-1 text-sky-900 dark:text-sky-200 rounded-full text-xs font-semibold"
  >
  <Clock className="w-3 h-3 text-sky-500 shrink-0" />
  <span className="font-bold">{l.sinif_adi}</span>
@@ -1205,7 +1205,7 @@ const Kullanicilar = () => {
  </div>
  ) : (
  <div className="flex items-center gap-2 pt-0.5">
- <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 rounded-full text-xs font-bold">
+ <span className="neo-card inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-sky-800 dark:text-sky-200">
  <BookOpen className="w-3 h-3 text-sky-500" />
  {teacher.brans || 'Genel Eğitmen'}
  </span>
@@ -1235,7 +1235,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openAddEvalModal('ogretmen', teacher.isim, teacher.brans)}
- className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white border border-amber-500/30 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+ className="neo-card px-3 py-1.5 text-amber-600 dark:text-amber-400 hover:text-amber-500 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer"
  >
  <Star className="w-3 h-3" />
  <span>Değerlendirme Yap</span>
@@ -1537,7 +1537,7 @@ const Kullanicilar = () => {
  {/* Card Header */}
  <div className="flex justify-between items-start gap-2 border-b pb-3">
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-500 font-bold shrink-0 text-base">
+ <div className="neo-card w-10 h-10 rounded-full flex items-center justify-center text-sky-500 font-bold shrink-0 text-base">
  {item.isim.charAt(0)}
  </div>
  <div>
@@ -1615,7 +1615,7 @@ const Kullanicilar = () => {
  <button
  type="button"
  onClick={() => openAddEvalModal('personel', item.isim, item.unvan)}
- className="px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500 text-sky-700 hover:text-white border border-sky-500/30 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+ className="neo-card px-3 py-1.5 text-sky-600 dark:text-sky-400 hover:text-sky-500 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer"
  >
  <Star className="w-3 h-3" />
  <span>Değerlendirme Yap</span>
@@ -2012,10 +2012,10 @@ const Kullanicilar = () => {
  onClick={() => {
  setEvalForm({ ...evalForm, tur: 'ogretmen', selectedEmployeeId: '', isim: '', unvan: '' });
  }}
- className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border cursor-pointer ${
+ className={`neo-card py-2 px-3 rounded-full text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
  evalForm.tur === 'ogretmen'
- ? 'bg-amber-100 dark:bg-amber-950/80 border-amber-500 text-amber-800 dark:text-amber-400'
- : ' text-slate-600 dark:text-slate-400'
+ ? 'text-amber-600 dark:text-amber-400'
+ : 'text-slate-500 dark:text-slate-400 opacity-60'
  }`}
  >
  <GraduationCap className="w-4 h-4" />
@@ -2026,10 +2026,10 @@ const Kullanicilar = () => {
  onClick={() => {
  setEvalForm({ ...evalForm, tur: 'personel', selectedEmployeeId: '', isim: '', unvan: '' });
  }}
- className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border cursor-pointer ${
+ className={`neo-card py-2 px-3 rounded-full text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
  evalForm.tur === 'personel'
- ? 'bg-sky-100 dark:bg-sky-950/80 border-sky-500  '
- : ' text-slate-600 dark:text-slate-400'
+ ? 'text-sky-600 dark:text-sky-400'
+ : 'text-slate-500 dark:text-slate-400 opacity-60'
  }`}
  >
  <Briefcase className="w-4 h-4" />

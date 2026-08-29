@@ -19,6 +19,8 @@ const Finans = () => {
  const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState(false);
  const [formStudentSearchQuery, setFormStudentSearchQuery] = useState('');
  const studentDropdownRef = useRef(null);
+ const [kasaStartDate, setKasaStartDate] = useState('');
+ const [kasaEndDate, setKasaEndDate] = useState('');
 
  const [confirmModal, setConfirmModal] = useState({
  isOpen: false,
@@ -102,6 +104,12 @@ const Finans = () => {
  useEffect(() => {
  fetchOgrencilerVeOdemeler();
  }, []);
+
+ useEffect(() => {
+ if (kasaStartDate || kasaEndDate) {
+ setActiveMainTab('tahsilatlar');
+ }
+ }, [kasaStartDate, kasaEndDate]);
 
  // Taksit sayısı veya başlangıç tarihi değiştiğinde taksit tarihlerini otomatik hesapla
  useEffect(() => {
@@ -376,7 +384,27 @@ const Finans = () => {
  })();
  const roleLower = (currentUser?.rol || '').toLowerCase();
  const isAdmin = roleLower.includes('yönetici') || roleLower.includes('yonetici') || roleLower.includes('admin') || roleLower.includes('super') || roleLower.includes('süper');
- const totalKasa = ogrenciler.reduce((acc, curr) => acc + (curr.bakiye || 0), 0);
+ 
+ const filteredOdemelerForKasa = odemeler.filter(p => {
+   if (p.durum !== 'Ödendi') return false;
+   if (!p.tarih) return false;
+   const pDate = new Date(p.tarih);
+   pDate.setHours(0, 0, 0, 0);
+
+   if (kasaStartDate) {
+     const start = new Date(kasaStartDate);
+     start.setHours(0, 0, 0, 0);
+     if (pDate < start) return false;
+   }
+   if (kasaEndDate) {
+     const end = new Date(kasaEndDate);
+     end.setHours(23, 59, 59, 999);
+     if (pDate > end) return false;
+   }
+   return true;
+ });
+
+ const totalKasa = filteredOdemelerForKasa.reduce((acc, curr) => acc + (curr.tutar || 0), 0);
 
  const tutarNum = parseFloat(odemeData.tutar) || 0;
  const taksitNum = parseInt(odemeData.taksit_sayisi) || 1;
@@ -495,11 +523,41 @@ const Finans = () => {
  </div>
 
  {isAdmin && (
- <div className="px-4 py-2 rounded-full flex items-center gap-3 bg-gradient-to-r from-sky-500 to-sky-600 transition-colors text-white border-transparent shadow-sm">
- <div className="text-right">
- <span className="block text-[10px] font-bold uppercase text-sky-50/90">Toplam Cari Kasa</span>
- <span className="text-xl font-bold text-white">₺{formatTL(totalKasa)}</span>
- </div>
+ <div className="flex flex-col xl:flex-row items-end xl:items-center gap-3">
+   <div className="flex items-center gap-2">
+     <div className="w-32 sm:w-36">
+       <CustomDatePicker
+         value={kasaStartDate}
+         onChange={(val) => setKasaStartDate(val)}
+         placeholder="Başlangıç"
+       />
+     </div>
+     <div className="w-32 sm:w-36">
+       <CustomDatePicker
+         value={kasaEndDate}
+         onChange={(val) => setKasaEndDate(val)}
+         placeholder="Bitiş"
+       />
+     </div>
+     {(kasaStartDate || kasaEndDate) && (
+       <button 
+         onClick={() => { setKasaStartDate(''); setKasaEndDate(''); }}
+         className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
+         title="Filtreyi Temizle"
+       >
+         <X className="w-4 h-4" />
+       </button>
+     )}
+   </div>
+
+   <div className="px-4 py-2 rounded-full flex items-center gap-3 bg-gradient-to-r from-sky-500 to-sky-600 transition-colors text-white border-transparent shadow-sm">
+     <div className="text-right">
+       <span className="block text-[10px] font-bold uppercase text-sky-50/90">
+         {(kasaStartDate || kasaEndDate) ? 'Filtrelenmiş Kasa' : 'Toplam Cari Kasa'}
+       </span>
+       <span className="text-xl font-bold text-white">₺{formatTL(totalKasa)}</span>
+     </div>
+   </div>
  </div>
  )}
  </div>
@@ -832,6 +890,33 @@ const Finans = () => {
 
  {/* Student Balances & Status Table */}
  <div className="lg:col-span-2 neo-card p-6 space-y-4">
+ 
+ {/* Tabs Header */}
+ <div className="flex border-b border-slate-200 dark:border-slate-700/60 mb-2 gap-2 px-1">
+   <button
+     onClick={() => setActiveMainTab('ogrenciler')}
+     className={`py-2.5 px-4 text-sm font-bold border-b-2 transition-colors ${
+       activeMainTab === 'ogrenciler'
+         ? 'border-[#0284c7] text-[#0284c7]'
+         : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+     }`}
+   >
+     Öğrenci Bakiyeleri & Durum
+   </button>
+   <button
+     onClick={() => setActiveMainTab('tahsilatlar')}
+     className={`py-2.5 px-4 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${
+       activeMainTab === 'tahsilatlar'
+         ? 'border-[#2eb82e] text-[#2eb82e]'
+         : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+     }`}
+   >
+     Tahsilat Geçmişi (Ödemeler)
+   </button>
+ </div>
+
+ {activeMainTab === 'ogrenciler' && (
+ <div className="space-y-4 animate-in fade-in duration-300">
  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-3">
  <div>
  <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -1060,9 +1145,86 @@ const Finans = () => {
     })
   )}
   </div>
-  </div>
+ </div>
+ )}
+
+ {activeMainTab === 'tahsilatlar' && (
+ <div className="space-y-4 animate-in fade-in duration-300">
+   <div className="flex justify-between items-center mb-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+      <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+        <CreditCard className="w-4 h-4 text-[#2eb82e]" />
+        {kasaStartDate || kasaEndDate ? 'Filtrelenmiş Tahsilatlar (Ödemeler)' : 'Tüm Tahsilatlar'}
+      </h3>
+      <span className="text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+        <CheckCircle className="w-3.5 h-3.5" />
+        Toplam: ₺{formatTL(totalKasa)}
+      </span>
+   </div>
+   
+   <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700/60">
+     <table className="w-full text-left text-xs border-collapse">
+       <thead className="bg-slate-50 dark:bg-slate-800/50">
+         <tr className="border-b border-slate-200 dark:border-slate-700/60 text-slate-500 dark:text-slate-400 font-bold tracking-wider">
+           <th className="py-3 px-4">TARİH</th>
+           <th className="py-3 px-4">ÖĞRENCİ</th>
+           <th className="py-3 px-4">AÇIKLAMA / TÜR</th>
+           <th className="py-3 px-4">YÖNTEM</th>
+           <th className="py-3 px-4 text-right">TUTAR</th>
+         </tr>
+       </thead>
+       <tbody className="divide-y divide-slate-200 dark:divide-slate-700/60 font-semibold text-slate-700 dark:text-slate-200">
+         {filteredOdemelerForKasa.length === 0 ? (
+           <tr>
+             <td colSpan={5} className="text-center py-10">
+               <div className="flex flex-col items-center justify-center space-y-2">
+                 <Clock className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+                 <span className="text-slate-500 dark:text-slate-400">Bu tarih aralığında tahsilat bulunmuyor.</span>
+               </div>
+             </td>
+           </tr>
+         ) : (
+           filteredOdemelerForKasa.sort((a, b) => new Date(b.tarih || 0) - new Date(a.tarih || 0)).map((p) => {
+             const ogrenci = ogrenciler.find(o => String(o.id) === String(p.ogrenci_id));
+             const ogrenciAd = ogrenci ? `${ogrenci.isim} ${ogrenci.soyisim}` : 'Bilinmeyen Öğrenci';
+             
+             return (
+               <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                 <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
+                   {p.tarih ? new Date(p.tarih).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                 </td>
+                 <td className="py-3.5 px-4 font-bold text-[#0284c7]">
+                   <span 
+                     className="cursor-pointer hover:underline flex items-center gap-1.5"
+                     onClick={() => { setSelectedOgrenci(ogrenci); }}
+                   >
+                     {ogrenciAd}
+                     <ChevronRight className="w-3 h-3 text-slate-400" />
+                   </span>
+                 </td>
+                 <td className="py-3.5 px-4">
+                   <span className="text-slate-600 dark:text-slate-300">{p.aciklama || p.odeme_turu || 'Kurs Ücreti'}</span>
+                 </td>
+                 <td className="py-3.5 px-4">
+                   <span className="px-2 py-1 rounded font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px]">
+                     {p.odeme_yontemi || 'Nakit'}
+                   </span>
+                 </td>
+                 <td className="py-3.5 px-4 text-right font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">
+                   ₺{formatTL(p.tutar)}
+                 </td>
+               </tr>
+             );
+           })
+         )}
+       </tbody>
+     </table>
+   </div>
+ </div>
+ )}
 
  </div>
+
+</div>
 
  {/* STUDENT PAYMENT DETAILS MODAL */}
  {selectedOgrenci && (
@@ -1095,18 +1257,18 @@ const Finans = () => {
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 border-b text-xs">
  <div className="p-3 border rounded-full text-center flex flex-col items-center justify-center">
  <span className="text-slate-400 block font-semibold">Toplam Cari Bakiye</span>
- <span className="text-base font-bold text-slate-900 dark:text-slate-100">₺{formatTL(selectedOgrenci.bakiye)}</span>
+ <span className="text-base font-bold text-slate-900 dark:text-slate-100">₺{formatTL(studentOdenenler.reduce((acc, p) => acc + (p.tutar || 0), 0) + studentBekleyenler.reduce((acc, p) => acc + (p.tutar || 0), 0))}</span>
  </div>
  <div className="p-3 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-colors text-white border-transparent shadow-sm flex flex-col items-center justify-center text-center">
  <span className="text-emerald-50/90 block font-semibold">Tahsil Edilenler</span>
  <span className="text-base font-bold text-white">
- ₺{formatTL(studentOdenenler.reduce((acc, p) => acc + (p.tutar || 0), 0))} ({studentOdenenler.length} Adet)
+ ₺{formatTL(studentOdenenler.reduce((acc, p) => acc + (p.tutar || 0), 0))}
  </span>
  </div>
  <div className="p-3 rounded-full bg-gradient-to-r from-sky-500 to-sky-600 transition-colors text-white border-transparent shadow-sm flex flex-col items-center justify-center text-center">
  <span className="text-sky-50/90 block font-semibold">Alınacak Taksitler</span>
  <span className="text-base font-bold text-white">
- ₺{formatTL(studentBekleyenler.reduce((acc, p) => acc + (p.tutar || 0), 0))} ({studentBekleyenler.length} Adet)
+ ₺{formatTL(studentBekleyenler.reduce((acc, p) => acc + (p.tutar || 0), 0))}
  </span>
  </div>
   <div className="p-3 border rounded-full flex flex-col items-center justify-center text-center">
