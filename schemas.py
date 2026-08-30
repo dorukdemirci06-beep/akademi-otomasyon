@@ -426,3 +426,18 @@ class WhatsAppBulkRequest(BaseModel):
     target_type: str
     target_ids: List[str] = []
     message: str
+
+# ==================== SEZON ARŞİVİ SCHEMAS ====================
+class SezonArsiviCreate(BaseModel):
+    sezon_adi: str
+
+class SezonArsiviResponse(BaseModel):
+    id: int
+    akademi_adi: str
+    sezon_adi: str
+    olusturulma_tarihi: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class SezonArsiviDetailResponse(SezonArsiviResponse):
+    veri_dump: str

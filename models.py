@@ -253,3 +253,12 @@ class Degerlendirme(Base):
     kategori = Column(String, nullable=True)
     akademi_adi = Column(String, nullable=True, default="Test1", index=True)
     tarih = Column(DateTime, default=datetime.utcnow)
+
+class SezonArsivi(Base):
+    __tablename__ = "sezon_arsivleri"
+
+    id = Column(Integer, primary_key=True, index=True)
+    akademi_adi = Column(String, nullable=False, index=True)
+    sezon_adi = Column(String, nullable=False) # Örn: "2023-2024"
+    veri_dump = Column(String, nullable=False) # JSON payload
+    olusturulma_tarihi = Column(DateTime, default=datetime.utcnow)

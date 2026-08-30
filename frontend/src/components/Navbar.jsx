@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon, Users, BookOpen, HelpCircle, Menu, X } from 'lucide-react';
+import { LayoutDashboard, UserPlus, UserCheck, ClipboardCheck, Wallet, GraduationCap, UserCog, LogOut, Shield, Sun, Moon, Users, BookOpen, HelpCircle, Menu, X, Archive, AlertTriangle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { isArchiveMode, getArchiveSezonAdi, clearArchiveData } from '../services/archiveMode';
 
 const WhatsappIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" {...props}>
@@ -11,6 +12,21 @@ const WhatsappIcon = (props) => (
 
 const Navbar = ({ currentUser, onLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [archiveModeActive, setArchiveModeActive] = useState(isArchiveMode());
+
+  React.useEffect(() => {
+    const handleArchiveChange = () => {
+      setArchiveModeActive(isArchiveMode());
+    };
+    window.addEventListener('archiveModeChanged', handleArchiveChange);
+    return () => window.removeEventListener('archiveModeChanged', handleArchiveChange);
+  }, []);
+
+  const handleExitArchive = () => {
+    clearArchiveData();
+    window.location.href = '/gecmis-sezonlar';
+  };
+
   const { theme, toggleTheme } = useTheme();
   const roleLower = (currentUser?.rol || '').toLowerCase();
   const isAdmin = roleLower.includes('yönetici') || roleLower.includes('yonetici') || roleLower.includes('admin') || roleLower.includes('super') || roleLower.includes('süper');
@@ -28,6 +44,7 @@ const Navbar = ({ currentUser, onLogout }) => {
   
   if (canAccessSettings) {
     navItems.push({ path: '/ayarlar', label: 'WhatsApp', icon: WhatsappIcon });
+    navItems.push({ path: '/gecmis-sezonlar', label: 'Arşiv', icon: Archive });
   }
 
   if (isAdmin) {
@@ -38,6 +55,22 @@ const Navbar = ({ currentUser, onLogout }) => {
 
   return (
     <>
+    
+      {archiveModeActive && (
+        <div className="bg-rose-600 text-white px-4 py-2 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg relative z-[60]">
+          <div className="flex items-center gap-2 font-bold text-sm">
+            <AlertTriangle className="w-5 h-5 animate-pulse" />
+            ŞU AN ARŞİV MODUNDASINIZ ({getArchiveSezonAdi()}). Sadece okuma yapılabilir.
+          </div>
+          <button
+            onClick={handleExitArchive}
+            className="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-bold transition flex items-center gap-2"
+          >
+            <X className="w-4 h-4" /> Arşiv Modundan Çık
+          </button>
+        </div>
+      )}
+
     <header className="neo-card sticky top-0 z-50 mb-6 !rounded-none !border-x-0 !border-t-0 border-b border-[rgba(255,255,255,0.1)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">

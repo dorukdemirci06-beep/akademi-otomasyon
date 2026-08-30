@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAkademiAyarlar, updateAkademiAyarlar, getOgrenciler, getSiniflarBasic, sendBulkWhatsAppMessage } from '../services/api';
-import { Save, Smartphone, Key, MessageCircle, AlertCircle, Type, Send, Users, BookOpen, UserCheck, RefreshCw } from 'lucide-react';
+import { getAkademiAyarlar, updateAkademiAyarlar, getOgrenciler, getSiniflarBasic, sendBulkWhatsAppMessage, arsivleSezonSonu } from '../services/api';
+import { Save, Smartphone, Key, MessageCircle, AlertCircle, Type, Send, Users, BookOpen, UserCheck, RefreshCw, Archive, Database, AlertTriangle } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 
 export default function Ayarlar({ showToast, user }) {
@@ -223,6 +223,7 @@ export default function Ayarlar({ showToast, user }) {
           <Send className="w-4 h-4" />
           <span>Toplu Mesaj Gönder</span>
         </button>
+
       </div>
 
       {activeTab === 'otomatik' ? (

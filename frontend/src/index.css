@@ -44,19 +44,19 @@ button, select, a, [role="button"] {
 
 /* Neo Card (Outer Shadow) */
 .neo-card {
-  background-color: var(--color-neo-bg-light) !important;
+  background-color: var(--color-neo-bg-light);
   border-radius: 1.25rem;
   box-shadow: 9px 9px 18px rgba(163,177,198,0.5), 
              -9px -9px 18px rgba(255,255,255, 0.9) !important;
-  border: 1px solid rgba(255,255,255,0.4) !important;
+  border: 1px solid rgba(255,255,255,0.4);
   transition: all 0.3s ease;
 }
 
 .dark .neo-card, [data-theme="dark"] .neo-card {
-  background-color: var(--color-neo-bg-dark) !important;
+  background-color: var(--color-neo-bg-dark);
   box-shadow: 7px 7px 14px rgba(0,0,0,0.6), 
              -7px -7px 14px rgba(255,255,255, 0.04) !important;
-  border: 1px solid rgba(255,255,255,0.02) !important;
+  border: 1px solid rgba(255,255,255,0.02);
 }
 
 /* Neo Button (Clickable Outer Shadow) */

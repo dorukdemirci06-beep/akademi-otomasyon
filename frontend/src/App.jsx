@@ -15,6 +15,7 @@ import Finans from "./pages/Finans";
 import Login from "./pages/Login";
 import Kullanicilar from "./pages/Kullanicilar";
 import Ayarlar from "./pages/Ayarlar";
+import GecmisSezonlar from "./pages/GecmisSezonlar";
 import Kilavuz from "./pages/Kilavuz";
 import { ThemeProvider } from "./context/ThemeContext";
 function App() {
@@ -81,6 +82,7 @@ function App() {
                 <Route path="/yoklama" element={<Yoklama />} />{" "}
                 <Route path="/finans" element={<Finans />} />
                 <Route path="/kilavuz" element={<Kilavuz />} />
+                <Route path="/gecmis-sezonlar" element={<GecmisSezonlar showToast={() => {}} />} />
                 <Route
                   path="/kullanicilar"
                   element={
