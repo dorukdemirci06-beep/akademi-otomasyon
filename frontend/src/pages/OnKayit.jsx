@@ -672,8 +672,8 @@ const OnKayit = () => {
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
  <span>İlgilenilen Branş / Sınıf</span>
  </label>
- <div className="space-y-2">
- <div className="relative">
+ <div className="flex gap-2">
+ <div className="relative flex-1">
  <SearchableSelect
  value={isCustomBrans ? 'DIGER_MANUEL' : formData.ilgilenilen_brans}
  onChange={handleBransSelectChange}
@@ -688,7 +688,7 @@ const OnKayit = () => {
  </div>
 
  {isCustomBrans && (
- <div className="relative animate-scale-in">
+ <div className="relative animate-scale-in flex-1">
  <Sparkles className="w-4 h-4 absolute left-3.5 top-3 text-amber-400" />
  <input
  type="text"
@@ -852,7 +852,7 @@ const OnKayit = () => {
  {/* Telefon */}
  <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300 font-mono text-xs">
  {item.telefon ? (
- <div className="flex items-center gap-1.5 text-slate-200">
+ <div className="flex items-center gap-1.5">
  <Phone className="w-3.5 h-3.5 text-slate-400" />
  <span>{item.telefon}</span>
  </div>

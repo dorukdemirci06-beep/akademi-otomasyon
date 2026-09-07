@@ -53,11 +53,20 @@ const CustomDatePicker = ({
      const rect = containerRef.current.getBoundingClientRect();
      const spaceBelow = window.innerHeight - rect.bottom;
      const spaceAbove = rect.top;
-     const popupHeight = 350;
-     let finalTop = rect.bottom + window.scrollY;
-     if (spaceBelow < popupHeight && spaceAbove > spaceBelow) {
-       finalTop = rect.top + window.scrollY - popupHeight;
-     }
+      const popupHeight = 440;
+      let finalTop = rect.bottom + window.scrollY + 8; // Default to opening below
+      
+      // If there's more space above than below, and below is not enough
+      if (spaceBelow < popupHeight && spaceAbove > spaceBelow) {
+        finalTop = rect.top + window.scrollY - popupHeight - 8;
+      }
+
+      // Clamp to screen bounds to prevent cutoff
+      const maxTop = window.innerHeight + window.scrollY - popupHeight - 16;
+      const minTop = window.scrollY + 16;
+      
+      if (finalTop > maxTop) finalTop = maxTop;
+      if (finalTop < minTop) finalTop = minTop;
      setDropdownPosition({
        top: finalTop,
        left: rect.left + window.scrollX,
@@ -193,9 +202,9 @@ const CustomDatePicker = ({
  if (!isOpen) updatePosition();
  setIsOpen(!isOpen);
  }}
- className={buttonClassName || "w-full flex items-center justify-between gap-2 px-3 py-2 border rounded-lg text-sm text-slate-900 dark:text-slate-100 transition cursor-pointer min-w-0 h-[38px]"}
+ className={`w-full flex flex-nowrap items-center justify-between gap-2 transition cursor-pointer min-w-0 overflow-hidden ${buttonClassName || 'px-3 py-2 border rounded-lg text-sm text-slate-900 dark:text-slate-100 h-[38px]'}`}
  >
- <div className="flex items-center gap-2 truncate min-w-0">
+ <div className="flex items-center gap-2 truncate min-w-0 flex-1 text-left">
  <IconComponent className="w-4 h-4 text-[#2eb82e] shrink-0" />
  <span className="truncate">{prefix}{getFormattedDisplay()}</span>
  </div>
@@ -207,7 +216,7 @@ const CustomDatePicker = ({
  <div 
  className={`absolute z-[99999] date-picker-popup neo-card p-4 w-[280px] sm:w-[320px] animate-scale-in text-slate-100`}
  style={{ 
-   top: `${dropdownPosition.top + 8}px`, 
+   top: `${dropdownPosition.top}px`, 
    left: align === 'right' ? `${dropdownPosition.left + dropdownPosition.width - 280}px` : `${dropdownPosition.left}px`,
    minWidth: '280px',
    transitionProperty: 'opacity, transform'

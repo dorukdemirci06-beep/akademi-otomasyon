@@ -7,6 +7,7 @@ import {
 import { getKullanicilar, createKullanici, deleteKullanici, getSiniflar, getOgretmenler, createOgretmen, updateOgretmen, deleteOgretmen, getPersoneller, createPersonel, updatePersonel, deletePersonel, getDegerlendirmeler, createDegerlendirme, updateDegerlendirme, deleteDegerlendirme } from '../services/api';
 import ConfirmModal from '../components/ConfirmModal';
 import SearchableSelect from '../components/SearchableSelect';
+import CustomDatePicker from '../components/CustomDatePicker';
 
 const INITIAL_TEACHERS = [
  {
@@ -1819,13 +1820,13 @@ const Kullanicilar = () => {
  </div>
 
  <div>
- <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">İşe Başlama Tarihi</label>
- <input
- type="date"
- value={teacherForm.baslamaTarihi}
- onChange={(e) => setTeacherForm({ ...teacherForm, baslamaTarihi: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
- />
+ <CustomDatePicker
+    label="İşe Başlama Tarihi"
+    value={teacherForm.baslamaTarihi}
+    onChange={(val) => setTeacherForm({ ...teacherForm, baslamaTarihi: val })}
+    buttonClassName="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 neo-input rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-amber-500"
+    align="left"
+  />
  </div>
  </div>
 
@@ -1927,13 +1928,13 @@ const Kullanicilar = () => {
  </div>
 
  <div>
- <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">İşe Başlama Tarihi</label>
- <input
- type="date"
- value={staffForm.baslamaTarihi}
- onChange={(e) => setStaffForm({ ...staffForm, baslamaTarihi: e.target.value })}
- className="w-full px-3.5 py-2.5 neo-input w-full rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
- />
+ <CustomDatePicker
+    label="İşe Başlama Tarihi"
+    value={staffForm.baslamaTarihi}
+    onChange={(val) => setStaffForm({ ...staffForm, baslamaTarihi: val })}
+    buttonClassName="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 neo-input rounded-full text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500"
+    align="left"
+  />
  </div>
  </div>
 

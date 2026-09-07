@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GraduationCap, Lock, User, KeyRound, ShieldCheck, Sparkles, ArrowRight, AlertCircle, Sun, Moon, Building2, PlusCircle, Search, ChevronDown, Check, Trash2, ExternalLink, Layers, Activity, RefreshCw } from 'lucide-react';
 import { loginKullanici, getAkademiler, getAkademilerDetayli, kurAkademi, deleteAkademi } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Login = ({ onLoginSuccess }) => {
  const { theme, toggleTheme } = useTheme();
@@ -35,6 +36,11 @@ const Login = ({ onLoginSuccess }) => {
  });
  const [kurulumLoading, setKurulumLoading] = useState(false);
  const [kurulumMsg, setKurulumMsg] = useState({ type: '', text: '' });
+ 
+ const [panelListMsg, setPanelListMsg] = useState({ type: '', text: '' });
+
+ const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+ const [akademiToDelete, setAkademiToDelete] = useState(null);
 
  // Mouse cursor tracking for dynamic neon glow effect
  const [mousePos, setMousePos] = useState({ x: -500, y: -500 });
@@ -132,17 +138,29 @@ const Login = ({ onLoginSuccess }) => {
  }
  };
 
- const handleDeleteAkademi = async (id, name) => {
- if (!window.confirm(`'${name}' akademisini sistemden silmek istediğinize emin misiniz?`)) return;
- try {
- await deleteAkademi(id);
- await fetchAkademilerDetayli();
- const akRes = await getAkademiler();
- if (akRes.data) setAkademiler(akRes.data);
- } catch (err) {
- alert('Akademi silinirken hata oluştu.');
- }
- };
+ const handleDeleteAkademiClick = (id, name) => {
+    setAkademiToDelete({ id, name });
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteAkademi = async () => {
+    if (!akademiToDelete) return;
+    try {
+      await deleteAkademi(akademiToDelete.id);
+      await fetchAkademilerDetayli();
+      const akRes = await getAkademiler();
+      if (akRes.data) setAkademiler(akRes.data);
+      
+      setPanelListMsg({ type: 'success', text: `'${akademiToDelete.name}' akademisi başarıyla silindi.` });
+      setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
+    } catch (err) {
+      setPanelListMsg({ type: 'error', text: 'Akademi silinirken hata oluştu.' });
+      setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
+    } finally {
+      setDeleteConfirmOpen(false);
+      setAkademiToDelete(null);
+    }
+  };
 
  const handleSelectAkademiFromPanel = (akName) => {
  setSelectedAkademi(akName);
@@ -630,6 +648,22 @@ const Login = ({ onLoginSuccess }) => {
  {/* Tab 1: Kayıtlı Akademiler Listesi */}
  {panelTab === 'list' && (
  <div className="space-y-3 flex-1 overflow-y-auto pr-1">
+ 
+  {panelListMsg.text && (
+    <div className={`p-3 rounded-xl border text-xs font-semibold flex items-center gap-2 ${
+      panelListMsg.type === 'error'
+      ? 'bg-rose-50 dark:bg-rose-950/80 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-200'
+      : 'bg-emerald-50 dark:bg-emerald-950/80 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-200'
+    }`}>
+      {panelListMsg.type === 'error' ? (
+        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+      ) : (
+        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+      )}
+      <span>{panelListMsg.text}</span>
+    </div>
+  )}
+
  {/* Search Bar & Refresh */}
  <div className="flex justify-between items-center gap-2">
  <div className="relative flex-1">
@@ -699,7 +733,7 @@ const Login = ({ onLoginSuccess }) => {
  {akademilerDetayli.length > 1 && (
  <button
  type="button"
- onClick={() => handleDeleteAkademi(ak.id, ak.name)}
+ onClick={() => handleDeleteAkademiClick(ak.id, ak.name)}
  className="p-1 dark: rounded-full transition cursor-pointer bg-rose-600 hover:bg-rose-700 transition-colors text-white border-transparent shadow-sm"
  title="Akademiyi Sil"
  >
@@ -822,7 +856,23 @@ const Login = ({ onLoginSuccess }) => {
  </div>
  </div>
  )}
- </div>
+
+      {/* ================= MODAL: Confirm Delete Akademi ================= */}
+      <ConfirmModal
+        isOpen={deleteConfirmOpen}
+        title="Akademi Silme Onayı"
+        message={akademiToDelete ? `'${akademiToDelete.name}' akademisini sistemden silmek istediğinize emin misiniz?` : ''}
+        confirmText="Evet, Akademiyi Sil"
+        cancelText="İptal"
+        type="danger"
+        requireHold={false}
+        onConfirm={confirmDeleteAkademi}
+        onCancel={() => {
+          setDeleteConfirmOpen(false);
+          setAkademiToDelete(null);
+        }}
+      />
+    </div>
  );
 };
 
