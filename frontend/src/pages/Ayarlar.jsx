@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAkademiAyarlar, updateAkademiAyarlar, getOgrenciler, getSiniflarBasic, sendBulkWhatsAppMessage, arsivleSezonSonu } from '../services/api';
+import { getAkademiAyarlar, updateAkademiAyarlar, getOgrenciler, getSiniflarBasic, sendBulkWhatsAppMessage, arsivleSezonSonu, triggerManualBackup } from '../services/api';
 import { Save, Smartphone, Key, MessageCircle, AlertCircle, Type, Send, Users, BookOpen, UserCheck, RefreshCw, Archive, Database, AlertTriangle } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -141,6 +141,18 @@ export default function Ayarlar({ showToast, user }) {
     }
   };
 
+  const handleManualBackup = async () => {
+    setLoading(true);
+    try {
+      await triggerManualBackup();
+      showToast('Yedekleme işlemi arka planda başlatıldı. Birkaç dakika içinde Sheets üzerinde görebilirsiniz.', 'success');
+    } catch (err) {
+      showToast('Yedekleme başlatılırken hata oluştu.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleBulkSend = async (e) => {
     e.preventDefault();
     if (!bulkMessage.trim()) {
@@ -199,9 +211,10 @@ export default function Ayarlar({ showToast, user }) {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       
-      {/* TABS HEADER */}
-      <div className="flex items-center gap-2 mb-8 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl w-fit mx-auto neo-card !border-none">
-        <button
+      {/* TABS HEADER VE YEDEKLEME BUTONU */}
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl w-fit neo-card !border-none">
+          <button
           onClick={() => setActiveTab('otomatik')}
           className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
             activeTab === 'otomatik'
@@ -223,7 +236,17 @@ export default function Ayarlar({ showToast, user }) {
           <Send className="w-4 h-4" />
           <span>Toplu Mesaj Gönder</span>
         </button>
+        </div>
 
+        <button
+          type="button"
+          onClick={handleManualBackup}
+          disabled={loading}
+          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-purple-500/20 disabled:opacity-50"
+        >
+          {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+          <span>{loading ? 'İşleniyor...' : 'Manuel Yedekle (Sheets)'}</span>
+        </button>
       </div>
 
       {activeTab === 'otomatik' ? (

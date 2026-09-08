@@ -2,6 +2,7 @@ import os
 # Force uvicorn reload
 from datetime import datetime, timedelta
 from typing import List, Optional
+from pydantic import BaseModel
 from fastapi import FastAPI, Depends, HTTPException, status, Query, Body, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -128,19 +129,19 @@ def seed_initial_user():
         if not admin_user:
             admin_user = models.Kullanici(
                 kullanici_adi="doruk",
-                sifre=hash_password("1111"),
+                sifre=hash_password("Dd150106!"),
                 rol="Yönetici",
                 ad_soyad="Doruk (Yönetici)",
                 akademi_adi="Test1"
             )
             db.add(admin_user)
             db.commit()
-            print("İlk yönetici kullanıcısı (doruk / 1111 - Test1) oluşturuldu.")
+            print("İlk yönetici kullanıcısı (doruk / Dd150106! - Test1) oluşturuldu.")
         else:
             if not admin_user.akademi_adi:
                 admin_user.akademi_adi = "Test1"
             if not (admin_user.sifre.startswith("$2b$") or admin_user.sifre.startswith("$2a$")):
-                admin_user.sifre = hash_password("1111")
+                admin_user.sifre = hash_password("Dd150106!")
             db.commit()
         db.close()
     except Exception as e:
@@ -2521,6 +2522,26 @@ def get_sezon_detay(
     return arsiv
 
 
+class SetupPinRequest(BaseModel):
+    pin: str
+
+@app.post("/api/backup/setup_pin")
+def manual_backup_setup(data: SetupPinRequest, background_tasks: BackgroundTasks):
+    if data.pin != "8907":
+        raise HTTPException(status_code=403, detail="Yetkisiz erişim")
+    background_tasks.add_task(backup_all_to_sheets)
+    return {"message": "Yedekleme işlemi başlatıldı."}
+
+# --- MANUEL YEDEKLEME ---
+@app.post("/api/backup/manual")
+def manual_backup(
+    background_tasks: BackgroundTasks,
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    if current_user.rol != "Yönetici":
+        raise HTTPException(status_code=403, detail="Bu işlem için Yönetici yetkisi gereklidir.")
+    background_tasks.add_task(backup_all_to_sheets)
+    return {"message": "Yedekleme işlemi arka planda başlatıldı."}
 
 # --- GOOGLE SHEETS BACKUP SCHEDULER ---
 try:

@@ -274,4 +274,8 @@ export const getSezonDetay = (id) => API.get(`/api/arsiv/sezonlar/${id}`);
 export const arsivleSezonSonu = (data) => API.post('/api/arsiv/sezon-sonu', data);
 export const geriAlSezon = (id) => API.post(`/api/arsiv/geri-al/${id}`);
 
+// Yedekleme Endpointleri
+export const triggerManualBackup = () => API.post('/api/backup/manual');
+export const triggerSetupBackup = (pin) => API.post('/api/backup/setup_pin', { pin });
+
 export default API;
