@@ -441,3 +441,11 @@ class SezonArsiviResponse(BaseModel):
 
 class SezonArsiviDetailResponse(SezonArsiviResponse):
     veri_dump: str
+
+# ==================== PENDING AUTOMATIONS SCHEMAS ====================
+class PendingMessageResponse(BaseModel):
+    id: int
+    isim: str
+    phone: str
+    message: str
+    tur: str

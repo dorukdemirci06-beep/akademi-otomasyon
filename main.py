@@ -1357,6 +1357,175 @@ def get_akademi_ayarlar(
     return akademi
 
 
+@app.get("/akademiler/ayarlar/pending-automations", response_model=List[schemas.PendingMessageResponse])
+def get_pending_automations(
+    db: Session = Depends(get_db),
+    current_user: models.Kullanici = Depends(get_current_user)
+):
+    if not current_user.akademi_adi:
+        raise HTTPException(status_code=400, detail="Kullanıcı bir akademiye bağlı değil.")
+        
+    akademi = db.query(models.Akademi).filter(models.Akademi.name == current_user.akademi_adi).first()
+    if not akademi:
+        raise HTTPException(status_code=404, detail="Akademi bulunamadı.")
+        
+    bugun = datetime.now()
+    bugun_ay_gun = bugun.strftime("%m-%d")
+    bugun_baslangic = datetime(bugun.year, bugun.month, bugun.day)
+    bugun_bitis = bugun_baslangic + timedelta(days=1)
+    
+    gecen_hafta_baslangic = bugun_baslangic - timedelta(days=7)
+    gecen_hafta_bitis = gecen_hafta_baslangic + timedelta(days=1)
+
+    ozel_gunler = {
+        "01-01": "Yılbaşı",
+        "04-23": "23 Nisan Ulusal Egemenlik ve Çocuk Bayramı",
+        "05-01": "1 Mayıs Emek ve Dayanışma Günü",
+        "05-19": "19 Mayıs Atatürk'ü Anma, Gençlik ve Spor Bayramı",
+        "07-15": "15 Temmuz Demokrasi ve Milli Birlik Günü",
+        "08-30": "30 Ağustos Zafer Bayramı",
+        "10-29": "29 Ekim Cumhuriyet Bayramı"
+    }
+    bugun_ozel_gun_mu = ozel_gunler.get(bugun_ay_gun)
+
+    aktif_ogrenciler = db.query(models.Ogrenci).filter(
+        models.Ogrenci.durum == "Aktif",
+        models.Ogrenci.telefon != None,
+        models.Ogrenci.akademi_adi == current_user.akademi_adi
+    ).all()
+
+    pending_messages = []
+    
+    # 1. Doğum Günü ve Özel Gün
+    for ogrenci in aktif_ogrenciler:
+        if ogrenci.dogum_tarihi and akademi.msg_dogum_gunu and akademi.is_msg_dogum_gunu_active:
+            try:
+                dt_parts = ogrenci.dogum_tarihi.split("-")
+                if len(dt_parts) >= 3:
+                    o_ay_gun = f"{dt_parts[1]}-{dt_parts[2]}"
+                    if o_ay_gun == bugun_ay_gun:
+                        d_mesaj = akademi.msg_dogum_gunu.format(isim=ogrenci.isim, soyisim=ogrenci.soyisim)
+                        pending_messages.append({
+                            "id": ogrenci.id,
+                            "isim": f"{ogrenci.isim} {ogrenci.soyisim}",
+                            "phone": ogrenci.telefon,
+                            "message": d_mesaj,
+                            "tur": "dogum_gunu"
+                        })
+            except Exception:
+                pass
+                
+        if bugun_ozel_gun_mu and akademi.msg_ozel_gun and akademi.is_msg_ozel_gun_active:
+            try:
+                o_mesaj = akademi.msg_ozel_gun.format(isim=ogrenci.isim, soyisim=ogrenci.soyisim, ozel_gun_adi=bugun_ozel_gun_mu)
+                pending_messages.append({
+                    "id": ogrenci.id,
+                    "isim": f"{ogrenci.isim} {ogrenci.soyisim}",
+                    "phone": ogrenci.telefon,
+                    "message": o_mesaj,
+                    "tur": "ozel_gun"
+                })
+            except Exception:
+                pass
+
+    # 2. Ödeme Hatırlatmaları
+    bekleyen_odemeler = db.query(models.Odeme).filter(
+        models.Odeme.durum.in_(["Bekliyor", "Gecikti"]),
+        models.Odeme.akademi_adi == current_user.akademi_adi
+    ).all()
+    
+    for odeme in bekleyen_odemeler:
+        if not odeme.tarih or not akademi.msg_odeme_hatirlatma or not akademi.is_msg_odeme_hatirlatma_active:
+            continue
+            
+        is_today = bugun_baslangic <= odeme.tarih < bugun_bitis
+        is_week_ago = gecen_hafta_baslangic <= odeme.tarih < gecen_hafta_bitis
+        
+        if not (is_today or is_week_ago):
+            continue
+            
+        ogrenci = db.query(models.Ogrenci).filter(models.Ogrenci.id == odeme.ogrenci_id).first()
+        if not ogrenci or not ogrenci.telefon or ogrenci.durum != "Aktif":
+            continue
+            
+        try:
+            vade_str = odeme.tarih.strftime("%d.%m.%Y")
+            mesaj = akademi.msg_odeme_hatirlatma.format(
+                isim=ogrenci.isim, 
+                soyisim=ogrenci.soyisim, 
+                tutar=odeme.tutar,
+                vade=vade_str
+            )
+            pending_messages.append({
+                "id": ogrenci.id,
+                "isim": f"{ogrenci.isim} {ogrenci.soyisim}",
+                "phone": ogrenci.telefon,
+                "message": mesaj,
+                "tur": "odeme_hatirlatma"
+            })
+        except Exception:
+            pass
+
+    # 3. Ders Hatırlatmaları
+    tomorrow = datetime.now() + timedelta(days=1)
+    gunler = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
+    yarin_gun_str = gunler[tomorrow.weekday()]
+    
+    yarin_dersleri = db.query(models.DersProgrami).join(models.Sinif).filter(
+        models.DersProgrami.gun == yarin_gun_str,
+        models.Sinif.akademi_adi == current_user.akademi_adi
+    ).all()
+    
+    for ders in yarin_dersleri:
+        ogrenci_siniflar = db.query(models.OgrenciSinif).filter(models.OgrenciSinif.sinif_id == ders.sinif_id).all()
+        for os_relation in ogrenci_siniflar:
+            ogrenci = os_relation.ogrenci
+            if ogrenci and ogrenci.telefon and ogrenci.durum == "Aktif":
+                ders_adi = ders.ders_adi or "Ders"
+                if akademi.msg_ders_hatirlatma and akademi.is_msg_ders_hatirlatma_active:
+                    try:
+                        mesaj = akademi.msg_ders_hatirlatma.format(
+                            isim=ogrenci.isim,
+                            soyisim=ogrenci.soyisim,
+                            ders_adi=ders_adi,
+                            gun=yarin_gun_str,
+                            saat=ders.baslangic_saati
+                        )
+                        pending_messages.append({
+                            "id": ogrenci.id,
+                            "isim": f"{ogrenci.isim} {ogrenci.soyisim}",
+                            "phone": ogrenci.telefon,
+                            "message": mesaj,
+                            "tur": "ders_hatirlatma"
+                        })
+                    except Exception:
+                        pass
+        
+        if ders.ogretmen_adi and getattr(akademi, 'msg_ogretmen_hatirlatma', None) and getattr(akademi, 'is_msg_ogretmen_hatirlatma_active', False):
+            ogretmen = db.query(models.Ogretmen).filter(
+                models.Ogretmen.isim == ders.ogretmen_adi,
+                models.Ogretmen.akademi_adi == current_user.akademi_adi
+            ).first()
+            if ogretmen and ogretmen.telefon and ogretmen.durum == "Aktif":
+                try:
+                    mesaj = akademi.msg_ogretmen_hatirlatma.format(
+                        ogretmen_adi=ogretmen.isim,
+                        ders_adi=ders.ders_adi or "Ders",
+                        tarih=yarin_gun_str,
+                        saat=ders.baslangic_saati
+                    )
+                    pending_messages.append({
+                        "id": -ogretmen.id if ogretmen.id else -999,
+                        "isim": ogretmen.isim,
+                        "phone": ogretmen.telefon,
+                        "message": mesaj,
+                        "tur": "ogretmen_hatirlatma"
+                    })
+                except Exception:
+                    pass
+                    
+    return pending_messages
+
 @app.put("/akademiler/ayarlar", response_model=schemas.AkademiResponse)
 def update_akademi_ayarlar(
     ayarlar: schemas.AkademiUpdate,
@@ -2121,6 +2290,8 @@ def run_daily_reminders(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
+    return {"status": "disabled", "message": "Otomatik gönderim kapatıldı. WhatsApp Web yarı-otomatik modu aktiftir."}
+
     """
     Yarınki dersleri bulup, öğrencilere WhatsApp üzerinden hatırlatma mesajı gönderir.
     Bu endpoint cron job vb. araçlarla günde 1 kez tetiklenmelidir.
@@ -2213,7 +2384,8 @@ def run_daily_reminders(
     }
 
 @app.post("/jobs/daily-celebrations")
-def run_daily_celebrations(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def run_celebrations(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    return {"status": "disabled", "message": "Otomatik gönderim kapatıldı. WhatsApp Web yarı-otomatik modu aktiftir."}
     bugun = datetime.now()
     bugun_ay_gun = bugun.strftime("%m-%d") # Ornegin "08-10"
     
@@ -2281,6 +2453,7 @@ def run_daily_celebrations(background_tasks: BackgroundTasks, db: Session = Depe
 
 @app.post("/jobs/payment-reminders")
 def run_payment_reminders(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    return {"status": "disabled", "message": "Otomatik gönderim kapatıldı. WhatsApp Web yarı-otomatik modu aktiftir."}
     bugun = datetime.now()
     bugun_baslangic = datetime(bugun.year, bugun.month, bugun.day)
     bugun_bitis = bugun_baslangic + timedelta(days=1)

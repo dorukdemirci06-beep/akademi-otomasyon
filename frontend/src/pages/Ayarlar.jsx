@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAkademiAyarlar, updateAkademiAyarlar, getOgrenciler, getSiniflarBasic, sendBulkWhatsAppMessage, arsivleSezonSonu, triggerManualBackup } from '../services/api';
+import { getAkademiAyarlar, getPendingAutomations, updateAkademiAyarlar, getOgrenciler, getSiniflarBasic, sendBulkWhatsAppMessage, arsivleSezonSonu, triggerManualBackup } from '../services/api';
 import { Save, Smartphone, Key, MessageCircle, AlertCircle, Type, Send, Users, BookOpen, UserCheck, RefreshCw, Archive, Database, AlertTriangle } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -33,7 +33,10 @@ export default function Ayarlar({ showToast, user }) {
   const [targetType, setTargetType] = useState('tumu'); // tumu, sinif, kisi
   const [selectedTarget, setSelectedTarget] = useState([]);
   const [bulkMessage, setBulkMessage] = useState('');
+  const [pendingAutomations, setPendingAutomations] = useState([]);
   const [sendingBulk, setSendingBulk] = useState(false);
+  const [generatedLinks, setGeneratedLinks] = useState([]);
+  const [clickedLinks, setClickedLinks] = useState(new Set());
   
   // Veriler
   const [siniflar, setSiniflar] = useState([]);
@@ -46,11 +49,13 @@ export default function Ayarlar({ showToast, user }) {
 
   // Sınıf veya Öğrencileri yükle
   useEffect(() => {
-    if (activeTab === 'toplu' && targetType === 'sinif' && siniflar.length === 0) {
-      loadSiniflar();
-    }
-    if (activeTab === 'toplu' && targetType === 'kisi' && ogrenciler.length === 0) {
-      loadOgrenciler();
+    if (activeTab === 'toplu') {
+      if (targetType === 'sinif' && siniflar.length === 0) {
+        loadSiniflar();
+      }
+      if (ogrenciler.length === 0) {
+        loadOgrenciler();
+      }
     }
   }, [activeTab, targetType]);
 
@@ -83,6 +88,10 @@ export default function Ayarlar({ showToast, user }) {
     setFetching(true);
     try {
       const { data } = await getAkademiAyarlar();
+      try {
+        const pendingRes = await getPendingAutomations();
+        setPendingAutomations(pendingRes.data || []);
+      } catch(e) { console.error(e); }
       setFormData({
         whatsapp_provider: data.whatsapp_provider || 'callmebot',
         whatsapp_api_key: data.whatsapp_api_key || '',
@@ -164,21 +173,46 @@ export default function Ayarlar({ showToast, user }) {
       return;
     }
 
-    setSendingBulk(true);
-    try {
-      await sendBulkWhatsAppMessage({
-        target_type: targetType,
-        target_ids: selectedTarget,
-        message: bulkMessage
-      });
-      showToast('Toplu mesajlar sıraya eklendi ve başarıyla gönderiliyor!');
-      setBulkMessage('');
-      setSelectedTarget([]);
-    } catch (err) {
-      showToast('Mesajlar gönderilirken hata oluştu.', 'error');
-    } finally {
-      setSendingBulk(false);
+    let targets = [];
+    if (targetType === 'tumu') {
+      targets = ogrenciler;
+    } else if (targetType === 'sinif') {
+      targets = ogrenciler.filter(o => o.sinif_isimleri?.some(s => selectedTarget.includes(s)));
+    } else if (targetType === 'kisi') {
+      targets = ogrenciler.filter(o => selectedTarget.includes(String(o.id)));
     }
+
+    const links = [];
+    targets.forEach(student => {
+      let phone = '';
+      if (student.birincil_veli === 'Anne' && student.anne_telefon) phone = student.anne_telefon;
+      else if (student.birincil_veli === 'Baba' && student.baba_telefon) phone = student.baba_telefon;
+      else if (student.telefon) phone = student.telefon;
+      else if (student.anne_telefon) phone = student.anne_telefon;
+      else if (student.baba_telefon) phone = student.baba_telefon;
+
+      if (phone) {
+        let cleanPhone = phone.replace(/\D/g, '');
+        if (cleanPhone.length === 10) cleanPhone = '90' + cleanPhone;
+        if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = '9' + cleanPhone;
+        
+        links.push({
+          id: student.id,
+          isim: `${student.isim} ${student.soyisim}`,
+          phone: cleanPhone,
+          url: `https://wa.me/${cleanPhone}?text=${encodeURIComponent(bulkMessage)}`
+        });
+      }
+    });
+
+    if (links.length === 0) {
+      showToast('Seçilen kişilerin geçerli bir telefon numarası bulunamadı.', 'error');
+      return;
+    }
+
+    setGeneratedLinks(links);
+    setClickedLinks(new Set());
+    showToast(`${links.length} kişi için WhatsApp linkleri oluşturuldu.`);
   };
 
   if (user?.rol !== 'Yönetici') {
@@ -190,6 +224,44 @@ export default function Ayarlar({ showToast, user }) {
       </div>
     );
   }
+
+
+  const renderPending = (tur) => {
+    const items = pendingAutomations.filter(p => p.tur === tur);
+    if (items.length === 0) return null;
+    
+    return (
+      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
+        <div className="text-sm text-sky-600 dark:text-sky-400 font-bold mb-3 flex items-center gap-2">
+          <Send className="w-4 h-4" />
+          Bugün Bekleyen {items.length} Mesaj Var
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {items.map(link => {
+            let cleanPhone = link.phone.replace(/\D/g, '');
+            if (cleanPhone.length === 10) cleanPhone = '90' + cleanPhone;
+            if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = '9' + cleanPhone;
+            const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(link.message)}`;
+            
+            return (
+              <a
+                key={link.id}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-3 rounded-2xl bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 hover:border-[#25D366] transition-all group shadow-sm hover:shadow-md"
+              >
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate pr-2">{link.isim}</span>
+                <div className="bg-[#25D366] text-white p-2 rounded-xl opacity-80 group-hover:opacity-100 transition-opacity shrink-0 shadow-sm shadow-[#25D366]/20">
+                  <MessageCircle className="w-4 h-4" />
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   if (fetching) {
     return <div className="p-8 text-center text-slate-500">Yükleniyor...</div>;
@@ -238,98 +310,13 @@ export default function Ayarlar({ showToast, user }) {
         </button>
         </div>
 
-        <button
-          type="button"
-          onClick={handleManualBackup}
-          disabled={loading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-purple-500/20 disabled:opacity-50"
-        >
-          {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-          <span>{loading ? 'İşleniyor...' : 'Manuel Yedekle (Sheets)'}</span>
-        </button>
+
       </div>
 
       {activeTab === 'otomatik' ? (
         <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-8 lg:gap-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          {/* SOL KOLON: Entegrasyon Bilgileri */}
-          <div className="neo-card md:w-1/3 rounded-3xl p-6 flex flex-col h-fit">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10 dark:border-white/5">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
-                <Key className="w-5 h-5 text-emerald-600" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">API Entegrasyonu</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">WhatsApp bağlantı bilgileri</p>
-              </div>
-            </div>
-
-            <div className="space-y-5 flex-1">
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">Sağlayıcı (Altyapı)</label>
-                <div className="grid grid-cols-1 gap-3">
-                  <label className={`cursor-pointer p-3 transition-all flex items-center gap-3 rounded-2xl ${formData.whatsapp_provider === 'meta' ? 'neo-button-primary' : 'border-white/10 dark:border-white/5 neo-button'}`}>
-                    <input type="radio" name="whatsapp_provider" value="meta" checked={formData.whatsapp_provider === 'meta'} onChange={handleChange} className="hidden" />
-                    <div>
-                      <span className="font-bold text-sm text-slate-800 dark:text-slate-100">Meta Cloud API (Resmi)</span>
-                      <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">Kurumsal hesaplar için işletme onayı gerektirir.</p>
-                    </div>
-                  </label>
-                  
-                  <label className={`cursor-pointer p-3 transition-all flex items-center gap-3 rounded-2xl ${formData.whatsapp_provider === 'callmebot' ? 'neo-button-primary' : 'border-white/10 dark:border-white/5 neo-button'}`}>
-                    <input type="radio" name="whatsapp_provider" value="callmebot" checked={formData.whatsapp_provider === 'callmebot'} onChange={handleChange} className="hidden" />
-                    <div>
-                      <span className="font-bold text-sm text-slate-800 dark:text-slate-100">CallMeBot (Ücretsiz)</span>
-                      <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">İzin verilen numaralara ücretsiz mesaj gönderimi.</p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2">
-                  <Key className="w-4 h-4 text-slate-400" />
-                  API Key / Access Token
-                </label>
-                <input
-                  type="password"
-                  name="whatsapp_api_key"
-                  value={formData.whatsapp_api_key}
-                  onChange={handleChange}
-                  placeholder="Örn: EAAIxxxx..."
-                  className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition neo-input"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-slate-400" />
-                  {formData.whatsapp_provider === 'meta' ? 'Phone Number ID' : 'Telefon No (CallMeBot)'}
-                </label>
-                <input
-                  type="text"
-                  name="whatsapp_phone_number"
-                  value={formData.whatsapp_phone_number}
-                  onChange={handleChange}
-                  placeholder={formData.whatsapp_provider === 'meta' ? "Örn: 104xxxxxxxxx" : "Örn: +90532..."}
-                  className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition neo-input"
-                />
-              </div>
-            </div>
-            
-            <div className="pt-4 border-t border-white/10 dark:border-white/5 mt-auto">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-2.5 text-white font-bold text-sm rounded-full transition flex items-center justify-center gap-2 disabled:opacity-70 neo-button-primary"
-              >
-                <Save className="w-4 h-4" />
-                {loading ? 'Kaydediliyor...' : 'Tüm Ayarları Kaydet'}
-              </button>
-            </div>
-          </div>
-
           {/* SAĞ KOLON: Mesaj Şablonları */}
-          <div className="neo-card md:w-2/3 rounded-3xl p-6 flex flex-col h-fit">
+          <div className="neo-card w-full rounded-3xl p-6 flex flex-col h-fit">
             <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/10 dark:border-white/5 shrink-0">
               <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
                 <MessageCircle className="w-5 h-5 text-emerald-600" />
@@ -357,6 +344,7 @@ export default function Ayarlar({ showToast, user }) {
                   className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
                 />
                 <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{akademi_adi}'}</span></p>
+                {renderPending('kayit')}
               </div>
 
               {/* Şablon 2: Ders Hatırlatma */}
@@ -375,6 +363,7 @@ export default function Ayarlar({ showToast, user }) {
                   className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
                 />
                 <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ders_adi}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{gun}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{saat}'}</span></p>
+                {renderPending('ders_hatirlatma')}
               </div>
 
               {/* Şablon 7: Öğretmene Ders Hatırlatma */}
@@ -393,6 +382,7 @@ export default function Ayarlar({ showToast, user }) {
                   className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
                 />
                 <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ogretmen_adi}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{tarih}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{saat}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ders_adi}'}</span></p>
+                {renderPending('ogretmen_hatirlatma')}
               </div>
 
               {/* Şablon 3: Ödeme Hatırlatma */}
@@ -411,6 +401,7 @@ export default function Ayarlar({ showToast, user }) {
                   className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
                 />
                 <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{tutar}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{vade}'}</span></p>
+                {renderPending('odeme_hatirlatma')}
               </div>
 
               {/* Şablon 4: Devamsızlık Bildirimi */}
@@ -429,6 +420,7 @@ export default function Ayarlar({ showToast, user }) {
                   className="w-full rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition resize-none h-20 neo-input"
                 />
                 <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{tarih}'}</span></p>
+                {renderPending('devamsizlik')}
               </div>
 
               {/* Şablon 5: Doğum Günü */}
@@ -466,8 +458,17 @@ export default function Ayarlar({ showToast, user }) {
                 />
                 <p className="text-[10px] text-slate-500 font-medium">Değişkenler: <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{isim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{soyisim}'}</span> <span className="px-1 py-0.5 rounded bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">{'{ozel_gun_adi}'}</span></p>
               </div>
-
-
+            </div>
+            
+            <div className="pt-6 mt-4 border-t border-white/10 dark:border-white/5 flex justify-end">
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-8 py-3 text-white font-bold text-sm rounded-full transition flex items-center justify-center gap-2 disabled:opacity-70 neo-button-primary shadow-lg shadow-emerald-500/20"
+              >
+                <Save className="w-5 h-5" />
+                {loading ? 'Kaydediliyor...' : 'Tüm Ayarları Kaydet'}
+              </button>
             </div>
           </div>
         </form>
@@ -573,11 +574,12 @@ export default function Ayarlar({ showToast, user }) {
                   </>
                 ) : (
                   <>
-                    <Send className="w-5 h-5" />
-                    Mesajları Gönder
+                    <MessageCircle className="w-5 h-5" />
+                    WhatsApp Linklerini Oluştur
                   </>
                 )}
               </button>
+            
             </div>
           </div>
         </form>
@@ -585,25 +587,55 @@ export default function Ayarlar({ showToast, user }) {
         {/* SAĞ KOLON: Seçilenler Listesi */}
         <div className="neo-card md:w-1/3 rounded-3xl p-6 flex flex-col h-fit max-h-[600px]">
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10 dark:border-white/5 shrink-0">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-sky-500/10 text-sky-500">
-              <Users className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#25D366]/10 text-[#25D366]">
+              <MessageCircle className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Seçilen Alıcılar</h2>
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white">Alıcılar ve Linkler</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {targetType === 'tumu' ? 'Tüm liste hedefleniyor' : `${selectedTarget.length} alıcı seçildi`}
+                {generatedLinks.length > 0 ? `${generatedLinks.length} kişi için link oluşturuldu` : (targetType === 'tumu' ? 'Tüm liste hedefleniyor' : `${selectedTarget.length} alıcı seçildi`)}
               </p>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2">
-            {targetType === 'tumu' ? (
+            {generatedLinks.length > 0 ? (
+              generatedLinks.map(link => {
+                const isClicked = clickedLinks.has(link.id);
+                return (
+                  <div key={link.id} className="flex flex-col p-4 rounded-2xl neo-card gap-3 border border-slate-100 dark:border-white/5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-slate-700 dark:text-slate-200">{link.isim}</span>
+                      <span className="text-xs text-slate-400">+{link.phone}</span>
+                    </div>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        const newSet = new Set(clickedLinks);
+                        newSet.add(link.id);
+                        setClickedLinks(newSet);
+                      }}
+                      className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all ${
+                        isClicked
+                          ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/30'
+                          : 'bg-[#25D366] text-white hover:bg-[#128C7E] shadow-sm'
+                      }`}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      {isClicked ? "WhatsApp'ta Açıldı" : "WhatsApp'ta Aç"}
+                    </a>
+                  </div>
+                );
+              })
+            ) : targetType === 'tumu' ? (
               <div className="p-4 rounded-2xl neo-card !border-l-4 !border-l-sky-500 bg-gradient-to-r from-sky-500/10 to-transparent flex items-center justify-center gap-3">
                 <div className="p-2 bg-sky-100 dark:bg-sky-900/50 rounded-full shrink-0">
                   <Users className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                 </div>
                 <div className="text-sky-800 dark:text-sky-200 text-sm font-bold">
-                  Sistemdeki tüm aktif öğrencilere mesaj gönderilecek.
+                  Sistemdeki tüm aktif öğrencilere mesaj gönderilecek. Linkleri oluşturmak için butona tıklayın.
                 </div>
               </div>
             ) : selectedTarget.length === 0 ? (
