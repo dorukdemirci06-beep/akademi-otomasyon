@@ -914,7 +914,7 @@ const Kullanicilar = () => {
  <div className="neo-card -indigo-200 dark:-indigo-500/30 rounded-3xl p-5 flex flex-col justify-between gap-3">
  <div className="flex items-center justify-between">
  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">Hızlı İşlemler</span>
- <span className="text-xs font-bold px-2.5 py-0.5 rounded-full -transparent bg-indigo-500 text-white border-transparent shadow-sm">
+ <span className="text-xs font-bold px-2.5 py-0.5 rounded-full -transparent bg-sky-500 text-white border-transparent shadow-sm">
  {teacherEvals.length} Değerlendirme Kayıtlı
  </span>
  </div>
@@ -1046,7 +1046,7 @@ const Kullanicilar = () => {
  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
  <span>{teacher.isim}</span>
  </h3>
- <span className="inline-flex items-center gap-1 text-[11px] font-semibold -transparent px-2 py-0.5 rounded-full mt-0.5 bg-indigo-500 text-white border-transparent shadow-sm">
+ <span className="inline-flex items-center gap-1 text-[11px] font-semibold -transparent px-2 py-0.5 rounded-full mt-0.5 bg-sky-500 text-white border-transparent shadow-sm">
  <BookOpen className="w-3 h-3 text-white" />
  <span>{teacher.brans || 'Genel Eğitmen'}</span>
  </span>
@@ -1248,7 +1248,7 @@ const Kullanicilar = () => {
  <span>{displayName}</span>
  </h3>
  {displayUnvan && (
- <span className="inline-flex items-center gap-1 text-xs font-semibold mt-1 -transparent px-2.5 py-0.5 rounded-full bg-indigo-500 text-white border-transparent shadow-sm">
+ <span className="inline-flex items-center gap-1 text-xs font-semibold mt-1 -transparent px-2.5 py-0.5 rounded-full bg-sky-500 text-white border-transparent shadow-sm">
  <BookOpen className="w-3 h-3 text-white" />
  <span>{displayUnvan}</span>
  </span>
