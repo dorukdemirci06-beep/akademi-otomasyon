@@ -138,56 +138,6 @@ const Kullanicilar = () => {
  const [submitting, setSubmitting] = useState(false);
  const [toastMessage, setToastMessage] = useState(null);
 
- const isTest1 = (akademi) => (akademi || '').trim().toLowerCase() === 'test1';
-
- const getInitialTeachers = (akademi) => {
- try {
- const saved = localStorage.getItem(`system_teachers_${akademi}`);
- if (saved) {
- const parsed = JSON.parse(saved);
- if (!isTest1(akademi)) {
- return parsed.filter(t => t.id !== 1 && t.id !== 2 && t.id !== 3);
- }
- return parsed;
- }
- return isTest1(akademi) ? INITIAL_TEACHERS : [];
- } catch {
- return isTest1(akademi) ? INITIAL_TEACHERS : [];
- }
- };
-
- const getInitialStaff = (akademi) => {
- try {
- const saved = localStorage.getItem(`system_staff_${akademi}`);
- if (saved) {
- const parsed = JSON.parse(saved);
- if (!isTest1(akademi)) {
- return parsed.filter(s => s.id !== 101 && s.id !== 102);
- }
- return parsed;
- }
- return isTest1(akademi) ? INITIAL_STAFF : [];
- } catch {
- return isTest1(akademi) ? INITIAL_STAFF : [];
- }
- };
-
- const getInitialEvaluations = (akademi) => {
- try {
- const saved = localStorage.getItem(`system_evaluations_${akademi}`);
- if (saved) {
- const parsed = JSON.parse(saved);
- if (!isTest1(akademi)) {
- return parsed.filter(e => e.id !== 1 && e.id !== 2 && e.id !== 3 && e.id !== 101 && e.id !== 102);
- }
- return parsed;
- }
- return isTest1(akademi) ? INITIAL_EVALUATIONS : [];
- } catch {
- return isTest1(akademi) ? INITIAL_EVALUATIONS : [];
- }
- };
-
  // Öğretmen Kadrosu State (Akademiye Özel)
  const [teachers, setTeachers] = useState([]);
 

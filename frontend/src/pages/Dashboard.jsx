@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Users, BookOpen, Wallet, ArrowUpRight, TrendingUp, Plus, Trash2, X, Eye, UserPlus, Calendar, Clock } from 'lucide-react';
-import { getOgrenciler, getSiniflar, createSinif, deleteSinif, getSinifOgrencileri, getOnKayitlar, createDersProgrami, deleteDersProgrami, getDersProgrami } from '../services/api';
+import { getOgrenciler, getSiniflar, createSinif, deleteSinif, getSinifOgrencileri, getOnKayitlar, createDersProgrami, deleteDersProgrami, getDersProgrami, getKullanicilar } from '../services/api';
 import { Link } from 'react-router-dom';
 import ConfirmModal from '../components/ConfirmModal';
 import HaftalikDersCizelgesi from '../components/HaftalikDersCizelgesi';
@@ -104,8 +104,20 @@ const Dashboard = () => {
  const [sinifOgrencileriList, setSinifOgrencileriList] = useState([]);
  const [detayLoading, setDetayLoading] = useState(false);
 
+ const [teachersList, setTeachersList] = useState([]);
+ const fetchTeachers = async () => {
+ try {
+ const res = await getKullanicilar();
+ const ogretmenler = res.data.filter(k => k.rol === 'Öğretmen');
+ setTeachersList(ogretmenler);
+ } catch (err) {
+ console.error('Öğretmenler yüklenirken hata:', err);
+ }
+ };
+
  useEffect(() => {
  loadDashboardData();
+ fetchTeachers();
  }, []);
 
  const loadDashboardData = async () => {
@@ -158,20 +170,7 @@ const Dashboard = () => {
  };
 
  const getRegisteredTeachers = () => {
- try {
- const saved = localStorage.getItem('system_teachers');
- return saved ? JSON.parse(saved) : [
- { id: 1, isim: 'Ahmet Yılmaz', brans: 'Piyano & Solfej' },
- { id: 2, isim: 'Elif Kaya', brans: 'Keman & Müzik Teorisi' },
- { id: 3, isim: 'Caner Öztürk', brans: 'Dans & Koreografi' }
- ];
- } catch {
- return [
- { id: 1, isim: 'Ahmet Yılmaz', brans: 'Piyano & Solfej' },
- { id: 2, isim: 'Elif Kaya', brans: 'Keman & Müzik Teorisi' },
- { id: 3, isim: 'Caner Öztürk', brans: 'Dans & Koreografi' }
- ];
- }
+ return teachersList.map(t => ({ isim: t.ad_soyad, soyisim: '' }));
  };
 
  const handleCreateSinif = async (e) => {
