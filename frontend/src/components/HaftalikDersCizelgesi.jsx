@@ -57,9 +57,10 @@ const HaftalikDersCizelgesi = ({
  const gunDersleri = dersProgrami.filter(d => d.gun === gun);
  gunDersleri.sort((a, b) => (a.baslangic_saati || '').localeCompare(b.baslangic_saati || ''));
 
+ const formatTime = (t) => t ? t.substring(0, 5) : '';
  const timeGroups = {};
  gunDersleri.forEach(ders => {
- const key = ders.baslangic_saati || '00:00';
+ const key = formatTime(ders.baslangic_saati) || '00:00';
  if (!timeGroups[key]) timeGroups[key] = [];
  timeGroups[key].push(ders);
  });
@@ -144,7 +145,7 @@ const HaftalikDersCizelgesi = ({
  <div className={`font-medium opacity-90 mt-1 flex items-center gap-1 ${isExpanded ? 'text-xs' : 'text-[10px]'}`}>
  <Clock className="w-3 h-3 opacity-75 shrink-0" />
  <span className={isExpanded ? 'whitespace-normal font-bold' : 'truncate'}>
- {isExpanded ? `${ders.baslangic_saati} - ${ders.bitis_saati}` : ders.baslangic_saati}
+ {isExpanded ? `${formatTime(ders.baslangic_saati)} - ${formatTime(ders.bitis_saati)}` : formatTime(ders.baslangic_saati)}
  </span>
  </div>
 

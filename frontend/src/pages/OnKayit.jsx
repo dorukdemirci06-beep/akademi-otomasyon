@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 import SearchableSelect from '../components/SearchableSelect';
+import CustomDatePicker from '../components/CustomDatePicker';
 import { 
  getOnKayitlar, 
  createOnKayit,
@@ -91,6 +92,7 @@ const OnKayit = () => {
  telefon: '',
  ilgilenilen_brans: '',
  notlar: '',
+ dogum_tarihi: '',
  durum: 'Aranacak',
  });
 
@@ -184,6 +186,7 @@ const OnKayit = () => {
  adres: '',
  sinif_adi: '',
  bakiye: 0.0,
+ dogum_tarihi: '',
  anne_isim: '',
  anne_tc: '',
  anne_telefon: '',
@@ -259,6 +262,7 @@ const OnKayit = () => {
  telefon: '',
  ilgilenilen_brans: '',
  notlar: '',
+ dogum_tarihi: '',
  durum: 'Aranacak',
  });
  fetchKayitlar();
@@ -329,6 +333,7 @@ const OnKayit = () => {
  adres: '',
  sinif_adi: item.ilgilenilen_brans || '',
  bakiye: 0.0,
+ dogum_tarihi: item.dogum_tarihi || '',
  // Veli türü Anne ise anneye işleyelim
  anne_isim: veliTamIsim,
  anne_tc: '',
@@ -603,6 +608,16 @@ const OnKayit = () => {
  </div>
  </div>
 
+ {/* Doğum Tarihi */}
+ <div>
+ <CustomDatePicker
+   label="Doğum Tarihi"
+   value={formData.dogum_tarihi}
+   onChange={(val) => handleInputChange({ target: { name: 'dogum_tarihi', value: val } })}
+   placeholder="Doğum tarihi seçin"
+ />
+ </div>
+
  {/* Telefon */}
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İletişim Telefonu</label>
@@ -787,7 +802,7 @@ const OnKayit = () => {
  </div>
 
  {/* Table */}
- <div className="overflow-x-auto">
+ <div className="w-full">
  {loading ? (
  <div className="text-center py-12 text-slate-400 flex flex-col items-center gap-3">
  <RefreshCw className="w-7 h-7 animate-spin text-[#2eb82e]" />
@@ -836,6 +851,11 @@ const OnKayit = () => {
  <div className="font-bold text-slate-900 dark:text-slate-100">
  {item.ogrenci_adi} {item.ogrenci_soyadi}
  </div>
+ {item.dogum_tarihi && (
+ <div className="text-[10px] text-slate-500 font-medium mt-0.5">
+ Doğum: {new Date(item.dogum_tarihi).toLocaleDateString('tr-TR')}
+ </div>
+ )}
  </div>
  </div>
  </td>
@@ -955,6 +975,12 @@ const OnKayit = () => {
           </div>
 
           <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2">
+ {item.dogum_tarihi && (
+ <div className="flex justify-between items-center">
+ <span className="font-semibold">Doğum Tarihi:</span>
+ <span>{new Date(item.dogum_tarihi).toLocaleDateString('tr-TR')}</span>
+ </div>
+ )}
              <div className="flex justify-between items-center">
                 <span className="font-semibold">Veli:</span>
                 <span>{item.veli_adi || item.veli_soyadi ? `${item.veli_adi} ${item.veli_soyadi}` : '-'}</span>
@@ -1095,6 +1121,15 @@ const OnKayit = () => {
  options={siniflar.map(s => ({ value: s.sinif_adi, label: `${s.sinif_adi} (Kapasite: ${s.kapasite})` }))}
  placeholder="-- Mevcut Sınıflardan Seçiniz --"
  searchPlaceholder="Sınıf ara..."
+ />
+ </div>
+ 
+ <div className="sm:col-span-2">
+ <CustomDatePicker
+   label="Doğum Tarihi"
+   value={convertFormData.dogum_tarihi}
+   onChange={(val) => handleConvertInputChange({ target: { name: 'dogum_tarihi', value: val } })}
+   placeholder="Doğum tarihi seçin"
  />
  </div>
 
@@ -1379,6 +1414,14 @@ const OnKayit = () => {
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Veli Adı</label>
  <input type="text" name="veli_adi" value={editFormData.veli_adi || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ </div>
+ <div>
+ <CustomDatePicker
+   label="Doğum Tarihi"
+   value={editFormData.dogum_tarihi}
+   onChange={(val) => handleEditInputChange({ target: { name: 'dogum_tarihi', value: val } })}
+   placeholder="Doğum tarihi seçin"
+ />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Veli Soyadı</label>

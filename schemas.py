@@ -161,6 +161,7 @@ class OnKayitBase(BaseModel):
     telefon: Optional[str] = None
     ilgilenilen_brans: Optional[str] = None
     notlar: Optional[str] = None
+    dogum_tarihi: Optional[str] = None
     durum: Optional[str] = "Aranacak"
 
 class OnKayitCreate(OnKayitBase):
@@ -178,6 +179,7 @@ class OnKayitUpdate(BaseModel):
     telefon: Optional[str] = None
     ilgilenilen_brans: Optional[str] = None
     notlar: Optional[str] = None
+    dogum_tarihi: Optional[str] = None
     durum: Optional[str] = None
 
 class OnKayitResponse(OnKayitBase):

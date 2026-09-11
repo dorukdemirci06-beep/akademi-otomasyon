@@ -72,10 +72,10 @@ const Navbar = ({ currentUser, onLogout }) => {
       )}
 
     <header className="neo-card sticky top-0 z-50 mb-6 !rounded-none !border-x-0 !border-t-0 border-b border-[rgba(255,255,255,0.1)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Mobile Hamburger Toggle & Brand Logo */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 shrink-0">
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}
@@ -87,7 +87,7 @@ const Navbar = ({ currentUser, onLogout }) => {
               <GraduationCap className="w-6 h-6" />
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="flex items-center">
+              <div className="flex items-center shrink-0">
                 <span className="text-2xl sm:text-3xl font-black tracking-tighter leading-none text-slate-800 dark:text-slate-100">
                   KU<span className="text-[#2eb82e]">YO</span>
                 </span>
@@ -98,14 +98,14 @@ const Navbar = ({ currentUser, onLogout }) => {
                 </div>
               </div>
               {currentUser?.akademi_adi && (
-                <span className="hidden sm:block neo-input text-xs font-semibold text-slate-500 dark:text-slate-400 border-l pl-2 ml-2">
-                  {currentUser.akademi_adi}
-                </span>
+                <div className="hidden sm:flex items-center neo-input text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 ml-2 sm:ml-3 px-2 py-1 max-w-[100px] sm:max-w-[140px] min-h-[32px] leading-tight text-center">
+                  <span className="break-words w-full line-clamp-2">{currentUser.akademi_adi}</span>
+                </div>
               )}
             </div>
           </div>
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1 sm:gap-2 py-1">
+          <nav className="hidden lg:flex items-center gap-1 sm:gap-2 py-1 shrink-0">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -127,7 +127,7 @@ const Navbar = ({ currentUser, onLogout }) => {
             })}
           </nav>
           {/* Profile, Theme Switch & Logout */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center justify-end gap-2 sm:gap-3 flex-1 shrink-0">
             {/* Guide/Help Button */}
             <NavLink
               to="/kilavuz"

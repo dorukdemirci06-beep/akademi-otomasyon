@@ -7,6 +7,8 @@ from database import SessionLocal
 import models
 from config import settings
 from dotenv import load_dotenv
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
 load_dotenv()
 
@@ -132,17 +134,17 @@ def backup_all_to_sheets():
             # 5. ÖN KAYITLAR
             ws = get_or_create_worksheet(sheet, "Ön Kayıtlar")
             data = []
-            headers = ["Akademi Adı", "Kayıt ID", "İsim", "Soyisim", "Veli İsim", "Telefon", "Branş", "Durum", "Notlar", "Tarih"]
+            headers = ["Akademi Adı", "Kayıt ID", "İsim", "Soyisim", "Veli İsim", "Telefon", "Doğum Tarihi", "Branş", "Durum", "Notlar", "Tarih"]
             for akademi in akademiler:
                 items = db.query(models.OnKayit).filter(models.OnKayit.akademi_adi == akademi.name).all()
                 append_academy_data(data, akademi.name, headers, items, lambda ok: [
                     ok.akademi_adi or "", str(ok.id), ok.ogrenci_adi or "", ok.ogrenci_soyadi or "", 
-                    f"{ok.veli_adi or ''} {ok.veli_soyadi or ''}".strip(), ok.telefon or "", ok.ilgilenilen_brans or "", 
+                    f"{ok.veli_adi or ''} {ok.veli_soyadi or ''}".strip(), ok.telefon or "", ok.dogum_tarihi or "", ok.ilgilenilen_brans or "", 
                     ok.durum or "", ok.notlar or "", ok.eklenme_tarihi.strftime("%Y-%m-%d %H:%M") if ok.eklenme_tarihi else ""
                 ])
             ws.clear()
             if data:
-                ws.update(values=data, range_name=f"A1:J{len(data)}")
+                ws.update(values=data, range_name=f"A1:K{len(data)}")
 
             # 6. AKADEMİLER
             ws = get_or_create_worksheet(sheet, "Akademiler")
@@ -222,6 +224,30 @@ def backup_all_to_sheets():
                 ws.update(values=data, range_name=f"A1:J{len(data)}")
 
             print(f"[{datetime.now()}] Yedekleme Tamamlandı! Tüm tablolar başarıyla Google Sheets'e aktarıldı.")
+            
+            # --- Veritabanı Yedeği (.db) yükleme işlemi ---
+            print(f"[{datetime.now()}] Veritabanı (.db) yedeklemesi başlatılıyor...")
+            try:
+                drive_folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
+                if not drive_folder_id:
+                    print(f"[{datetime.now()}] UYARI: GOOGLE_DRIVE_FOLDER_ID .env dosyasında bulunamadı.")
+                    print(f"[{datetime.now()}] Servis hesaplarının kendi depolama alanı olmadığı için bir klasör ID'si sağlamalısınız.")
+                    print(f"[{datetime.now()}] Veritabanı Drive'a yüklenemedi, atlanıyor.")
+                else:
+                    drive_service = build('drive', 'v3', credentials=credentials)
+                    db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "akademi.db")
+                    if os.path.exists(db_path):
+                        file_metadata = {
+                            'name': f'akademi_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db',
+                            'parents': [drive_folder_id]
+                        }
+                        media = MediaFileUpload(db_path, mimetype='application/octet-stream', resumable=True)
+                        uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+                        print(f"[{datetime.now()}] Veritabanı başarıyla Google Drive'a yüklendi. Dosya ID: {uploaded_file.get('id')}")
+                    else:
+                        print(f"[{datetime.now()}] akademi.db dosyası bulunamadı, Google Drive veritabanı yedeği atlanıyor.")
+            except Exception as e:
+                print(f"[{datetime.now()}] Google Drive'a veritabanı yedeği yüklenirken hata oluştu: {e}")
             
         finally:
             db.close()

@@ -164,6 +164,7 @@ class OnKayit(Base):
     durum = Column(String, default="Aranacak") # Aranacak, Arandı, Ulaşılamadı, Olumsuz, Kesin Kayıt
     akademi_adi = Column(String, nullable=True, default="Test1", index=True)
     notlar = Column(String, nullable=True)
+    dogum_tarihi = Column(String, nullable=True) # YYYY-MM-DD
     eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
 
 class Akademi(Base):

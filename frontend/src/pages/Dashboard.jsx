@@ -379,7 +379,9 @@ const Dashboard = () => {
  <UserPlus className="w-6 h-6" />
  </div>
  </div>
- <div className="mt-4 flex items-center text-xs text-emerald-600 font-semibold gap-1">
+ <div className="mt-4 flex items-center text-xs text-emerald-500 font-semibold gap-1">
+ <TrendingUp className="w-4 h-4 shrink-0" />
+ <span>Ön Kayıtları Görüntüle →</span>
  </div>
  </Link>
  </div>

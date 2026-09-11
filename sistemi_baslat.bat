@@ -14,7 +14,7 @@ echo.
 
 :: Backend'i yeni bir pencerede baslat
 echo [1/2] Backend (API Sunucusu) baslatiliyor...
-start "Akademi Backend" cmd /k "python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+start "Akademi Backend" cmd /k "call venv\Scripts\activate.bat && python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
 
 :: Frontend'i yeni bir pencerede baslat
 echo [2/2] Frontend (Arayuz) baslatiliyor...
