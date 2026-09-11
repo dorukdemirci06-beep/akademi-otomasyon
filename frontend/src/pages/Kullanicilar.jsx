@@ -1047,7 +1047,7 @@ const Kullanicilar = () => {
  <span>{teacher.isim}</span>
  </h3>
  <span className="inline-flex items-center gap-1 text-[11px] font-semibold -transparent px-2 py-0.5 rounded-full mt-0.5 bg-indigo-500 text-white border-transparent shadow-sm">
- <BookOpen className="w-3 h-3 text-indigo-500" />
+ <BookOpen className="w-3 h-3 text-white" />
  <span>{teacher.brans || 'Genel Eğitmen'}</span>
  </span>
  </div>
@@ -1249,7 +1249,7 @@ const Kullanicilar = () => {
  </h3>
  {displayUnvan && (
  <span className="inline-flex items-center gap-1 text-xs font-semibold mt-1 -transparent px-2.5 py-0.5 rounded-full bg-indigo-500 text-white border-transparent shadow-sm">
- <BookOpen className="w-3 h-3 text-indigo-500" />
+ <BookOpen className="w-3 h-3 text-white" />
  <span>{displayUnvan}</span>
  </span>
  )}
@@ -1496,7 +1496,7 @@ const Kullanicilar = () => {
  <span>{item.isim}</span>
  </h3>
  <span className="inline-flex items-center gap-1 text-[11px] font-semibold -transparent px-2 py-0.5 rounded-full mt-0.5 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
- <Briefcase className="w-3 h-3 text-sky-500" />
+ <Briefcase className="w-3 h-3 text-white" />
  <span>{item.unvan || 'İdari Personel'}</span>
  </span>
  </div>
@@ -1629,7 +1629,7 @@ const Kullanicilar = () => {
  </h3>
  {displayUnvan && (
  <span className="inline-flex items-center gap-1 text-xs font-semibold mt-1 -transparent px-2.5 py-0.5 rounded-full bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
- <Briefcase className="w-3 h-3 text-sky-500" />
+ <Briefcase className="w-3 h-3 text-white" />
  <span>{displayUnvan}</span>
  </span>
  )}
