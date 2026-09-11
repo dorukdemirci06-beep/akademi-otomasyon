@@ -5,7 +5,7 @@ import { ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Users, BookOpen,
 import { 
  getSiniflar, getSiniflarBasic, getSinifOgrencileri, getDersProgrami, 
  createDersProgrami, deleteDersProgrami, getYoklama, saveYoklamaToplu,
- deleteYoklamaOturum, getDerslikler, getKullanicilar
+ deleteYoklamaOturum, getDerslikler, getOgretmenler
 } from '../services/api';
 import CustomDatePicker from '../components/CustomDatePicker';
 import HaftalikDersCizelgesi from '../components/HaftalikDersCizelgesi';
@@ -40,16 +40,15 @@ const Yoklama = () => {
   const [teachersList, setTeachersList] = useState([]);
   const fetchTeachers = async () => {
     try {
-      const res = await getKullanicilar();
-      const ogretmenler = res.data.filter(k => k.rol === 'Öğretmen');
-      setTeachersList(ogretmenler);
+      const res = await getOgretmenler();
+      setTeachersList(res.data || []);
     } catch (err) {
       console.error('Öğretmenler yüklenirken hata:', err);
     }
   };
 
   const getRegisteredTeachers = () => {
-    return teachersList.map(t => ({ isim: t.ad_soyad, soyisim: '' }));
+    return teachersList.map(t => ({ isim: t.isim, soyisim: '' }));
   };
 
  const [siniflar, setSiniflar] = useState([]);

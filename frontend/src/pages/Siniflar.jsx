@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Users, BookOpen, Wallet, ArrowUpRight, TrendingUp, Plus, Trash2, X, Eye, UserPlus, Calendar, Clock, Check } from 'lucide-react';
-import { getOgrenciler, getSiniflar, getSiniflarBasic, createSinif, deleteSinif, getSinifOgrencileri, getOnKayitlar, createDersProgrami, deleteDersProgrami, getDerslikler, createDerslik, deleteDerslik, getKullanicilar } from '../services/api';
+import { getOgrenciler, getSiniflar, getSiniflarBasic, createSinif, deleteSinif, getSinifOgrencileri, getOnKayitlar, createDersProgrami, deleteDersProgrami, getDerslikler, createDerslik, deleteDerslik, getOgretmenler } from '../services/api';
 import { Link } from 'react-router-dom';
 import ConfirmModal from '../components/ConfirmModal';
 import SearchableSelect from '../components/SearchableSelect';
@@ -130,9 +130,8 @@ const Siniflar = () => {
  const [teachersList, setTeachersList] = useState([]);
  const fetchTeachers = async () => {
    try {
-     const res = await getKullanicilar();
-     const ogretmenler = res.data.filter(k => k.rol === 'Öğretmen');
-     setTeachersList(ogretmenler);
+     const res = await getOgretmenler();
+     setTeachersList(res.data || []);
    } catch (err) {
      console.error('Öğretmenler yüklenirken hata:', err);
    }
@@ -197,7 +196,7 @@ const Siniflar = () => {
  };
 
  const getRegisteredTeachers = () => {
- return teachersList.map(t => ({ isim: t.ad_soyad, soyisim: '' }));
+ return teachersList.map(t => ({ isim: t.isim, soyisim: '' }));
  };
 
  const calculateEndTime = (startTime, durationMinutes) => {
