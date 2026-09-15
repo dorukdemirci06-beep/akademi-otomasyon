@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getAkademiAyarlar, getPendingAutomations, updateAkademiAyarlar, getOgrenciler, getSiniflarBasic, sendBulkWhatsAppMessage, arsivleSezonSonu, triggerManualBackup } from '../services/api';
-import { Save, Smartphone, Key, MessageCircle, AlertCircle, Type, Send, Users, BookOpen, UserCheck, RefreshCw, Archive, Database, AlertTriangle } from 'lucide-react';
+import { getAkademiAyarlar, getPendingAutomations, updateAkademiAyarlar, getOgrenciler, getSiniflarBasic, sendBulkWhatsAppMessage, arsivleSezonSonu, triggerManualBackup, getOnKayitlar } from '../services/api';
+import { Save, Smartphone, Key, MessageCircle, AlertCircle, Type, Send, Users, BookOpen, UserCheck, RefreshCw, Archive, Database, AlertTriangle, UserPlus } from 'lucide-react';
 import SearchableSelect from '../components/SearchableSelect';
 
 export default function Ayarlar({ showToast, user }) {
@@ -41,6 +41,7 @@ export default function Ayarlar({ showToast, user }) {
   // Veriler
   const [siniflar, setSiniflar] = useState([]);
   const [ogrenciler, setOgrenciler] = useState([]);
+  const [onKayitlar, setOnKayitlar] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
 
   useEffect(() => {
@@ -53,8 +54,11 @@ export default function Ayarlar({ showToast, user }) {
       if (targetType === 'sinif' && siniflar.length === 0) {
         loadSiniflar();
       }
-      if (ogrenciler.length === 0) {
+      if ((targetType === 'kisi' || targetType === 'tumu') && ogrenciler.length === 0) {
         loadOgrenciler();
+      }
+      if (targetType === 'onkayit' && onKayitlar.length === 0) {
+        loadOnKayitlar();
       }
     }
   }, [activeTab, targetType]);
@@ -77,6 +81,18 @@ export default function Ayarlar({ showToast, user }) {
       // Sadece aktif öğrencileri al
       const res = await getOgrenciler('Aktif');
       setOgrenciler(res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const loadOnKayitlar = async () => {
+    setLoadingData(true);
+    try {
+      const res = await getOnKayitlar();
+      setOnKayitlar(res.data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -168,7 +184,7 @@ export default function Ayarlar({ showToast, user }) {
       showToast('Lütfen gönderilecek mesajı yazın.', 'error');
       return;
     }
-    if ((targetType === 'sinif' || targetType === 'kisi') && selectedTarget.length === 0) {
+    if ((targetType === 'sinif' || targetType === 'kisi' || targetType === 'onkayit') && selectedTarget.length === 0) {
       showToast('Lütfen en az bir alıcı seçin.', 'error');
       return;
     }
@@ -180,25 +196,35 @@ export default function Ayarlar({ showToast, user }) {
       targets = ogrenciler.filter(o => o.sinif_isimleri?.some(s => selectedTarget.includes(s)));
     } else if (targetType === 'kisi') {
       targets = ogrenciler.filter(o => selectedTarget.includes(String(o.id)));
+    } else if (targetType === 'onkayit') {
+      targets = onKayitlar.filter(o => selectedTarget.includes(String(o.id)));
     }
 
     const links = [];
     targets.forEach(student => {
       let phone = '';
-      if (student.birincil_veli === 'Anne' && student.anne_telefon) phone = student.anne_telefon;
-      else if (student.birincil_veli === 'Baba' && student.baba_telefon) phone = student.baba_telefon;
-      else if (student.telefon) phone = student.telefon;
-      else if (student.anne_telefon) phone = student.anne_telefon;
-      else if (student.baba_telefon) phone = student.baba_telefon;
+      if (targetType === 'onkayit') {
+        phone = student.telefon;
+      } else {
+        if (student.birincil_veli === 'Anne' && student.anne_telefon) phone = student.anne_telefon;
+        else if (student.birincil_veli === 'Baba' && student.baba_telefon) phone = student.baba_telefon;
+        else if (student.telefon) phone = student.telefon;
+        else if (student.anne_telefon) phone = student.anne_telefon;
+        else if (student.baba_telefon) phone = student.baba_telefon;
+      }
 
       if (phone) {
         let cleanPhone = phone.replace(/\D/g, '');
         if (cleanPhone.length === 10) cleanPhone = '90' + cleanPhone;
         if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = '9' + cleanPhone;
         
+        let isim = targetType === 'onkayit' 
+          ? `${student.ogrenci_adi} ${student.ogrenci_soyadi}`
+          : `${student.isim} ${student.soyisim}`;
+
         links.push({
           id: student.id,
-          isim: `${student.isim} ${student.soyisim}`,
+          isim: isim,
           phone: cleanPhone,
           url: `https://wa.me/${cleanPhone}?text=${encodeURIComponent(bulkMessage)}`
         });
@@ -490,23 +516,29 @@ export default function Ayarlar({ showToast, user }) {
             {/* ALICI TÜRÜ SEÇİMİ */}
             <div className="space-y-3">
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">1. Alıcı Grubu Seçin</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <label className={`cursor-pointer p-4 transition-all flex flex-col gap-2 rounded-2xl border text-center ${targetType === 'tumu' ? 'neo-button-primary' : 'neo-button border-slate-200 dark:border-white/10'}`}>
                   <input type="radio" name="targetType" value="tumu" checked={targetType === 'tumu'} onChange={(e) => {setTargetType(e.target.value); setSelectedTarget([]);}} className="hidden" />
                   <Users className={`w-6 h-6 mx-auto ${targetType === 'tumu' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
-                  <span className="font-bold text-sm">Tüm Aktif Öğrenciler</span>
+                  <span className="font-bold text-sm">Tüm Öğrenciler</span>
                 </label>
                 
                 <label className={`cursor-pointer p-4 transition-all flex flex-col gap-2 rounded-2xl border text-center ${targetType === 'sinif' ? 'neo-button-primary' : 'neo-button border-slate-200 dark:border-white/10'}`}>
                   <input type="radio" name="targetType" value="sinif" checked={targetType === 'sinif'} onChange={(e) => {setTargetType(e.target.value); setSelectedTarget([]);}} className="hidden" />
                   <BookOpen className={`w-6 h-6 mx-auto ${targetType === 'sinif' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
-                  <span className="font-bold text-sm">Sınıflara Göre Gönder</span>
+                  <span className="font-bold text-sm">Sınıflar</span>
                 </label>
 
                 <label className={`cursor-pointer p-4 transition-all flex flex-col gap-2 rounded-2xl border text-center ${targetType === 'kisi' ? 'neo-button-primary' : 'neo-button border-slate-200 dark:border-white/10'}`}>
                   <input type="radio" name="targetType" value="kisi" checked={targetType === 'kisi'} onChange={(e) => {setTargetType(e.target.value); setSelectedTarget([]);}} className="hidden" />
                   <UserCheck className={`w-6 h-6 mx-auto ${targetType === 'kisi' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
-                  <span className="font-bold text-sm">Kişilere Göre Gönder</span>
+                  <span className="font-bold text-sm">Kişiler</span>
+                </label>
+
+                <label className={`cursor-pointer p-4 transition-all flex flex-col gap-2 rounded-2xl border text-center ${targetType === 'onkayit' ? 'neo-button-primary' : 'neo-button border-slate-200 dark:border-white/10'}`}>
+                  <input type="radio" name="targetType" value="onkayit" checked={targetType === 'onkayit'} onChange={(e) => {setTargetType(e.target.value); setSelectedTarget([]);}} className="hidden" />
+                  <UserPlus className={`w-6 h-6 mx-auto ${targetType === 'onkayit' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                  <span className="font-bold text-sm">Ön Kayıtlar</span>
                 </label>
               </div>
             </div>
@@ -541,6 +573,24 @@ export default function Ayarlar({ showToast, user }) {
                     placeholder="Öğrenci ara ve seç..."
                     searchPlaceholder="Öğrenci ara..."
                     icon={UserCheck}
+                    isMulti={true}
+                  />
+                  {loadingData && <RefreshCw className="w-4 h-4 absolute right-12 top-2.5 animate-spin text-slate-400" />}
+                </div>
+              </div>
+            )}
+
+            {targetType === 'onkayit' && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Ön Kayıt Seçimi</label>
+                <div className="relative">
+                  <SearchableSelect
+                    value={selectedTarget}
+                    onChange={(val) => setSelectedTarget(val)}
+                    options={onKayitlar.map(o => ({ value: String(o.id), label: `${o.ogrenci_adi || ''} ${o.ogrenci_soyadi || ''}`.trim() }))}
+                    placeholder="Ön kayıt ara ve seç..."
+                    searchPlaceholder="Ön kayıt ara..."
+                    icon={UserPlus}
                     isMulti={true}
                   />
                   {loadingData && <RefreshCw className="w-4 h-4 absolute right-12 top-2.5 animate-spin text-slate-400" />}
@@ -648,6 +698,9 @@ export default function Ayarlar({ showToast, user }) {
                 if (targetType === 'kisi') {
                   const student = ogrenciler.find(o => String(o.id) === String(idOrName));
                   if (student) label = `${student.isim} ${student.soyisim}`;
+                } else if (targetType === 'onkayit') {
+                  const student = onKayitlar.find(o => String(o.id) === String(idOrName));
+                  if (student) label = `${student.ogrenci_adi} ${student.ogrenci_soyadi}`;
                 }
                 return (
                   <div key={idOrName} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 shadow-sm">

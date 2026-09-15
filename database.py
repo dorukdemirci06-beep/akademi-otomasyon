@@ -4,6 +4,8 @@ from config import settings
 
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
+from sqlalchemy.pool import NullPool
+
 # Veritabanı Motoru
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
@@ -12,10 +14,7 @@ if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
 else:
     engine = create_engine(
         SQLALCHEMY_DATABASE_URL,
-        pool_pre_ping=True,
-        pool_recycle=300,
-        pool_size=10,
-        max_overflow=20
+        poolclass=NullPool
     )
 
 # Veritabanı Oturumu (Session)
