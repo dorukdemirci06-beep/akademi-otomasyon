@@ -1595,9 +1595,21 @@ async def login_kullanici(request: Request, credentials: schemas.KullaniciLogin,
     if not kullanici or not verify_password(credentials.sifre.strip(), kullanici.sifre):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Kullanıcı adı veya şifre hatalı!")
     
-    # Oturum için aktif akademi belirlenir (seçilen akademi veya kullanıcının kayıtlı akademisi)
-    selected_akademi = credentials.akademi_adi.strip() if credentials.akademi_adi else None
-    session_akademi = selected_akademi or kullanici.akademi_adi or "Test1"
+    req_akademi = credentials.akademi_adi.strip() if credentials.akademi_adi else None
+    
+    # Sıkı Güvenlik Kontrolü: 
+    if not req_akademi:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Lütfen giriş yapmak istediğiniz kurumu listeden seçin.")
+
+    # Doruk (sistem yöneticisi) hariç kimse kendi akademisi dışındaki bir kurumu seçemez.
+    if kullanici.kullanici_adi != "doruk":
+        if kullanici.akademi_adi != req_akademi:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Bu kuruma giriş yetkiniz bulunmamaktadır! Lütfen kendi kurumunuzu seçin.")
+
+    session_akademi = kullanici.akademi_adi or "Test1"
+    
+    if kullanici.kullanici_adi == "doruk" and req_akademi:
+        session_akademi = req_akademi
 
     access_token = create_access_token(data={
         "sub": kullanici.kullanici_adi, 

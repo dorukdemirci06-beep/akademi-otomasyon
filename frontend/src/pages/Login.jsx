@@ -6,7 +6,7 @@ import ConfirmModal from '../components/ConfirmModal';
 
 const Login = ({ onLoginSuccess }) => {
   const { theme, toggleTheme } = useTheme();
-  const [selectedAkademi, setSelectedAkademi] = useState('Test1');
+  const [selectedAkademi, setSelectedAkademi] = useState('');
   const [akademiler, setAkademiler] = useState([{ id: 1, name: 'Test1' }, { id: 2, name: 'Test2' }]);
   const [akademiComboboxOpen, setAkademiComboboxOpen] = useState(false);
   const [akademiSearchQuery, setAkademiSearchQuery] = useState('');

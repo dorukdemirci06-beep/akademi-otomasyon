@@ -38,8 +38,23 @@ const CustomDatePicker = ({
  const selectedDate = value ? parseDateStr(value) : null;
  const [viewDate, setViewDate] = useState(() => selectedDate || new Date());
  
- const containerRef = useRef(null);
- const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const containerRef = useRef(null);
+  const monthDropdownRef = useRef(null);
+  const yearDropdownRef = useRef(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [openDropdown, setOpenDropdown] = useState(null); // 'month' | 'year' | null
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (openDropdown === 'month' && monthDropdownRef.current) {
+        const activeBtn = monthDropdownRef.current.querySelector('.active-month');
+        if (activeBtn) activeBtn.scrollIntoView({ block: 'center' });
+      } else if (openDropdown === 'year' && yearDropdownRef.current) {
+        const activeBtn = yearDropdownRef.current.querySelector('.active-year');
+        if (activeBtn) activeBtn.scrollIntoView({ block: 'center' });
+      }
+    }, 10);
+  }, [openDropdown]);
 
  // Update viewDate when value changes
  useEffect(() => {
@@ -84,6 +99,7 @@ const CustomDatePicker = ({
      const handleClickOutside = (event) => {
        if (containerRef.current && !containerRef.current.contains(event.target) && (!event.target.closest || !event.target.closest('.date-picker-popup'))) {
          setIsOpen(false);
+         setOpenDropdown(null);
        }
      };
      document.addEventListener('mousedown', handleClickOutside);
@@ -118,6 +134,7 @@ const CustomDatePicker = ({
  const todayStr = formatDateToYYYYMMDD(today);
  onChange(todayStr);
  setIsOpen(false);
+ setOpenDropdown(null);
  };
 
  const formatDateToYYYYMMDD = (dateObj) => {
@@ -132,6 +149,7 @@ const CustomDatePicker = ({
  const dateStr = formatDateToYYYYMMDD(newDate);
  onChange(dateStr);
  setIsOpen(false);
+ setOpenDropdown(null);
  };
 
  // Generate calendar grid
@@ -201,6 +219,7 @@ const CustomDatePicker = ({
  e.stopPropagation();
  if (!isOpen) updatePosition();
  setIsOpen(!isOpen);
+ if (isOpen) setOpenDropdown(null);
  }}
  className={`w-full flex flex-nowrap items-center justify-between gap-2 transition cursor-pointer min-w-0 overflow-hidden ${buttonClassName || 'px-3 py-2 border rounded-lg text-sm text-slate-900 dark:text-slate-100 h-[38px]'}`}
  >
@@ -214,7 +233,7 @@ const CustomDatePicker = ({
  {/* STANDARD SIZE POPUP CALENDAR MODAL */}
  {isOpen && createPortal(
  <div 
- className={`absolute z-[99999] date-picker-popup neo-card p-4 w-[280px] sm:w-[320px] animate-scale-in text-slate-100`}
+ className={`absolute z-[99999] date-picker-popup neo-card bg-slate-900/95 backdrop-blur-md border border-slate-700/50 shadow-2xl rounded-2xl p-4 w-[280px] sm:w-[320px] animate-scale-in text-slate-100`}
  style={{ 
    top: `${dropdownPosition.top}px`, 
    left: align === 'right' ? `${dropdownPosition.left + dropdownPosition.width - 280}px` : `${dropdownPosition.left}px`,
@@ -222,28 +241,71 @@ const CustomDatePicker = ({
    transitionProperty: 'opacity, transform'
  }}
  >
- {/* Header Bar */}
- <div className="flex justify-between items-center border-b pb-3 mb-4">
- <div className="flex items-center gap-2">
- <select 
- value={viewMonth}
- onChange={(e) => setViewDate(new Date(viewYear, parseInt(e.target.value), 1))}
- className="text-slate-100 font-bold rounded-full px-2 py-1 outline-none focus:border-emerald-500 cursor-pointer text-sm hover: transition neo-input"
- >
- {AYLAR.map((ay, idx) => (
- <option key={ay} value={idx}>{ay}</option>
- ))}
- </select>
- <select 
- value={viewYear}
- onChange={(e) => setViewDate(new Date(parseInt(e.target.value), viewMonth, 1))}
- className="text-slate-100 font-bold rounded-full px-2 py-1 outline-none focus:border-emerald-500 cursor-pointer text-sm hover: transition neo-input"
- >
- {Array.from({length: 100}, (_, i) => new Date().getFullYear() - 80 + i).map(yil => (
- <option key={yil} value={yil}>{yil}</option>
- ))}
- </select>
- </div>
+  {/* Header Bar */}
+  <div className="flex justify-between items-center border-b border-slate-700/50 pb-3 mb-4">
+    <div className="flex items-center gap-2 relative">
+      {/* Month Select */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setOpenDropdown(openDropdown === 'month' ? null : 'month'); }}
+          className="text-slate-100 font-bold rounded-xl px-3 py-1.5 outline-none bg-slate-800/50 hover:bg-slate-700 transition cursor-pointer text-sm flex items-center gap-1 border border-slate-600/50"
+        >
+          {AYLAR[viewMonth]}
+          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${openDropdown === 'month' ? 'rotate-90' : ''}`} />
+        </button>
+        
+        {openDropdown === 'month' && (
+          <div ref={monthDropdownRef} className="absolute top-full left-0 mt-1 w-32 max-h-48 overflow-y-auto neo-card bg-slate-900 border border-emerald-500/30 rounded-xl shadow-xl z-50 py-1 custom-scrollbar">
+            {AYLAR.map((ay, idx) => (
+              <button
+                key={ay}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewDate(new Date(viewYear, idx, 1));
+                  setOpenDropdown(null);
+                }}
+                className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-emerald-500/20 ${viewMonth === idx ? 'active-month text-emerald-400 font-bold bg-emerald-500/10' : 'text-slate-300'}`}
+              >
+                {ay}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Year Select */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setOpenDropdown(openDropdown === 'year' ? null : 'year'); }}
+          className="text-slate-100 font-bold rounded-xl px-3 py-1.5 outline-none bg-slate-800/50 hover:bg-slate-700 transition cursor-pointer text-sm flex items-center gap-1 border border-slate-600/50"
+        >
+          {viewYear}
+          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${openDropdown === 'year' ? 'rotate-90' : ''}`} />
+        </button>
+        
+        {openDropdown === 'year' && (
+          <div ref={yearDropdownRef} className="absolute top-full left-0 mt-1 w-24 max-h-48 overflow-y-auto neo-card bg-slate-900 border border-emerald-500/30 rounded-xl shadow-xl z-50 py-1 custom-scrollbar">
+            {Array.from({length: 120}, (_, i) => new Date().getFullYear() + 20 - i).map(yil => (
+              <button
+                key={yil}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewDate(new Date(yil, viewMonth, 1));
+                  setOpenDropdown(null);
+                }}
+                className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-emerald-500/20 ${viewYear === yil ? 'active-year text-emerald-400 font-bold bg-emerald-500/10' : 'text-slate-300'}`}
+              >
+                {yil}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
 
  <div className="flex items-center gap-1">
  <button
