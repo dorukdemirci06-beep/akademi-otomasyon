@@ -40,13 +40,11 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     if not hashed_password:
         return False
-    if hashed_password.startswith("$2b$") or hashed_password.startswith("$2a$"):
-        try:
-            pwd_bytes = (plain_password or "").encode('utf-8')[:72]
-            return bcrypt.checkpw(pwd_bytes, hashed_password.encode('utf-8'))
-        except Exception:
-            return False
-    return plain_password == hashed_password
+    try:
+        pwd_bytes = (plain_password or "").encode('utf-8')[:72]
+        return bcrypt.checkpw(pwd_bytes, hashed_password.encode('utf-8'))
+    except Exception:
+        return False
 
 # JWT Setup
 security_scheme = HTTPBearer(auto_error=False)
