@@ -385,18 +385,7 @@ def get_ogrenciler(
     if durum:
         query = query.filter(models.Ogrenci.durum == durum)
     ogrenciler = query.all()
-    sonuc = []
-    for o in ogrenciler:
-        validated = schemas.OgrenciResponse.model_validate(o)
-        if current_user.rol != "Yönetici":
-            if validated.tc and len(validated.tc) >= 6:
-                validated.tc = f"{validated.tc[:3]}*****{validated.tc[-3:]}"
-            if getattr(validated, 'anne_tc', None) and len(validated.anne_tc) >= 6:
-                validated.anne_tc = f"{validated.anne_tc[:3]}*****{validated.anne_tc[-3:]}"
-            if getattr(validated, 'baba_tc', None) and len(validated.baba_tc) >= 6:
-                validated.baba_tc = f"{validated.baba_tc[:3]}*****{validated.baba_tc[-3:]}"
-        sonuc.append(validated)
-    return sonuc
+    return [schemas.OgrenciResponse.model_validate(o) for o in ogrenciler]
 
 
 @app.put("/ogrenciler/{ogrenci_id}", response_model=schemas.OgrenciResponse)
