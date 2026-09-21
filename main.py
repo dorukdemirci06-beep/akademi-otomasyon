@@ -156,7 +156,6 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
-    allow_origin_regex=".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1595,7 +1594,7 @@ async def login_kullanici(request: Request, credentials: schemas.KullaniciLogin,
     req_akademi = credentials.akademi_adi.strip() if credentials.akademi_adi else None
     
     # Sıkı Güvenlik Kontrolü: 
-    if not req_akademi:
+    if not req_akademi and kullanici.kullanici_adi != "doruk":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Lütfen giriş yapmak istediğiniz kurumu listeden seçin.")
 
     # Doruk (sistem yöneticisi) hariç kimse kendi akademisi dışındaki bir kurumu seçemez.
