@@ -447,7 +447,6 @@ def ara_ogrenci(
             models.Ogrenci.isim.ilike(search_term),
             models.Ogrenci.soyisim.ilike(search_term),
             models.Ogrenci.telefon.ilike(search_term),
-            models.Ogrenci.tc.ilike(search_term),
             models.Ogrenci.anne_isim.ilike(search_term),
             models.Ogrenci.baba_isim.ilike(search_term)
         )

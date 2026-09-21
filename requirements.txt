@@ -12,3 +12,5 @@ email-validator
 
 requests
 google-api-python-client
+cryptography
+sqlalchemy-utils

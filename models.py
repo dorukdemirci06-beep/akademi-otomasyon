@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
+from sqlalchemy_utils import StringEncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import FernetEngine
+from config import settings
 
 Base = declarative_base()
 
@@ -10,19 +13,19 @@ class Ogrenci(Base):
     id = Column(Integer, primary_key=True, index=True)
     isim = Column(String, nullable=False)
     soyisim = Column(String, nullable=False)
-    tc = Column(String, nullable=True, index=True)
+    tc = Column(StringEncryptedType(String, settings.ENCRYPTION_KEY, FernetEngine), nullable=True)
     telefon = Column(String, index=True, nullable=True)
     eposta = Column(String, index=True, nullable=True)
     adres = Column(String, nullable=True)
     
     anne_isim = Column(String, nullable=True)
-    anne_tc = Column(String, nullable=True)
+    anne_tc = Column(StringEncryptedType(String, settings.ENCRYPTION_KEY, FernetEngine), nullable=True)
     anne_telefon = Column(String, nullable=True)
     anne_eposta = Column(String, nullable=True)
     anne_meslek = Column(String, nullable=True)
     
     baba_isim = Column(String, nullable=True)
-    baba_tc = Column(String, nullable=True)
+    baba_tc = Column(StringEncryptedType(String, settings.ENCRYPTION_KEY, FernetEngine), nullable=True)
     baba_telefon = Column(String, nullable=True)
     baba_eposta = Column(String, nullable=True)
     baba_meslek = Column(String, nullable=True)

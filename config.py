@@ -22,5 +22,6 @@ class Settings:
     )
     ALLOWED_ORIGINS: list = [origin.strip() for origin in _raw_origins.split(",") if origin.strip()]
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY", "avuh5j4FcnjK14zY4RVqCR0SV78FwAB1JcQN35Cl5WU=")
 
 settings = Settings()
