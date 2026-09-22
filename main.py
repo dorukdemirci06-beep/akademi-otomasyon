@@ -84,11 +84,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    app_logger.error(f"Global hata yakalandi: {request.method} {request.url}")
-    app_logger.error(traceback.format_exc())
+    app_logger.error(f"Global Hata: {exc}", exc_info=True)
     return JSONResponse(
         status_code=500,
-        content={"detail": "Sunucu icinde beklenmedik bir hata olustu. Lutfen yoneticinizle iletisime gecin."},
+        content={"detail": f"Hata: {str(exc)}"},
     )
 
 # CORS Middleware ile dinamik ALLOWED_ORIGINS allow-list
