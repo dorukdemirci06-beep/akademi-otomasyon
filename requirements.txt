@@ -9,8 +9,10 @@ bcrypt
 slowapi
 python-dotenv
 email-validator
-
 requests
 google-api-python-client
 cryptography
 sqlalchemy-utils
+gspread
+google-auth
+oauth2client
