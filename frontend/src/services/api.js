@@ -4,9 +4,9 @@ import { isArchiveMode, getArchiveData } from './archiveMode';
 const getApiUrl = () => {
   if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
   if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return `http://${window.location.hostname}:8000`;
+    return `http://${window.location.hostname}:8005`;
   }
-  return 'http://127.0.0.1:8000';
+  return 'http://127.0.0.1:8005';
 };
 
 const API = axios.create({
@@ -166,14 +166,45 @@ API.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // Eğer hata 401 ise ve daha önce tekrar denenmemişse
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken) {
+        try {
+          const res = await axios.post(`${getApiUrl()}/kullanicilar/refresh`, {
+            refresh_token: refreshToken
+          });
+          
+          if (res.data && res.data.access_token) {
+            localStorage.setItem('token', res.data.access_token);
+            if (res.data.refresh_token) {
+               localStorage.setItem('refresh_token', res.data.refresh_token);
+            }
+            originalRequest.headers.Authorization = `Bearer ${res.data.access_token}`;
+            return API(originalRequest);
+          }
+        } catch (refreshError) {
+          // Refresh token geçersizse dışarı at
+          localStorage.removeItem('token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(refreshError);
+        }
       } else {
-        window.location.reload();
+        // Refresh token yoksa doğrudan dışarı at
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

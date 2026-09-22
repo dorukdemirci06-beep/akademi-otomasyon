@@ -32,6 +32,7 @@ function App() {
   });
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
     setCurrentUser(null);
   };

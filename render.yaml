@@ -1,0 +1,20 @@
+services:
+  # 1. Ana API Sunucusu (Gelen İstekleri Karşılar)
+  - type: web
+    name: akademi-backend
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+
+  # 2. Arka Plan İşçisi (Zamanlanmış Görevleri ve Yedeklemeleri Yapar)
+  - type: worker
+    name: akademi-scheduler
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python run_scheduler.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12

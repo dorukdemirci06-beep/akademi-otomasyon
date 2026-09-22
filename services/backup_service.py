@@ -1,16 +1,20 @@
 import os
+import json
+import zipfile
 import gspread
 from google.oauth2.service_account import Credentials
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, date
 from database import SessionLocal
 import models
 from config import settings
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from logger import get_logger
 
 load_dotenv()
+logger = get_logger("backup_service")
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -23,18 +27,75 @@ def get_or_create_worksheet(sheet, title):
     except gspread.exceptions.WorksheetNotFound:
         return sheet.add_worksheet(title=title, rows="1000", cols="20")
 
+def create_database_dump(db: Session) -> str:
+    """Veritabanındaki tüm tabloları okur, JSON'a çevirir ve sıkıştırarak ZIP oluşturur."""
+    logger.info("JSON veritabanı yedeği hazırlanıyor...")
+    backup_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "backups")
+    if not os.path.exists(backup_dir):
+        os.makedirs(backup_dir)
+        
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    json_path = os.path.join(backup_dir, f"backup_{timestamp}.json")
+    zip_path = os.path.join(backup_dir, f"akademi_db_backup_{timestamp}.zip")
+    
+    all_data = {}
+    model_classes = [
+        models.Akademi, models.Kullanici, models.Ogrenci, models.Sinif, models.OgrenciSinif,
+        models.Odeme, models.Yoklama, models.DersProgrami, models.OnKayit, models.Derslik,
+        models.Ogretmen, models.Personel, models.Degerlendirme
+    ]
+    
+    for model in model_classes:
+        table_name = model.__tablename__
+        records = db.query(model).all()
+        table_data = []
+        for record in records:
+            row_dict = {}
+            for column in record.__table__.columns:
+                val = getattr(record, column.name)
+                if isinstance(val, (datetime, date)):
+                    row_dict[column.name] = val.isoformat()
+                else:
+                    row_dict[column.name] = val
+            table_data.append(row_dict)
+        all_data[table_name] = table_data
+        
+    # Write to JSON
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(all_data, f, ensure_ascii=False, indent=2)
+        
+    # Zip the JSON
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(json_path, arcname=f"backup_{timestamp}.json")
+        
+    # Delete the raw JSON file to save space
+    if os.path.exists(json_path):
+        os.remove(json_path)
+        
+    # Clean up old backups (keep last 7)
+    try:
+        backups = sorted([f for f in os.listdir(backup_dir) if f.endswith('.zip')])
+        while len(backups) > 7:
+            old_backup = os.path.join(backup_dir, backups.pop(0))
+            os.remove(old_backup)
+    except Exception as e:
+        logger.error(f"Eski yedekler temizlenirken hata oluştu: {e}")
+        
+    logger.info(f"JSON veritabanı yedeği oluşturuldu: {zip_path}")
+    return zip_path
+
 def backup_all_to_sheets():
-    print(f"[{datetime.now()}] Google Sheets Merkezi Yedekleme İşlemi Başladı...")
+    logger.info("Google Sheets Merkezi Yedekleme İşlemi Başladı...")
     
     sheet_id = os.getenv("GOOGLE_SHEET_ID")
     cred_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "credentials.json")
     
     if not sheet_id:
-        print("GOOGLE_SHEET_ID bulunamadı, yedekleme atlanıyor.")
+        logger.warning("GOOGLE_SHEET_ID bulunamadı, yedekleme atlanıyor.")
         return
         
     if not os.path.exists(cred_file):
-        print("credentials.json bulunamadı, yedekleme atlanıyor.")
+        logger.warning("credentials.json bulunamadı, yedekleme atlanıyor.")
         return
 
     try:
@@ -223,34 +284,36 @@ def backup_all_to_sheets():
             if data:
                 ws.update(values=data, range_name=f"A1:J{len(data)}")
 
-            print(f"[{datetime.now()}] Yedekleme Tamamlandı! Tüm tablolar başarıyla Google Sheets'e aktarıldı.")
+            logger.info("Yedekleme Tamamlandı! Tüm tablolar başarıyla Google Sheets'e aktarıldı.")
             
-            # --- Veritabanı Yedeği (.db) yükleme işlemi ---
-            print(f"[{datetime.now()}] Veritabanı (.db) yedeklemesi başlatılıyor...")
+            # --- Veritabanı Yedeği (.zip) yükleme işlemi ---
+            logger.info("Tam veritabanı yedeği oluşturuluyor ve Google Drive'a yükleniyor...")
             try:
                 drive_folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
                 if not drive_folder_id:
-                    print(f"[{datetime.now()}] UYARI: GOOGLE_DRIVE_FOLDER_ID .env dosyasında bulunamadı.")
-                    print(f"[{datetime.now()}] Servis hesaplarının kendi depolama alanı olmadığı için bir klasör ID'si sağlamalısınız.")
-                    print(f"[{datetime.now()}] Veritabanı Drive'a yüklenemedi, atlanıyor.")
+                    logger.warning("GOOGLE_DRIVE_FOLDER_ID .env dosyasında bulunamadı. Drive yüklemesi atlanıyor.")
                 else:
                     drive_service = build('drive', 'v3', credentials=credentials)
-                    db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "akademi.db")
-                    if os.path.exists(db_path):
+                    
+                    # .db dosyası yerine tüm DB'nin JSON dump'ını alıp zip'le
+                    zip_path = create_database_dump(db)
+                    
+                    if os.path.exists(zip_path):
+                        filename = os.path.basename(zip_path)
                         file_metadata = {
-                            'name': f'akademi_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db',
+                            'name': filename,
                             'parents': [drive_folder_id]
                         }
-                        media = MediaFileUpload(db_path, mimetype='application/octet-stream', resumable=True)
+                        media = MediaFileUpload(zip_path, mimetype='application/zip', resumable=True)
                         uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-                        print(f"[{datetime.now()}] Veritabanı başarıyla Google Drive'a yüklendi. Dosya ID: {uploaded_file.get('id')}")
+                        logger.info(f"Veritabanı yedeği ({filename}) başarıyla Google Drive'a yüklendi. Dosya ID: {uploaded_file.get('id')}")
                     else:
-                        print(f"[{datetime.now()}] akademi.db dosyası bulunamadı, Google Drive veritabanı yedeği atlanıyor.")
+                        logger.error("ZIP dosyası oluşturulamadı, Google Drive veritabanı yedeği atlanıyor.")
             except Exception as e:
-                print(f"[{datetime.now()}] Google Drive'a veritabanı yedeği yüklenirken hata oluştu: {e}")
+                logger.error(f"Google Drive'a veritabanı yedeği yüklenirken hata oluştu: {e}")
             
         finally:
             db.close()
             
     except Exception as e:
-        print(f"[{datetime.now()}] Genel yedekleme hatası: {e}")
+        logger.error(f"Genel yedekleme hatası: {e}")

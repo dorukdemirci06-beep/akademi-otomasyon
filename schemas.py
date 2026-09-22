@@ -271,10 +271,14 @@ class KullaniciResponse(KullaniciBase):
 
 class TokenResponse(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     user: KullaniciResponse
 
     model_config = ConfigDict(from_attributes=True)
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 
 # ==================== DERS PROGRAMI SCHEMAS ====================

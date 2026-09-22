@@ -22,11 +22,10 @@ import models
 import schemas
 from services.whatsapp_service import send_whatsapp_message
 from services.backup_service import backup_all_to_sheets
-from apscheduler.schedulers.background import BackgroundScheduler
+# APScheduler importu run_scheduler.py dosyasına taşındı.
 
 
-# Veritabanı tablolarını oluştur
-models.Base.metadata.create_all(bind=engine)
+# Veritabanı tabloları ve migrasyonlar artık init_db.py üzerinden yönetiliyor.
 
 import bcrypt
 
@@ -55,107 +54,48 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "type": "access"})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
-def auto_migrate():
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS tc VARCHAR;"))
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS anne_isim VARCHAR;"))
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS anne_tc VARCHAR;"))
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS anne_meslek VARCHAR;"))
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS baba_isim VARCHAR;"))
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS baba_tc VARCHAR;"))
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS baba_meslek VARCHAR;"))
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS durum VARCHAR DEFAULT 'Aktif';"))
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS kayit_tarihi TIMESTAMP;"))
-            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
-            
-            conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS veli_meslek VARCHAR;"))
-            conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
-            conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS notlar VARCHAR;"))
-            
-            conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
-            
-            conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS odeme_periyodu VARCHAR;"))
-            conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS taksit_sayisi INTEGER;"))
-            conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS taksit_no INTEGER DEFAULT 1;"))
-            conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS aciklama VARCHAR;"))
-            conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS sinif_adi VARCHAR;"))
-            conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
-            
-            conn.execute(text("ALTER TABLE yoklamalar ADD COLUMN IF NOT EXISTS aciklama VARCHAR;"))
-            conn.execute(text("ALTER TABLE yoklamalar ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
-            
-            conn.execute(text("ALTER TABLE kullanicilar ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
-            
-            cols = ["anne_telefon", "anne_isim", "anne_tc", "anne_eposta", "anne_meslek",
-                    "baba_telefon", "baba_isim", "baba_tc", "baba_eposta", "baba_meslek",
-                    "tc", "telefon", "eposta", "adres"]
-            for col in cols:
-                try:
-                    conn.execute(text(f"ALTER TABLE ogrenciler ALTER COLUMN {col} DROP NOT NULL;"))
-                except Exception:
-                    pass
-            try:
-                conn.execute(text("DROP INDEX IF EXISTS ix_ogrenciler_telefon;"))
-            except Exception:
-                pass
-            conn.commit()
-    except Exception as e:
-        print("Otomatik migrasyon uyarısı:", e)
+def create_refresh_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    to_encode.update({"exp": expire, "type": "refresh"})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
-auto_migrate()
+# auto_migrate() ve seed_initial_user() fonksiyonları init_db.py dosyasına taşındı.
 
-def seed_initial_user():
-    try:
-        db = SessionLocal()
-        test1 = db.query(models.Akademi).filter(models.Akademi.name == "Test1").first()
-        if not test1:
-            test1 = models.Akademi(name="Test1")
-            db.add(test1)
-            db.commit()
+from logger import get_logger
+from fastapi.responses import JSONResponse
+import traceback
 
-        test2 = db.query(models.Akademi).filter(models.Akademi.name == "Test2").first()
-        if not test2:
-            test2 = models.Akademi(name="Test2")
-            db.add(test2)
-            db.commit()
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-        admin_user = db.query(models.Kullanici).filter(models.Kullanici.kullanici_adi == "doruk").first()
-        if not admin_user:
-            admin_user = models.Kullanici(
-                kullanici_adi="doruk",
-                sifre=hash_password("Dd150106!"),
-                rol="Yönetici",
-                ad_soyad="Doruk (Yönetici)",
-                akademi_adi="Test1"
-            )
-            db.add(admin_user)
-            db.commit()
-            print("İlk yönetici kullanıcısı (doruk / Dd150106! - Test1) oluşturuldu.")
-        else:
-            if not admin_user.akademi_adi:
-                admin_user.akademi_adi = "Test1"
-            if not (admin_user.sifre.startswith("$2b$") or admin_user.sifre.startswith("$2a$")):
-                admin_user.sifre = hash_password("Dd150106!")
-            db.commit()
-        db.close()
-    except Exception as e:
-        print("Kullanıcı seed uyarısı:", e)
-
-seed_initial_user()
+app_logger = get_logger("main")
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Akademi Otomasyonu API")
+
+# Gerçek IP Adresi Çözümlemesi (Nginx / Cloudflare arkasında çalışırken Rate Limit hatasını önler)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    app_logger.error(f"Global hata yakalandi: {request.method} {request.url}")
+    app_logger.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Sunucu icinde beklenmedik bir hata olustu. Lutfen yoneticinizle iletisime gecin."},
+    )
 
 # CORS Middleware ile dinamik ALLOWED_ORIGINS allow-list
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -182,6 +122,15 @@ def get_current_user(
     token = credentials.credentials
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        
+        # Sadece access_token'lar kabul edilir
+        if payload.get("type") and payload.get("type") != "access":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Geçersiz yetkilendirme token tipi.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+            
         username: str = payload.get("sub")
         token_akademi: Optional[str] = payload.get("akademi_adi")
         if username is None:
@@ -222,6 +171,10 @@ if os.path.exists(assets_path):
 @app.get("/yoklama", response_class=HTMLResponse)
 @app.get("/finans", response_class=HTMLResponse)
 @app.get("/kullanicilar", response_class=HTMLResponse)
+@app.get("/siniflar", response_class=HTMLResponse)
+@app.get("/ayarlar", response_class=HTMLResponse)
+@app.get("/kilavuz", response_class=HTMLResponse)
+@app.get("/gecmis-sezonlar", response_class=HTMLResponse)
 def get_dashboard():
     dist_index = os.path.join(dist_path, "index.html")
     if os.path.exists(dist_index):
@@ -1612,6 +1565,11 @@ async def login_kullanici(request: Request, credentials: schemas.KullaniciLogin,
         "rol": kullanici.rol,
         "akademi_adi": session_akademi
     })
+    
+    refresh_token = create_refresh_token(data={
+        "sub": kullanici.kullanici_adi,
+        "akademi_adi": session_akademi
+    })
 
     # Yanıtta kullanıcının aktif oturum akademisini (session_akademi) dön
     user_res = schemas.KullaniciResponse.model_validate(kullanici)
@@ -1619,9 +1577,47 @@ async def login_kullanici(request: Request, credentials: schemas.KullaniciLogin,
 
     return {
         "access_token": access_token,
+        "refresh_token": refresh_token,
         "token_type": "bearer",
         "user": user_res
     }
+
+@app.post("/kullanicilar/refresh", response_model=schemas.TokenResponse)
+async def refresh_token(req: schemas.RefreshTokenRequest, db: Session = Depends(get_db)):
+    try:
+        payload = jwt.decode(req.refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Geçersiz token tipi.")
+        
+        username: str = payload.get("sub")
+        if not username:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Geçersiz token.")
+            
+        kullanici = db.query(models.Kullanici).filter(models.Kullanici.kullanici_adi == username).first()
+        if not kullanici:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Kullanıcı bulunamadı.")
+            
+        session_akademi = payload.get("akademi_adi") or kullanici.akademi_adi
+        
+        access_token = create_access_token(data={
+            "sub": kullanici.kullanici_adi, 
+            "rol": kullanici.rol,
+            "akademi_adi": session_akademi
+        })
+        
+        user_res = schemas.KullaniciResponse.model_validate(kullanici)
+        user_res.akademi_adi = session_akademi
+        
+        return {
+            "access_token": access_token,
+            "refresh_token": req.refresh_token,
+            "token_type": "bearer",
+            "user": user_res
+        }
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token süresi doldu, lütfen tekrar giriş yapın.")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Geçersiz refresh token.")
 
 @app.get("/kullanicilar/", response_model=List[schemas.KullaniciResponse])
 def get_kullanicilar(
@@ -2726,14 +2722,7 @@ def manual_backup(
     return {"message": "Yedekleme işlemi arka planda başlatıldı."}
 
 # --- GOOGLE SHEETS BACKUP SCHEDULER ---
-try:
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(backup_all_to_sheets, 'cron', hour=3, minute=0)
-    scheduler.start()
-    print("Background scheduler started for Google Sheets backup (runs daily at 03:00).")
-except Exception as e:
-    print("Failed to start background scheduler:", e)
-
+# Scheduler kodları run_scheduler.py dosyasına taşınmıştır.
 
 from datetime import datetime
 

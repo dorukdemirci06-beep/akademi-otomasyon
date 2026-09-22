@@ -117,10 +117,14 @@ const Login = ({ onLoginSuccess }) => {
 
       const responseData = res.data;
       const token = responseData.access_token;
+      const refresh_token = responseData.refresh_token;
       const userData = responseData.user || responseData;
 
       if (token) {
         localStorage.setItem('token', token);
+      }
+      if (refresh_token) {
+        localStorage.setItem('refresh_token', refresh_token);
       }
       localStorage.setItem('user', JSON.stringify(userData));
 
