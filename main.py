@@ -184,7 +184,8 @@ def get_dashboard():
     if os.path.exists(dashboard_path):
         with open(dashboard_path, "r", encoding="utf-8") as f:
             return HTMLResponse(f.read())
-    return HTMLResponse("<h2>Dashboard dosyası bulunamadı.</h2>", status_code=404)
+    # Render.com Healthcheck'i için 200 dönmelidir (Frontend Hostinger'da barındırıldığı için dosyanın olmaması normaldir)
+    return HTMLResponse("<h2>Akademi Otomasyonu API Sunucusu Aktif. Arayuz Hostinger uzerinde calismaktadir.</h2>", status_code=200)
 
 
 # ==================== ÖĞRENCİ ENDPOINTLERİ ====================
