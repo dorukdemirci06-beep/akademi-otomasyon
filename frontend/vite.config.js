@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['icon-192x192.png', 'icon-512x512.png'],
       manifest: {
         name: 'KUYO Akademi Otomasyonu',
         short_name: 'KUYO',
