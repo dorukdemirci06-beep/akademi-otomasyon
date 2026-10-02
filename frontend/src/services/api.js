@@ -123,7 +123,7 @@ API.get = async (url, config) => {
 
 // --- AKILLI ÖN BELLEK (CACHE) SİSTEMİ ---
 const cache = {};
-const CACHE_DURATION = 60000; // 60 Saniye boyunca hafızada tutar
+const CACHE_DURATION = 300000; // 5 Dakika boyunca hafızada tutar
 
 export const clearCache = () => {
   for (let key in cache) {
@@ -219,14 +219,14 @@ export const deleteOgrenci = (id) => API.delete(`/ogrenciler/${id}`);
 export const updateOgrenciDurum = (id, durum) => API.put(`/ogrenciler/${id}/durum`, null, { params: { durum } });
 export const updateOgrenciInfo = (id, data) => API.put(`/ogrenciler/${id}`, data);
 export const araOgrenci = (q) => API.get('/ogrenciler/ara', { params: { q } });
-export const getOgrenciSiniflar = (id) => API.get(`/ogrenciler/${id}/siniflar/`);
+export const getOgrenciSiniflar = (id, bypass = false) => withCache(`/ogrenciler/${id}/siniflar/`, () => API.get(`/ogrenciler/${id}/siniflar/`), bypass);
 
 // Sınıf Endpointleri (CACHED)
 export const getSiniflar = (bypass = false) => withCache('/siniflar/', () => API.get('/siniflar/'), bypass);
 export const getSiniflarBasic = (bypass = false) => withCache('/siniflar/?basic=true', () => API.get('/siniflar/?basic=true'), bypass);
 export const createSinif = (params) => API.post('/siniflar/', null, { params });
 export const deleteSinif = (id) => API.delete(`/siniflar/${id}`);
-export const getSinifOgrencileri = (id) => API.get(`/siniflar/${id}/ogrenciler/`);
+export const getSinifOgrencileri = (id, bypass = false) => withCache(`/siniflar/${id}/ogrenciler/`, () => API.get(`/siniflar/${id}/ogrenciler/`), bypass);
 
 // Finans & Ders Kayıt Endpointleri (CACHED)
 export const getOdemeler = (bypass = false) => withCache('/odemeler-list/', () => API.get('/odemeler-list/'), bypass);
@@ -249,33 +249,33 @@ export const deleteOnKayit = (id) => API.delete(`/on-kayitlar/${id}`);
 export const sendBulkWhatsAppMessage = (data) => API.post('/whatsapp/toplu-gonder', data);
 
 // Akademi Endpointleri
-export const getAkademiler = () => API.get('/akademiler/');
-export const getAkademilerDetayli = () => API.get('/akademiler/detayli');
+export const getAkademiler = (bypass = false) => withCache('/akademiler/', () => API.get('/akademiler/'), bypass);
+export const getAkademilerDetayli = (bypass = false) => withCache('/akademiler/detayli', () => API.get('/akademiler/detayli'), bypass);
 export const kurAkademi = (data) => API.post('/akademiler/kurulum', data);
 export const deleteAkademi = (id) => API.delete(`/akademiler/${id}`);
-export const getAkademiAyarlar = () => API.get('/akademiler/ayarlar');
+export const getAkademiAyarlar = (bypass = false) => withCache('/akademiler/ayarlar', () => API.get('/akademiler/ayarlar'), bypass);
 export const getPendingAutomations = () => API.get('/akademiler/ayarlar/pending-automations');
 export const updateAkademiAyarlar = (data) => API.put('/akademiler/ayarlar', data);
 // Kullanıcı & Auth Endpointleri
 export const loginKullanici = (credentials) => API.post('/kullanicilar/login', credentials);
-export const getKullanicilar = () => API.get('/kullanicilar/');
+export const getKullanicilar = (bypass = false) => withCache('/kullanicilar/', () => API.get('/kullanicilar/'), bypass);
 export const createKullanici = (data) => API.post('/kullanicilar/', data);
 export const deleteKullanici = (id) => API.delete(`/kullanicilar/${id}`);
 
 // Öğretmen Endpointleri
-export const getOgretmenler = () => API.get('/ogretmenler/');
+export const getOgretmenler = (bypass = false) => withCache('/ogretmenler/', () => API.get('/ogretmenler/'), bypass);
 export const createOgretmen = (data) => API.post('/ogretmenler/', data);
 export const updateOgretmen = (id, data) => API.put(`/ogretmenler/${id}`, data);
 export const deleteOgretmen = (id) => API.delete(`/ogretmenler/${id}`);
 
 // Personel Endpointleri
-export const getPersoneller = () => API.get('/personeller/');
+export const getPersoneller = (bypass = false) => withCache('/personeller/', () => API.get('/personeller/'), bypass);
 export const createPersonel = (data) => API.post('/personeller/', data);
 export const updatePersonel = (id, data) => API.put(`/personeller/${id}`, data);
 export const deletePersonel = (id) => API.delete(`/personeller/${id}`);
 
 // Değerlendirme Endpointleri
-export const getDegerlendirmeler = () => API.get('/degerlendirmeler/');
+export const getDegerlendirmeler = (bypass = false) => withCache('/degerlendirmeler/', () => API.get('/degerlendirmeler/'), bypass);
 export const createDegerlendirme = (data) => API.post('/degerlendirmeler/', data);
 export const updateDegerlendirme = (id, data) => API.put(`/degerlendirmeler/${id}`, data);
 export const deleteDegerlendirme = (id) => API.delete(`/degerlendirmeler/${id}`);
@@ -286,17 +286,18 @@ export const createDersProgrami = (data) => API.post('/ders-programi/', data);
 export const deleteDersProgrami = (id) => API.delete(`/ders-programi/${id}`);
 
 // Yoklama Endpointleri
-export const getYoklama = (sinifId, tarih) => {
+export const getYoklama = (sinifId, tarih, bypass = false) => {
   const params = {};
   if (sinifId) params.sinif_id = sinifId;
   if (tarih) params.tarih = tarih;
-  return API.get('/yoklama/', { params });
+  const cacheKey = `/yoklama/?sinif_id=${sinifId || ''}&tarih=${tarih || ''}`;
+  return withCache(cacheKey, () => API.get('/yoklama/', { params }), bypass);
 };
 export const saveYoklamaToplu = (data) => API.post('/yoklama/toplu', data);
 export const deleteYoklamaOturum = (sinifId, tarih) => API.delete('/yoklama/oturum', { params: { sinif_id: sinifId, tarih } });
 
 // Derslik Endpointleri
-export const getDerslikler = () => API.get('/derslikler/');
+export const getDerslikler = (bypass = false) => withCache('/derslikler/', () => API.get('/derslikler/'), bypass);
 export const createDerslik = (data) => API.post('/derslikler/', data);
 export const deleteDerslik = (id) => API.delete(`/derslikler/${id}`);
 
