@@ -124,17 +124,20 @@ const Kayit = () => {
 
  const loadRelatedDataInBackground = async (list) => {
  // Arka planda her öğrenci için kayıtlı sınıfları getir
+ let updated = false;
  for (let o of list) {
+ if (o.siniflar !== undefined) continue; // Daha önce yüklendiyse (cache'de varsa) atla!
  try {
  const sinifRes = await getOgrenciSiniflar(o.id);
- setOgrenciler(prev => prev.map(student => 
- student.id === o.id ? { ...student, siniflar: sinifRes.data || [] } : student
- ));
+ o.siniflar = sinifRes.data || [];
+ updated = true;
  } catch {
- setOgrenciler(prev => prev.map(student => 
- student.id === o.id ? { ...student, siniflar: [] } : student
- ));
+ o.siniflar = [];
+ updated = true;
  }
+ }
+ if (updated) {
+ setOgrenciler([...list]);
  }
  };
 
@@ -145,7 +148,7 @@ const Kayit = () => {
  const list = res.data || [];
  
  // 1. Listeyi hemen yükle
- setOgrenciler(list);
+ setOgrenciler([...list]);
  setLoading(false); // Listeyi anında göster
  
  // 2. Genişletilmiş ve ek verileri arka planda yükle
