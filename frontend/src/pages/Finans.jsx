@@ -438,10 +438,18 @@ const Finans = () => {
  return name.includes(term) || String(o.id) === term || phone.includes(term) || tc.includes(term);
  });
 
- const handleOgrenciSelectDirect = (ogrenciId) => {
+ const handleOgrenciSelectDirect = async (ogrenciId) => {
  setOdemeData(prev => ({ ...prev, ogrenci_id: ogrenciId, sinif_adi: '' }));
  if (ogrenciId) {
- fetchOgrenciSiniflari(ogrenciId);
+ try {
+ setSinifLoading(true);
+ const res = await getOgrenciSiniflar(ogrenciId);
+ setOgrenciSiniflari(res.data || []);
+ } catch (err) {
+ console.error('Öğrenci dersleri getirilemedi:', err);
+ } finally {
+ setSinifLoading(false);
+ }
  } else {
  setOgrenciSiniflari([]);
  }
