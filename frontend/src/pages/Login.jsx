@@ -4,13 +4,19 @@ import { loginKullanici, getAkademiler, getAkademilerDetayli, kurAkademi, delete
 import { useTheme } from '../context/ThemeContext';
 import ConfirmModal from '../components/ConfirmModal';
 
-const Login = ({ onLoginSuccess }) => {
+const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) => {
   const { theme, toggleTheme } = useTheme();
   const [selectedAkademi, setSelectedAkademi] = useState('');
   const [akademiler, setAkademiler] = useState([{ id: 1, name: 'Test1' }, { id: 2, name: 'Test2' }]);
   const [akademiComboboxOpen, setAkademiComboboxOpen] = useState(false);
   const [akademiSearchQuery, setAkademiSearchQuery] = useState('');
   const comboboxRef = useRef(null);
+  useEffect(() => {
+    if (kurulumOnly) {
+      setShowPinModal(true);
+    }
+  }, [kurulumOnly]);
+
 
   const [kullaniciAdi, setKullaniciAdi] = useState('');
   const [sifre, setSifre] = useState('');
@@ -211,6 +217,14 @@ const Login = ({ onLoginSuccess }) => {
     setShowKurulumModal(false);
   };
 
+  
+  const handlePinCancel = () => {
+    setShowPinModal(false);
+    if (kurulumOnly && onCancelKurulum) {
+      onCancelKurulum();
+    }
+  };
+
   const handleOpenKurulumClick = () => {
     setPinInput('');
     setPinError('');
@@ -290,7 +304,9 @@ const Login = ({ onLoginSuccess }) => {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans duration-300">
 
-      {/* 1. Mouse Tracking Spotlight Gradient */}
+      {!kurulumOnly && (
+        <>
+{/* 1. Mouse Tracking Spotlight Gradient */}
       <div
         className="absolute inset-0 pointer-events-none transition-opacity duration-300 z-0"
         style={{
@@ -510,6 +526,9 @@ const Login = ({ onLoginSuccess }) => {
 
       </div>
 
+              </>
+      )}
+
       {/* ================= MODAL 1: Kurulum Ekranı Yetkili Şifresi Doğrulama (8907) ================= */}
       {showPinModal && (
         <div className="fixed inset-0 backdrop-blur-md z-[105] flex items-center justify-center p-4">
@@ -521,7 +540,7 @@ const Login = ({ onLoginSuccess }) => {
               </h3>
               <button
                 type="button"
-                onClick={() => setShowPinModal(false)}
+                onClick={handlePinCancel}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-lg cursor-pointer"
               >
                 &times;
@@ -560,7 +579,7 @@ const Login = ({ onLoginSuccess }) => {
               <div className="flex justify-end gap-2 pt-1 border-t">
                 <button
                   type="button"
-                  onClick={() => setShowPinModal(false)}
+                  onClick={handlePinCancel}
                   className="px-3 py-1.5 neo-button text-xs font-semibold rounded-full transition cursor-pointer"
                 >
                   İptal
