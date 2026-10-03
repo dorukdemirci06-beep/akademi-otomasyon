@@ -769,15 +769,6 @@ const Login = ({ onLoginSuccess }) => {
                                     <span>Girişe Aktar</span>
                                   </button>
 
-                                  <button
-                                    type="button"
-                                    className={`px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm ${ak.is_maintenance_mode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-600 hover:bg-slate-700'}`}
-
-
-                                  <button
-                                    type="button"
-                                    className={`px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm ${ak.is_maintenance_mode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-600 hover:bg-slate-700'}`}
-
                                   {akademilerDetayli.length > 1 && (
                                     <button
                                       type="button"
