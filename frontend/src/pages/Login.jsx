@@ -771,7 +771,7 @@ const Login = ({ onLoginSuccess }) => {
                                   <button
                                     type="button"
                                     onClick={() => handleToggleMaintenance(ak)}
-                                    className={px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm }
+                                    className={`px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm ${ak.is_maintenance_mode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-600 hover:bg-slate-700'}`}
                                     title="Bakim Modunu Degistir"
                                   >
                                     <ShieldCheck className="w-3 h-3" />
@@ -782,7 +782,7 @@ const Login = ({ onLoginSuccess }) => {
                                   <button
                                     type="button"
                                     onClick={() => handleToggleMaintenance(ak)}
-                                    className={px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm }
+                                    className={`px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm ${ak.is_maintenance_mode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-600 hover:bg-slate-700'}`}
                                     title="Bakim Modunu Degistir"
                                   >
                                     <ShieldCheck className="w-3 h-3" />
