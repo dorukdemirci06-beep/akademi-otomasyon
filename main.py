@@ -2917,7 +2917,7 @@ def sezon_geri_al(
 
 
 @app.put("/api/system/maintenance/global")
-def update_system_maintenance_global(request: schemas.AkademiMaintenanceUpdate, db: Session = Depends(get_db)):
+def update_system_maintenance_global(request: schemas.AkademiUpdate, db: Session = Depends(get_db)):
     akademiler = db.query(models.Akademi).all()
     for ak in akademiler:
         ak.is_maintenance_mode = request.is_maintenance_mode
