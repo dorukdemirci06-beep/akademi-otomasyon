@@ -252,10 +252,12 @@ export const sendBulkWhatsAppMessage = (data) => API.post('/whatsapp/toplu-gonde
 export const getAkademiler = (bypass = false) => withCache('/akademiler/', () => API.get('/akademiler/'), bypass);
 export const getAkademilerDetayli = (bypass = false) => withCache('/akademiler/detayli', () => API.get('/akademiler/detayli'), bypass);
 export const kurAkademi = (data) => API.post('/akademiler/kurulum', data);
+export const updateAkademiMaintenance = (id, data) => API.put(/akademiler//maintenance, data);
 export const deleteAkademi = (id) => API.delete(`/akademiler/${id}`);
 export const getAkademiAyarlar = (bypass = false) => withCache('/akademiler/ayarlar', () => API.get('/akademiler/ayarlar'), bypass);
 export const getPendingAutomations = () => API.get('/akademiler/ayarlar/pending-automations');
 export const updateAkademiAyarlar = (data) => API.put('/akademiler/ayarlar', data);
+export const getPublicSystemStatus = () => API.get('/public/system-status');
 // Kullanıcı & Auth Endpointleri
 export const loginKullanici = (credentials) => API.post('/kullanicilar/login', credentials);
 export const getKullanicilar = (bypass = false) => withCache('/kullanicilar/', () => API.get('/kullanicilar/'), bypass);

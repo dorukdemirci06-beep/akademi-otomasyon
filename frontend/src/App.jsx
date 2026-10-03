@@ -17,8 +17,41 @@ import Kullanicilar from "./pages/Kullanicilar";
 import Ayarlar from "./pages/Ayarlar";
 import GecmisSezonlar from "./pages/GecmisSezonlar";
 import Kilavuz from "./pages/Kilavuz";
+
+import { getPublicSystemStatus } from './services/api';
+import Bakimdayiz from './pages/Bakimdayiz';
+import { useEffect } from 'react';
 import { ThemeProvider } from "./context/ThemeContext";
 function App() {
+  
+  const [maintenanceInfo, setMaintenanceInfo] = useState(null);
+  const [maintenanceChecking, setMaintenanceChecking] = useState(true);
+  const [bypassMaintenance, setBypassMaintenance] = useState(false);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await getPublicSystemStatus();
+        if (res.data && res.data.is_maintenance_mode) {
+          setMaintenanceInfo(res.data);
+        } else {
+          setMaintenanceInfo(null);
+        }
+      } catch (e) {
+        console.error('Maintenance check failed', e);
+      } finally {
+        setMaintenanceChecking(false);
+      }
+    };
+    checkStatus();
+  }, []);
+
+  if (maintenanceChecking) return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2eb82e]"></div></div>;
+
+  if (maintenanceInfo && !bypassMaintenance) {
+    return <Bakimdayiz maintenanceInfo={maintenanceInfo} onLoginSuccess={(user) => { setCurrentUser(user); setBypassMaintenance(true); }} />;
+  }
+
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem("user");

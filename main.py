@@ -1222,6 +1222,25 @@ def get_akademiler_detayli(db: Session = Depends(get_db)):
     return result
 
 @app.delete("/akademiler/{akademi_id}", status_code=status.HTTP_204_NO_CONTENT)
+
+@app.put('/akademiler/{akademi_id}/maintenance')
+def update_akademi_maintenance(akademi_id: int, ayarlar: schemas.AkademiUpdate, db: Session = Depends(get_db)):
+    akademi = db.query(models.Akademi).filter(models.Akademi.id == akademi_id).first()
+    if not akademi:
+        raise HTTPException(status_code=404, detail='Akademi bulunamadı.')
+    
+    if ayarlar.is_maintenance_mode is not None:
+        akademi.is_maintenance_mode = ayarlar.is_maintenance_mode
+    if ayarlar.maintenance_message is not None:
+        akademi.maintenance_message = ayarlar.maintenance_message
+    if ayarlar.maintenance_end_time is not None:
+        akademi.maintenance_end_time = ayarlar.maintenance_end_time
+        
+    db.commit()
+    db.refresh(akademi)
+    return akademi
+
+@app.delete('/akademiler/{akademi_id}')
 def delete_akademi(akademi_id: int, db: Session = Depends(get_db)):
     ak = db.query(models.Akademi).filter(models.Akademi.id == akademi_id).first()
     if not ak:
@@ -1528,9 +1547,31 @@ def update_akademi_ayarlar(
     if ayarlar.is_msg_ogretmen_hatirlatma_active is not None:
         akademi.is_msg_ogretmen_hatirlatma_active = ayarlar.is_msg_ogretmen_hatirlatma_active
         
+    if ayarlar.is_maintenance_mode is not None:
+        akademi.is_maintenance_mode = ayarlar.is_maintenance_mode
+    if ayarlar.maintenance_message is not None:
+        akademi.maintenance_message = ayarlar.maintenance_message
+    if ayarlar.maintenance_end_time is not None:
+        akademi.maintenance_end_time = ayarlar.maintenance_end_time
+
     db.commit()
     db.refresh(akademi)
     return akademi
+
+@app.get("/public/system-status")
+def get_public_system_status(db: Session = Depends(get_db)):
+    akademi = db.query(models.Akademi).first()
+    if not akademi:
+        return {
+            "is_maintenance_mode": False,
+            "maintenance_message": "Sistemimizde bakım ve güncelleme çalışmaları yapılmaktadır.",
+            "maintenance_end_time": ""
+        }
+    return {
+        "is_maintenance_mode": bool(getattr(akademi, "is_maintenance_mode", False)),
+        "maintenance_message": getattr(akademi, "maintenance_message", None) or "Sistemimizde bakım ve güncelleme çalışmaları yapılmaktadır. Kısa süre sonra tekrar hizmetinizde olacağız.",
+        "maintenance_end_time": getattr(akademi, "maintenance_end_time", None) or ""
+    }
 
 
 

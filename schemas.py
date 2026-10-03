@@ -221,6 +221,9 @@ class AkademiUpdate(BaseModel):
     is_msg_dogum_gunu_active: Optional[bool] = None
     is_msg_ozel_gun_active: Optional[bool] = None
     is_msg_ogretmen_hatirlatma_active: Optional[bool] = None
+    is_maintenance_mode: Optional[bool] = None
+    maintenance_message: Optional[str] = None
+    maintenance_end_time: Optional[str] = None
 
 class AkademiResponse(AkademiBase):
     id: int
@@ -242,6 +245,9 @@ class AkademiResponse(AkademiBase):
     is_msg_dogum_gunu_active: Optional[bool] = False
     is_msg_ozel_gun_active: Optional[bool] = False
     is_msg_ogretmen_hatirlatma_active: Optional[bool] = False
+    is_maintenance_mode: Optional[bool] = False
+    maintenance_message: Optional[str] = None
+    maintenance_end_time: Optional[str] = None
     eklenme_tarihi: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)

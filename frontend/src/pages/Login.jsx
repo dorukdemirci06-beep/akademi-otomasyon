@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GraduationCap, Lock, User, KeyRound, ShieldCheck, Sparkles, ArrowRight, AlertCircle, Sun, Moon, Building2, PlusCircle, Search, ChevronDown, Check, Trash2, ExternalLink, Layers, Activity, RefreshCw } from 'lucide-react';
-import { loginKullanici, getAkademiler, getAkademilerDetayli, kurAkademi, deleteAkademi, triggerSetupBackup } from '../services/api';
+import { loginKullanici, getAkademiler, getAkademilerDetayli, kurAkademi, deleteAkademi, triggerSetupBackup, updateAkademiMaintenance } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import ConfirmModal from '../components/ConfirmModal';
 
@@ -154,6 +154,27 @@ const Login = ({ onLoginSuccess }) => {
       }
     } catch (err) {
       console.error('Detaylı akademiler yüklenemedi:', err);
+    } finally {
+      setPanelLoading(false);
+    }
+  };
+
+  
+  const handleToggleMaintenance = async (akademi) => {
+    try {
+      setPanelLoading(true);
+      const newStatus = !akademi.is_maintenance_mode;
+      await updateAkademiMaintenance(akademi.id, {
+        is_maintenance_mode: newStatus,
+        maintenance_message: newStatus ? 'Sistemimizde bakim ve guncelleme calismalari yapilmaktadir. En kisa surede tekrar hizmetinizde olacagiz.' : '',
+        maintenance_end_time: ''
+      });
+      await fetchAkademilerDetayli();
+      setPanelListMsg({ type: 'success', text: akademi.name + ' icin bakim modu ' + (newStatus ? 'acildi' : 'kapatildi') + '.' });
+      setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
+    } catch (err) {
+      setPanelListMsg({ type: 'error', text: 'Bakim modu guncellenirken hata olustu.' });
+      setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
     } finally {
       setPanelLoading(false);
     }
@@ -746,6 +767,28 @@ const Login = ({ onLoginSuccess }) => {
                                     <ExternalLink className="w-3 h-3" />
                                     <span>Girişe Aktar</span>
                                   </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleMaintenance(ak)}
+                                    className={px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm }
+                                    title="Bakim Modunu Degistir"
+                                  >
+                                    <ShieldCheck className="w-3 h-3" />
+                                    <span>{ak.is_maintenance_mode ? 'Bakimi Kapat' : 'Bakima Al'}</span>
+                                  </button>
+
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleMaintenance(ak)}
+                                    className={px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm }
+                                    title="Bakim Modunu Degistir"
+                                  >
+                                    <ShieldCheck className="w-3 h-3" />
+                                    <span>{ak.is_maintenance_mode ? 'Bakimi Kapat' : 'Bakima Al'}</span>
+                                  </button>
+
                                   {akademilerDetayli.length > 1 && (
                                     <button
                                       type="button"

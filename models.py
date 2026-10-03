@@ -192,6 +192,9 @@ class Akademi(Base):
     is_msg_dogum_gunu_active = Column(Boolean, default=False)
     is_msg_ozel_gun_active = Column(Boolean, default=False)
     is_msg_ogretmen_hatirlatma_active = Column(Boolean, default=False)
+    is_maintenance_mode = Column(Boolean, default=False)
+    maintenance_message = Column(String, nullable=True)
+    maintenance_end_time = Column(String, nullable=True)
     eklenme_tarihi = Column(DateTime, default=datetime.utcnow)
 
 

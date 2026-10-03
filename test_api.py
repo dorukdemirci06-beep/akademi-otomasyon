@@ -1,11 +1,10 @@
-from fastapi.testclient import TestClient
-from main import app, get_current_user
-from models import Kullanici
+import requests
+import json
 
-# Mock the dependency to bypass auth
-app.dependency_overrides[get_current_user] = lambda: Kullanici(akademi_adi="Test1")
-
-client = TestClient(app)
-response = client.get("/ogrenciler/")
-print(f"Status Code: {response.status_code}")
-print(f"Response: {response.json()}")
+URL = "https://akademi-backend-mz4v.onrender.com"
+# Login
+print("Logging in...")
+login_data = {
+    "username": "doruk",
+    "password": "123", # What is the password? I don't know the user's password. Wait!
+}
