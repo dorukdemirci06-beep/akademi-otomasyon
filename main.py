@@ -1218,6 +1218,7 @@ def get_akademiler_detayli(db: Session = Depends(get_db)):
             "admin_kullanici_adi": admin_user.kullanici_adi if admin_user else "Tanımsız",
             "admin_ad_soyad": admin_user.ad_soyad if admin_user else "-",
             "kullanici_sayisi": user_count
+        , "is_maintenance_mode": getattr(ak, "is_maintenance_mode", False)
         })
     return result
 
