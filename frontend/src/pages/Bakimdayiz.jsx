@@ -29,7 +29,6 @@ export default function Bakimdayiz({ maintenanceInfo, onLoginSuccess }) {
           <div className="inline-flex items-center justify-center p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl mb-6 text-amber-400 shadow-inner">
             <div className="relative">
               <Wrench className="w-12 h-12 animate-bounce" />
-              <Sparkles className="w-5 h-5 absolute -top-1 -right-1 text-amber-300 animate-spin" style={{ animationDuration: '4s' }} />
             </div>
           </div>
 
