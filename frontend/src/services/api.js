@@ -314,3 +314,5 @@ export const triggerManualBackup = () => API.post('/api/backup/manual');
 export const triggerSetupBackup = (pin) => API.post('/api/backup/setup_pin', { pin });
 
 export default API;
+
+export const updateSystemMaintenance = (data) => API.put('/system/maintenance/global', data);

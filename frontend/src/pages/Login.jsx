@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GraduationCap, Lock, User, KeyRound, ShieldCheck, Sparkles, ArrowRight, AlertCircle, Sun, Moon, Building2, PlusCircle, Search, ChevronDown, Check, Trash2, ExternalLink, Layers, Activity, RefreshCw } from 'lucide-react';
-import { loginKullanici, getAkademiler, getAkademilerDetayli, kurAkademi, deleteAkademi, triggerSetupBackup, updateAkademiMaintenance } from '../services/api';
+import { loginKullanici, getAkademiler, getAkademilerDetayli, kurAkademi, deleteAkademi, triggerSetupBackup, updateAkademiMaintenance, updateSystemMaintenance } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import ConfirmModal from '../components/ConfirmModal';
 
@@ -160,17 +160,19 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   
-  const handleToggleMaintenance = async (akademi) => {
+  const handleToggleSystemMaintenance = async () => {
     try {
       setPanelLoading(true);
-      const newStatus = !akademi.is_maintenance_mode;
-      await updateAkademiMaintenance(akademi.id, {
+      // find if any is maintenance to toggle off, or all to on
+      const isCurrentlyMaintenance = akademilerDetayli.some(ak => ak.is_maintenance_mode);
+      const newStatus = !isCurrentlyMaintenance;
+      await updateSystemMaintenance({
         is_maintenance_mode: newStatus,
         maintenance_message: newStatus ? 'Sistemimizde bakim ve guncelleme calismalari yapilmaktadir. En kisa surede tekrar hizmetinizde olacagiz.' : '',
         maintenance_end_time: ''
       });
       await fetchAkademilerDetayli();
-      setPanelListMsg({ type: 'success', text: akademi.name + ' icin bakim modu ' + (newStatus ? 'acildi' : 'kapatildi') + '.' });
+      setPanelListMsg({ type: 'success', text: `Sistem genel bakim modu ${newStatus ? 'acildi' : 'kapatildi'}.` });
       setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
     } catch (err) {
       setPanelListMsg({ type: 'error', text: 'Bakim modu guncellenirken hata olustu.' });
@@ -602,27 +604,26 @@ const Login = ({ onLoginSuccess }) => {
 
             {/* Metrics Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="p-3.5 neo-input rounded-full flex items-center gap-3">
-                <div className="p-2.5 rounded-full shrink-0 bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Kayıtlı Akademiler</div>
-                  <div className="text-lg font-extrabold text-slate-900 dark:text-slate-100">{akademilerDetayli.length} Adet</div>
-                </div>
-              </div>
-
-              <div className="p-3.5 neo-input rounded-full flex items-center gap-3">
-                <div className="p-2.5 rounded-full shrink-0 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
-                  <Activity className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Sistem Durumu</div>
-                  <div className="text-xs font-bold text-emerald-600 flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Canlı & Aktif</span>
+              <div className="p-3.5 neo-input rounded-full flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2.5 rounded-full shrink-0 transition-colors text-white border-transparent shadow-sm ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-amber-600' : 'bg-[#2eb82e]'}`}>
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Sistem Durumu</div>
+                    <div className={`text-xs font-bold flex items-center gap-1.5 mt-0.5 ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      <span className={`w-2 h-2 rounded-full animate-pulse ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                      <span>{akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Bakimda' : 'Canli & Aktif'}</span>
+                    </div>
                   </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleToggleSystemMaintenance}
+                  className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-slate-600 hover:bg-slate-700' : 'bg-amber-600 hover:bg-amber-700'}`}
+                >
+                  {akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Yayina Al' : 'Sistemi Bakima Al'}
+                </button>
               </div>
 
               <div className="p-3.5 neo-input rounded-full flex items-center justify-between">
@@ -770,24 +771,12 @@ const Login = ({ onLoginSuccess }) => {
 
                                   <button
                                     type="button"
-                                    onClick={() => handleToggleMaintenance(ak)}
                                     className={`px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm ${ak.is_maintenance_mode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-600 hover:bg-slate-700'}`}
-                                    title="Bakim Modunu Degistir"
-                                  >
-                                    <ShieldCheck className="w-3 h-3" />
-                                    <span>{ak.is_maintenance_mode ? 'Bakimi Kapat' : 'Bakima Al'}</span>
-                                  </button>
 
 
                                   <button
                                     type="button"
-                                    onClick={() => handleToggleMaintenance(ak)}
                                     className={`px-3 py-1 rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm ${ak.is_maintenance_mode ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-600 hover:bg-slate-700'}`}
-                                    title="Bakim Modunu Degistir"
-                                  >
-                                    <ShieldCheck className="w-3 h-3" />
-                                    <span>{ak.is_maintenance_mode ? 'Bakimi Kapat' : 'Bakima Al'}</span>
-                                  </button>
 
                                   {akademilerDetayli.length > 1 && (
                                     <button

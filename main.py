@@ -2914,3 +2914,15 @@ def sezon_geri_al(
     
     return {"message": "Arşiv başarıyla geri yüklendi. Sistem arşivdeki haline döndü."}
 
+
+
+@app.put("/api/system/maintenance/global")
+def update_system_maintenance_global(request: schemas.AkademiMaintenanceUpdate, db: Session = Depends(get_db)):
+    akademiler = db.query(models.Akademi).all()
+    for ak in akademiler:
+        ak.is_maintenance_mode = request.is_maintenance_mode
+        ak.maintenance_message = request.maintenance_message
+        ak.maintenance_end_time = request.maintenance_end_time
+    db.commit()
+    return {"message": "Sistem genel bakim modu guncellendi."}
+
