@@ -175,7 +175,7 @@ const Login = ({ onLoginSuccess }) => {
       setPanelListMsg({ type: 'success', text: `Sistem genel bakim modu ${newStatus ? 'acildi' : 'kapatildi'}.` });
       setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
     } catch (err) {
-      setPanelListMsg({ type: 'error', text: 'Bakim modu guncellenirken hata olustu.' });
+      console.error('MAINTENANCE ERROR', err); setPanelListMsg({ type: 'error', text: 'Bakim modu guncellenirken hata olustu. ' + (err.message || '') });
       setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
     } finally {
       setPanelLoading(false);
