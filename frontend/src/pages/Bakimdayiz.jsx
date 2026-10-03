@@ -1,22 +1,12 @@
 import React, { useState } from 'react';
+import Login from './Login';
 import { Wrench, ShieldAlert, Clock, RefreshCw, LogIn, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function Bakimdayiz({ maintenanceInfo, onLoginSuccess }) {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [pinInput, setPinInput] = useState('');
-  const [pinError, setPinError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
   
-  const handlePinSubmit = (e) => {
-    e.preventDefault();
-    if (pinInput.trim() === '8907') {
-      setShowAdminLogin(false);
-      if (onLoginSuccess) onLoginSuccess(null);
-    } else {
-      setPinError('Kurulum yetkili şifresi hatalı! Erişim engellendi.');
-    }
-  };
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -105,46 +95,18 @@ export default function Bakimdayiz({ maintenanceInfo, onLoginSuccess }) {
         </p>
       </div>
 
-      {/* Admin Login Modal (PIN) */}
+      {/* Admin Login Modal */}
       {showAdminLogin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-800/90 border border-slate-700 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
-            <button
-              onClick={() => setShowAdminLogin(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
-            >
-              ✕
-            </button>
-            <div className="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <span className="text-amber-500">🔒</span> Kurulum Yetkili Doğrulaması
-              </h3>
-            </div>
-            <form onSubmit={handlePinSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kurulum Yetkili Şifresi</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">🔑</span>
-                  <input
-                    type="password"
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition-colors"
-                    placeholder="Şifreyi giriniz"
-                    value={pinInput}
-                    onChange={(e) => setPinInput(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-                {pinError && <div className="text-xs text-rose-500 font-medium">{pinError}</div>}
-              </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-700/50">
-                <button type="button" onClick={() => setShowAdminLogin(false)} className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 transition-colors">
-                  İptal
-                </button>
-                <button type="submit" className="px-4 py-2 text-xs font-bold rounded-xl bg-[#2eb82e] hover:bg-[#269926] text-white transition-colors shadow-sm">
-                  Giriş Yap
-                </button>
-              </div>
-            </form>
+          <div className="max-w-md w-full relative">
+            <Login
+              kurulumOnly={true}
+              onCancelKurulum={() => setShowAdminLogin(false)}
+              onLoginSuccess={(user) => {
+                setShowAdminLogin(false);
+                if (onLoginSuccess) onLoginSuccess(user);
+              }}
+            />
           </div>
         </div>
       )}
