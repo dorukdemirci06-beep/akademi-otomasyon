@@ -605,24 +605,20 @@ const Login = ({ onLoginSuccess }) => {
             {/* Metrics Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="p-3.5 neo-input rounded-full flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-full shrink-0 transition-colors text-white border-transparent shadow-sm ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-amber-600' : 'bg-[#2eb82e]'}`}>
-                    <Activity className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Sistem Durumu</div>
-                    <div className={`text-xs font-bold flex items-center gap-1.5 mt-0.5 ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'text-amber-600' : 'text-emerald-600'}`}>
-                      <span className={`w-2 h-2 rounded-full animate-pulse ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                      <span>{akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Bakimda' : 'Canli & Aktif'}</span>
-                    </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Sistem Durumu</div>
+                  <div className={`text-xs font-bold flex items-center gap-1.5 mt-0.5 ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'text-amber-600' : 'text-emerald-600'}`}>
+                    <span className={`w-2 h-2 rounded-full animate-pulse ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                    <span>{akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Bakimda' : 'Canli & Aktif'}</span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={handleToggleSystemMaintenance}
-                  className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition flex items-center gap-1 cursor-pointer text-white shadow-sm ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-slate-600 hover:bg-slate-700' : 'bg-amber-600 hover:bg-amber-700'}`}
+                  className={`p-2 rounded-full text-white transition cursor-pointer shadow-sm ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-slate-600 hover:bg-slate-700' : 'bg-amber-600 hover:bg-amber-700'}`}
+                  title={akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Yayina Al' : 'Sistemi Bakima Al'}
                 >
-                  {akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Yayina Al' : 'Sistemi Bakima Al'}
+                  <ShieldCheck className="w-4 h-4" />
                 </button>
               </div>
 
