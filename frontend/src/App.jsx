@@ -23,7 +23,7 @@ import Bakimdayiz from './pages/Bakimdayiz';
 import { useEffect } from 'react';
 import { ThemeProvider } from "./context/ThemeContext";
 function App() {
-  
+
   const [maintenanceInfo, setMaintenanceInfo] = useState(null);
   const [maintenanceChecking, setMaintenanceChecking] = useState(true);
   const [bypassMaintenance, setBypassMaintenance] = useState(false);
@@ -39,12 +39,6 @@ function App() {
       return null;
     }
   });
-
-  if (maintenanceChecking) return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2eb82e]"></div></div>;
-
-  if (maintenanceInfo && !bypassMaintenance) {
-    return <Bakimdayiz maintenanceInfo={maintenanceInfo} onLoginSuccess={(user) => { setCurrentUser(user); setBypassMaintenance(true); }} />;
-  }
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -64,25 +58,19 @@ function App() {
     checkStatus();
   }, []);
 
-
-
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem("user");
-      const token = localStorage.getItem("token");
-      if (!token) return null;
-      const parsed = saved ? JSON.parse(saved) : null;
-      return parsed && parsed.kullanici_adi ? parsed : null;
-    } catch {
-      return null;
-    }
-  });
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
     setCurrentUser(null);
   };
+
+  if (maintenanceChecking) return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2eb82e]"></div></div>;
+
+  if (maintenanceInfo && !bypassMaintenance) {
+    return <Bakimdayiz maintenanceInfo={maintenanceInfo} onLoginSuccess={(user) => { setCurrentUser(user); setBypassMaintenance(true); }} />;
+  }
+
   const roleLower = (currentUser?.rol || "").toLowerCase();
   const isAdmin =
     roleLower.includes("yönetici") ||
@@ -92,6 +80,7 @@ function App() {
     roleLower.includes("süper");
   const isPersonel = roleLower.includes("personel");
   const canAccessSettings = isAdmin || isPersonel;
+
   return (
     <ThemeProvider>
       {" "}
