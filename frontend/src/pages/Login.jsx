@@ -44,6 +44,8 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
   const [kurulumMsg, setKurulumMsg] = useState({ type: '', text: '' });
 
   const [panelListMsg, setPanelListMsg] = useState({ type: '', text: '' });
+  const [maintenanceConfirmStatus, setMaintenanceConfirmStatus] = useState('idle');
+  const [maintenanceProgress, setMaintenanceProgress] = useState(0);
   const [backupLoading, setBackupLoading] = useState(false);
 
   const handleManualBackup = async () => {
@@ -172,17 +174,17 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
       // find if any is maintenance to toggle off, or all to on
       const isCurrentlyMaintenance = akademilerDetayli.some(ak => ak.is_maintenance_mode);
       const newStatus = !isCurrentlyMaintenance;
+      setPanelListMsg({ type: 'success', text: newStatus ? 'Bakıma alınıyor...' : 'Yayına alınıyor...' });
       await updateSystemMaintenance({
         is_maintenance_mode: newStatus,
         maintenance_message: newStatus ? 'Sistemimizde bakim ve guncelleme calismalari yapilmaktadir. En kisa surede tekrar hizmetinizde olacagiz.' : '',
         maintenance_end_time: ''
       });
       await fetchAkademilerDetayli();
-      setPanelListMsg({ type: 'success', text: `Sistem genel bakim modu ${newStatus ? 'acildi' : 'kapatildi'}. Sayfa 5 saniye içinde yenilenecek.` });
       setTimeout(() => {
         setPanelListMsg({ type: '', text: '' });
         window.location.reload();
-      }, 5000);
+      }, 1500);
     } catch (err) {
       console.error('MAINTENANCE ERROR', err); setPanelListMsg({ type: 'error', text: 'Bakim modu guncellenirken hata olustu. ' + (err.message || '') });
       setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
@@ -634,14 +636,47 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
                     <span>{akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Bakimda' : 'Canli & Aktif'}</span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleToggleSystemMaintenance}
-                  className={`p-2 rounded-full text-white transition cursor-pointer shadow-sm ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-slate-600 hover:bg-slate-700' : 'bg-amber-600 hover:bg-amber-700'}`}
-                  title={akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Yayina Al' : 'Sistemi Bakima Al'}
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                </button>
+                {maintenanceConfirmStatus === 'idle' ? (
+                  <button
+                    type="button"
+                    onClick={() => setMaintenanceConfirmStatus('confirming')}
+                    className={`p-2 rounded-full text-white transition cursor-pointer shadow-sm ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-slate-600 hover:bg-slate-700' : 'bg-amber-600 hover:bg-amber-700'}`}
+                    title={akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Yayina Al' : 'Sistemi Bakima Al'}
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={maintenanceConfirmStatus === 'filling'}
+                    onClick={() => {
+                      if (maintenanceConfirmStatus === 'confirming') {
+                        setMaintenanceConfirmStatus('filling');
+                        let start = Date.now();
+                        const interval = setInterval(() => {
+                          const elapsed = Date.now() - start;
+                          const p = Math.min((elapsed / 3000) * 100, 100);
+                          setMaintenanceProgress(p);
+                          if (p >= 100) {
+                            clearInterval(interval);
+                            handleToggleSystemMaintenance();
+                            setMaintenanceConfirmStatus('idle');
+                            setMaintenanceProgress(0);
+                          }
+                        }, 50);
+                      }
+                    }}
+                    className={`relative overflow-hidden px-3 py-1.5 rounded-full text-white text-[10px] font-bold transition cursor-pointer shadow-sm bg-rose-600 hover:bg-rose-700 disabled:opacity-90`}
+                  >
+                    <div 
+                       className="absolute left-0 top-0 bottom-0 bg-rose-800 transition-all duration-75"
+                       style={{ width: `${maintenanceProgress}%` }}
+                    />
+                    <span className="relative z-10 flex items-center gap-1">
+                      {maintenanceConfirmStatus === 'filling' ? 'İşleniyor...' : 'Emin misiniz?'}
+                    </span>
+                  </button>
+                )}
               </div>
 
               <div className="p-3.5 neo-input rounded-full flex items-center justify-between">
