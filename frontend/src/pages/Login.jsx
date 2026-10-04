@@ -641,7 +641,7 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
                     type="button"
                     onClick={() => setMaintenanceConfirmStatus('confirming')}
                     className={`p-2 rounded-full text-white transition cursor-pointer shadow-sm ${akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'bg-slate-600 hover:bg-slate-700' : 'bg-amber-600 hover:bg-amber-700'}`}
-                    title={akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Yayina Al' : 'Sistemi Bakima Al'}
+                    title={akademilerDetayli.some(ak => ak.is_maintenance_mode) ? 'Yayına Al' : 'Sistemi Bakıma Al'}
                   >
                     <ShieldCheck className="w-4 h-4" />
                   </button>
@@ -649,9 +649,8 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
                   <button
                     type="button"
                     disabled={maintenanceConfirmStatus === 'filling'}
-                    onClick={() => {
+                    onMouseDown={() => {
                       if (maintenanceConfirmStatus === 'confirming') {
-                        setMaintenanceConfirmStatus('filling');
                         let start = Date.now();
                         const interval = setInterval(() => {
                           const elapsed = Date.now() - start;
@@ -659,21 +658,64 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
                           setMaintenanceProgress(p);
                           if (p >= 100) {
                             clearInterval(interval);
+                            setMaintenanceConfirmStatus('filling');
                             handleToggleSystemMaintenance();
-                            setMaintenanceConfirmStatus('idle');
-                            setMaintenanceProgress(0);
+                            setTimeout(() => {
+                              setMaintenanceConfirmStatus('idle');
+                              setMaintenanceProgress(0);
+                            }, 1000); // Give it a sec before resetting state
                           }
                         }, 50);
+                        // Save interval id to window to clear on mouse up
+                        window.__maintenanceInterval = interval;
                       }
                     }}
-                    className={`relative overflow-hidden px-3 py-1.5 rounded-full text-white text-[10px] font-bold transition cursor-pointer shadow-sm bg-rose-600 hover:bg-rose-700 disabled:opacity-90`}
+                    onMouseUp={() => {
+                      if (window.__maintenanceInterval && maintenanceConfirmStatus !== 'filling') {
+                        clearInterval(window.__maintenanceInterval);
+                        setMaintenanceProgress(0);
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      if (window.__maintenanceInterval && maintenanceConfirmStatus !== 'filling') {
+                        clearInterval(window.__maintenanceInterval);
+                        setMaintenanceProgress(0);
+                      }
+                    }}
+                    onTouchStart={() => {
+                      if (maintenanceConfirmStatus === 'confirming') {
+                        let start = Date.now();
+                        const interval = setInterval(() => {
+                          const elapsed = Date.now() - start;
+                          const p = Math.min((elapsed / 3000) * 100, 100);
+                          setMaintenanceProgress(p);
+                          if (p >= 100) {
+                            clearInterval(interval);
+                            setMaintenanceConfirmStatus('filling');
+                            handleToggleSystemMaintenance();
+                            setTimeout(() => {
+                              setMaintenanceConfirmStatus('idle');
+                              setMaintenanceProgress(0);
+                            }, 1000);
+                          }
+                        }, 50);
+                        window.__maintenanceInterval = interval;
+                      }
+                    }}
+                    onTouchEnd={() => {
+                      if (window.__maintenanceInterval && maintenanceConfirmStatus !== 'filling') {
+                        clearInterval(window.__maintenanceInterval);
+                        setMaintenanceProgress(0);
+                      }
+                    }}
+                    className={`relative overflow-hidden px-3 py-1.5 rounded-full text-white text-[10px] font-bold transition cursor-pointer shadow-sm bg-rose-600 hover:bg-rose-700 disabled:opacity-90 select-none`}
                   >
                     <div 
                        className="absolute left-0 top-0 bottom-0 bg-rose-800 transition-all duration-75"
                        style={{ width: `${maintenanceProgress}%` }}
                     />
-                    <span className="relative z-10 flex items-center gap-1">
-                      {maintenanceConfirmStatus === 'filling' ? 'İşleniyor...' : 'Emin misiniz?'}
+                    <span className="relative z-10 flex items-center gap-1 pointer-events-none">
+                      {maintenanceConfirmStatus === 'filling' ? 'İşleniyor...' : (maintenanceProgress > 0 ? 'Basılı Tutun...' : 'Emin misiniz? (Basılı Tut)')}
                     </span>
                   </button>
                 )}
