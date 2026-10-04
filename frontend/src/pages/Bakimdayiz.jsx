@@ -1,12 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Login from './Login';
 import { Wrench, ShieldAlert, Clock, RefreshCw, LogIn, Sparkles, CheckCircle2 } from 'lucide-react';
+import { getPublicSystemStatus } from '../services/api';
 
 export default function Bakimdayiz({ maintenanceInfo, onLoginSuccess }) {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await getPublicSystemStatus();
+        if (res.data && !res.data.is_maintenance_mode) {
+           setRefreshing(true);
+           setTimeout(() => {
+             window.location.reload();
+           }, 5000);
+           clearInterval(interval);
+        }
+      } catch (err) {
+        // ignore
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
 
   const handleRefresh = () => {
     setRefreshing(true);

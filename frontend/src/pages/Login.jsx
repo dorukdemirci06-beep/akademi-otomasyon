@@ -178,8 +178,11 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
         maintenance_end_time: ''
       });
       await fetchAkademilerDetayli();
-      setPanelListMsg({ type: 'success', text: `Sistem genel bakim modu ${newStatus ? 'acildi' : 'kapatildi'}.` });
-      setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
+      setPanelListMsg({ type: 'success', text: `Sistem genel bakim modu ${newStatus ? 'acildi' : 'kapatildi'}. Sayfa 5 saniye içinde yenilenecek.` });
+      setTimeout(() => {
+        setPanelListMsg({ type: '', text: '' });
+        window.location.reload();
+      }, 5000);
     } catch (err) {
       console.error('MAINTENANCE ERROR', err); setPanelListMsg({ type: 'error', text: 'Bakim modu guncellenirken hata olustu. ' + (err.message || '') });
       setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
