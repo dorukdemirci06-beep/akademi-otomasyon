@@ -177,7 +177,7 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
       setPanelListMsg({ type: 'success', text: newStatus ? 'Bakıma alınıyor...' : 'Yayına alınıyor...' });
       await updateSystemMaintenance({
         is_maintenance_mode: newStatus,
-        maintenance_message: newStatus ? 'Sistemimizde bakim ve guncelleme calismalari yapilmaktadir. En kisa surede tekrar hizmetinizde olacagiz.' : '',
+        maintenance_message: newStatus ? 'Sistemimizde bakım ve güncelleme çalışmaları yapılmaktadır. En kısa sürede tekrar hizmetinizde olacağız.' : '',
         maintenance_end_time: ''
       });
       await fetchAkademilerDetayli();

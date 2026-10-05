@@ -48,7 +48,13 @@ export default function Bakimdayiz({ maintenanceInfo, onLoginSuccess }) {
     }, 800);
   };
 
-  const message = maintenanceInfo?.maintenance_message || "Sistemimizde bakım ve güncelleme çalışmaları yapılmaktadır. En kısa sürede tekrar hizmetinizde olacağız.";
+  let message = maintenanceInfo?.maintenance_message || "Sistemimizde bakım ve güncelleme çalışmaları yapılmaktadır. En kısa sürede tekrar hizmetinizde olacağız.";
+  
+  // Veritabanından (veya API'den) gelen metin eğer Türkçe karaktersiz haliyle geldiyse, doğrudan Türkçesi ile değiştir
+  if (message === 'Sistemimizde bakim ve guncelleme calismalari yapilmaktadir. En kisa surede tekrar hizmetinizde olacagiz.') {
+    message = "Sistemimizde bakım ve güncelleme çalışmaları yapılmaktadır. En kısa sürede tekrar hizmetinizde olacağız.";
+  }
+
   const endTime = maintenanceInfo?.maintenance_end_time;
 
   return (
