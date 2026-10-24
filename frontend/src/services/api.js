@@ -11,7 +11,7 @@ const getApiUrl = () => {
 
 const API = axios.create({
   baseURL: getApiUrl(),
-  timeout: 10000, // 10 seconds timeout to prevent infinite hang
+  timeout: 45000, // 45 seconds timeout to accommodate Neon serverless cold starts & Render wakeups
   headers: {
     'Content-Type': 'application/json',
   },
