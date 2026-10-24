@@ -259,6 +259,7 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
 
   const handleKurulumSubmit = async (e) => {
     e.preventDefault();
+    if (kurulumLoading) return;
     if (!kurulumForm.akademi_adi.trim() || !kurulumForm.kullanici_adi.trim() || !kurulumForm.sifre.trim()) {
       setKurulumMsg({ type: 'error', text: 'Lütfen akademi adı, kullanıcı adı ve şifre giriniz.' });
       return;
@@ -274,12 +275,12 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
         sifre: kurulumForm.sifre.trim(),
       });
 
-      // Güncel akademiler listesini yeniden çek
-      const akRes = await getAkademiler();
+      // Güncel akademiler listesini yeniden çek (önbelleği atla)
+      const akRes = await getAkademiler(true);
       if (akRes.data && akRes.data.length > 0) {
         setAkademiler(akRes.data);
       }
-      await fetchAkademilerDetayli();
+      await fetchAkademilerDetayli(true);
 
       // Yeni oluşturulan akademiyi ve kullanıcı bilgilerini forma otomatik doldur
       const createdAkademiName = kurulumForm.akademi_adi.trim();
@@ -762,7 +763,7 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
             <div className="flex border-b gap-2">
               <button
                 type="button"
-                onClick={() => setPanelTab('list')}
+                onClick={() => { setPanelTab('list'); fetchAkademilerDetayli(true); }}
                 className={`pb-2.5 px-4 text-xs font-bold transition border-b-2 cursor-pointer flex items-center gap-1.5 ${panelTab === 'list'
                   ? 'border-[#2eb82e] text-[#2eb82e]'
                   : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -817,7 +818,7 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
                   </div>
                   <button
                     type="button"
-                    onClick={fetchAkademilerDetayli}
+                    onClick={() => fetchAkademilerDetayli(true)}
                     className="p-2 hover: dark:hover: text-slate-600 dark:text-slate-300 rounded-full transition cursor-pointer"
                     title="Listeyi Yenile"
                   >
