@@ -1222,8 +1222,6 @@ def get_akademiler_detayli(db: Session = Depends(get_db)):
         })
     return result
 
-@app.delete("/akademiler/{akademi_id}", status_code=status.HTTP_204_NO_CONTENT)
-
 @app.put('/akademiler/{akademi_id}/maintenance')
 def update_akademi_maintenance(akademi_id: int, ayarlar: schemas.AkademiUpdate, db: Session = Depends(get_db)):
     akademi = db.query(models.Akademi).filter(models.Akademi.id == akademi_id).first()
@@ -1241,13 +1239,74 @@ def update_akademi_maintenance(akademi_id: int, ayarlar: schemas.AkademiUpdate, 
     db.refresh(akademi)
     return akademi
 
-@app.delete('/akademiler/{akademi_id}')
+@app.delete('/akademiler/{akademi_id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_akademi(akademi_id: int, db: Session = Depends(get_db)):
     ak = db.query(models.Akademi).filter(models.Akademi.id == akademi_id).first()
     if not ak:
         raise HTTPException(status_code=404, detail="Akademi bulunamadı.")
-    db.delete(ak)
-    db.commit()
+    
+    total_count = db.query(models.Akademi).count()
+    if total_count <= 1:
+        raise HTTPException(status_code=400, detail="Sistemde en az bir aktif akademi bulunmalıdır. Son akademi silinemez.")
+
+    ak_name = ak.name
+    try:
+        # 1. İlişkili sınıfların, öğrencilerin ve dersliklerin id listeleri
+        sinif_ids = [s[0] for s in db.query(models.Sinif.id).filter(models.Sinif.akademi_adi == ak_name).all()]
+        ogrenci_ids = [o[0] for o in db.query(models.Ogrenci.id).filter(models.Ogrenci.akademi_adi == ak_name).all()]
+        derslik_ids = [d[0] for d in db.query(models.Derslik.id).filter(models.Derslik.akademi_adi == ak_name).all()]
+
+        # 2. Alt ilişkileri temizle
+        if sinif_ids or derslik_ids:
+            dp_filter = []
+            if sinif_ids:
+                dp_filter.append(models.DersProgrami.sinif_id.in_(sinif_ids))
+            if derslik_ids:
+                dp_filter.append(models.DersProgrami.derslik_id.in_(derslik_ids))
+            db.query(models.DersProgrami).filter(or_(*dp_filter)).delete(synchronize_session=False)
+
+        if ogrenci_ids or sinif_ids:
+            os_filter = []
+            if ogrenci_ids:
+                os_filter.append(models.OgrenciSinif.ogrenci_id.in_(ogrenci_ids))
+            if sinif_ids:
+                os_filter.append(models.OgrenciSinif.sinif_id.in_(sinif_ids))
+            db.query(models.OgrenciSinif).filter(or_(*os_filter)).delete(synchronize_session=False)
+
+        # Yoklamalar
+        yok_filter = [models.Yoklama.akademi_adi == ak_name]
+        if ogrenci_ids:
+            yok_filter.append(models.Yoklama.ogrenci_id.in_(ogrenci_ids))
+        if sinif_ids:
+            yok_filter.append(models.Yoklama.sinif_id.in_(sinif_ids))
+        db.query(models.Yoklama).filter(or_(*yok_filter)).delete(synchronize_session=False)
+
+        # Ödemeler
+        odeme_filter = [models.Odeme.akademi_adi == ak_name]
+        if ogrenci_ids:
+            odeme_filter.append(models.Odeme.ogrenci_id.in_(ogrenci_ids))
+        db.query(models.Odeme).filter(or_(*odeme_filter)).delete(synchronize_session=False)
+
+        # Öğrenciler, Sınıflar, Derslikler
+        db.query(models.Ogrenci).filter(models.Ogrenci.akademi_adi == ak_name).delete(synchronize_session=False)
+        db.query(models.Sinif).filter(models.Sinif.akademi_adi == ak_name).delete(synchronize_session=False)
+        db.query(models.Derslik).filter(models.Derslik.akademi_adi == ak_name).delete(synchronize_session=False)
+
+        # Diğer Akademi tabloları
+        db.query(models.Ogretmen).filter(models.Ogretmen.akademi_adi == ak_name).delete(synchronize_session=False)
+        db.query(models.Personel).filter(models.Personel.akademi_adi == ak_name).delete(synchronize_session=False)
+        db.query(models.OnKayit).filter(models.OnKayit.akademi_adi == ak_name).delete(synchronize_session=False)
+        db.query(models.Degerlendirme).filter(models.Degerlendirme.akademi_adi == ak_name).delete(synchronize_session=False)
+        db.query(models.SezonArsivi).filter(models.SezonArsivi.akademi_adi == ak_name).delete(synchronize_session=False)
+        db.query(models.Kullanici).filter(models.Kullanici.akademi_adi == ak_name).delete(synchronize_session=False)
+
+        # Akademinin kendisini sil
+        db.delete(ak)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Akademi silinirken veritabanı hatası oluştu: {str(e)}")
+
     return None
 
 @app.post("/akademiler/", response_model=schemas.AkademiResponse, status_code=status.HTTP_201_CREATED)

@@ -153,10 +153,10 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
     }
   };
 
-  const fetchAkademilerDetayli = async () => {
+  const fetchAkademilerDetayli = async (bypass = false) => {
     try {
       setPanelLoading(true);
-      const res = await getAkademilerDetayli();
+      const res = await getAkademilerDetayli(bypass);
       if (res.data) {
         setAkademilerDetayli(res.data);
       }
@@ -180,7 +180,7 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
         maintenance_message: newStatus ? 'Sistemimizde bakım ve güncelleme çalışmaları yapılmaktadır. En kısa sürede tekrar hizmetinizde olacağız.' : '',
         maintenance_end_time: ''
       });
-      await fetchAkademilerDetayli();
+      await fetchAkademilerDetayli(true);
       setTimeout(() => {
         setPanelListMsg({ type: '', text: '' });
         window.location.reload();
@@ -202,14 +202,20 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
     if (!akademiToDelete) return;
     try {
       await deleteAkademi(akademiToDelete.id);
-      await fetchAkademilerDetayli();
-      const akRes = await getAkademiler();
-      if (akRes.data) setAkademiler(akRes.data);
+      await fetchAkademilerDetayli(true);
+      const akRes = await getAkademiler(true);
+      if (akRes.data) {
+        setAkademiler(akRes.data);
+        if (selectedAkademi === akademiToDelete.name) {
+          setSelectedAkademi(akRes.data.length > 0 ? akRes.data[0].name : '');
+        }
+      }
 
       setPanelListMsg({ type: 'success', text: `'${akademiToDelete.name}' akademisi başarıyla silindi.` });
       setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
     } catch (err) {
-      setPanelListMsg({ type: 'error', text: 'Akademi silinirken hata oluştu.' });
+      const detail = err.response?.data?.detail || 'Akademi silinirken hata oluştu.';
+      setPanelListMsg({ type: 'error', text: detail });
       setTimeout(() => setPanelListMsg({ type: '', text: '' }), 5000);
     } finally {
       setDeleteConfirmOpen(false);
