@@ -41,6 +41,8 @@ def auto_migrate():
             conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS notlar VARCHAR;"))
             
             conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
+            conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS ogretmen_adi VARCHAR;"))
+            conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS derslik_id INTEGER;"))
             
             conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS odeme_periyodu VARCHAR;"))
             conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS taksit_sayisi INTEGER;"))

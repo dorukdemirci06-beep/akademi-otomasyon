@@ -98,6 +98,7 @@ const Siniflar = () => {
  baslangic_saati: '10:00',
  ders_suresi: '60',
  ogretmen_adi: '',
+ derslik_id: '',
  renk: 'indigo'
  });
 
@@ -209,10 +210,12 @@ const Siniflar = () => {
 
  const handleOpenScheduleModal = (s) => {
    setSelectedSinifSchedule(s);
-   const existingTeacher = s.ders_programi && s.ders_programi.length > 0 ? s.ders_programi[0].ogretmen_adi : '';
+   const existingTeacher = s.ogretmen_adi || (s.ders_programi && s.ders_programi.length > 0 ? s.ders_programi[0].ogretmen_adi : '');
+   const existingDerslik = s.derslik_id || (s.ders_programi && s.ders_programi.length > 0 ? s.ders_programi[0].derslik_id : '');
    setNewScheduleForm(prev => ({
      ...prev,
-     ogretmen_adi: existingTeacher || prev.ogretmen_adi
+     ogretmen_adi: existingTeacher || '',
+     derslik_id: existingDerslik || ''
    }));
  };
 
@@ -251,21 +254,19 @@ const Siniflar = () => {
  e.preventDefault();
  if (!yeniSinifAdi.trim()) return;
  try {
- const payload = { sinif_adi: yeniSinifAdi.trim() };
  const teacherName = scheduleData.ogretmen_adi ? scheduleData.ogretmen_adi.trim() : null;
+ const derslikId = scheduleData.derslik_id ? parseInt(scheduleData.derslik_id) : null;
+ const payload = {
+   sinif_adi: yeniSinifAdi.trim(),
+   ogretmen_adi: teacherName,
+   derslik_id: derslikId
+ };
 
  if (addSchedule && scheduleData.gun && scheduleData.baslangic_saati && scheduleData.ders_suresi) {
- payload.gun = scheduleData.gun;
- payload.baslangic_saati = scheduleData.baslangic_saati;
- payload.bitis_saati = calculateEndTime(scheduleData.baslangic_saati, scheduleData.ders_suresi);
- payload.ogretmen_adi = teacherName;
- payload.renk = scheduleData.renk;
- } else if (teacherName) {
- payload.gun = 'Pazartesi';
- payload.baslangic_saati = '10:00';
- payload.bitis_saati = calculateEndTime('10:00', '60');
- payload.ogretmen_adi = teacherName;
- payload.renk = 'indigo';
+   payload.gun = scheduleData.gun;
+   payload.baslangic_saati = scheduleData.baslangic_saati;
+   payload.bitis_saati = calculateEndTime(scheduleData.baslangic_saati, scheduleData.ders_suresi);
+   payload.renk = scheduleData.renk;
  }
 
  await createSinif(payload);
@@ -276,13 +277,14 @@ const Siniflar = () => {
  baslangic_saati: '10:00',
  ders_suresi: '60',
  ogretmen_adi: '',
+ derslik_id: '',
  renk: 'indigo'
  });
  setShowEkleModal(false);
  await fetchSiniflarModal();
  showToast(`"${yeniSinifAdi.trim()}" sınıfı ${teacherName ? `(${teacherName} öğretmen ataması ile) ` : ''}başarıyla oluşturuldu!`);
  } catch (err) {
- showToast('Hata: Sınıf oluşturulamadı.', 'error');
+ showToast(err.response?.data?.detail || 'Hata: Sınıf oluşturulamadı.', 'error');
  }
  };
 
@@ -328,9 +330,9 @@ const Siniflar = () => {
  baslangic_saati: '10:00',
  ders_suresi: '60',
  ders_adi: '',
- ogretmen_adi: '',
+ ogretmen_adi: match?.ogretmen_adi || newScheduleForm.ogretmen_adi || '',
  renk: 'indigo',
- derslik_id: ''
+ derslik_id: match?.derslik_id || newScheduleForm.derslik_id || ''
  });
  showToast('Ders saati başarıyla eklendi.', 'success');
  } catch (err) {
@@ -431,9 +433,21 @@ const Siniflar = () => {
  siniflarList.map((s) => (
  <tr key={s.id} className="hover: dark:hover: transition">
  <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">
+ <div className="flex flex-wrap items-center gap-1.5">
  <span className="-transparent px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap inline-block bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  {s.sinif_adi}
  </span>
+ {(s.ogretmen_adi || s.ders_programi?.[0]?.ogretmen_adi) && (
+ <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+ {s.ogretmen_adi || s.ders_programi[0].ogretmen_adi}
+ </span>
+ )}
+ {(s.derslik_adi || s.ders_programi?.[0]?.derslik_adi) && (
+ <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+ {s.derslik_adi || s.ders_programi[0].derslik_adi}
+ </span>
+ )}
+ </div>
  </td>
  <td className="py-3.5 px-4">
  {!s.ders_programi || s.ders_programi.length === 0 ? (
@@ -494,10 +508,20 @@ const Siniflar = () => {
   ) : (
   siniflarList.map((s) => (
   <div key={s.id} className="neo-card p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-3 bg-white dark:bg-[#15181e] shadow-sm">
-      <div className="flex justify-between items-center border-b pb-2 border-slate-100 dark:border-slate-800/60">
+      <div className="flex flex-wrap items-center gap-1.5 border-b pb-2 border-slate-100 dark:border-slate-800/60">
         <span className="-transparent px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap inline-block bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
         {s.sinif_adi}
         </span>
+        {(s.ogretmen_adi || s.ders_programi?.[0]?.ogretmen_adi) && (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+            {s.ogretmen_adi || s.ders_programi[0].ogretmen_adi}
+          </span>
+        )}
+        {(s.derslik_adi || s.ders_programi?.[0]?.derslik_adi) && (
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+            {s.derslik_adi || s.ders_programi[0].derslik_adi}
+          </span>
+        )}
       </div>
       
       <div className="flex flex-col gap-2.5 text-xs text-slate-600 dark:text-slate-300 mt-1">
@@ -620,12 +644,25 @@ const Siniflar = () => {
                   Sınıfa Atanacak Öğretmen
                 </label>
                 <SearchableSelect
-  value={scheduleData.ogretmen_adi}
-  onChange={(val) => setScheduleData({ ...scheduleData, ogretmen_adi: val })}
-  options={getRegisteredTeachers().map(t => ({ value: `${t.isim} ${t.soyisim || ""}`.trim(), label: `${t.isim} ${t.soyisim || ""}`.trim() }))}
-  placeholder="-- Öğretmen Seçin (Opsiyonel) --"
-  searchPlaceholder="Öğretmen ara..."
-/>
+                  value={scheduleData.ogretmen_adi}
+                  onChange={(val) => setScheduleData({ ...scheduleData, ogretmen_adi: val })}
+                  options={getRegisteredTeachers().map(t => ({ value: `${t.isim} ${t.soyisim || ""}`.trim(), label: `${t.isim} ${t.soyisim || ""}`.trim() }))}
+                  placeholder="-- Öğretmen Seçin (Opsiyonel) --"
+                  searchPlaceholder="Öğretmen ara..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Sınıfa Atanacak Derslik
+                </label>
+                <SearchableSelect
+                  value={scheduleData.derslik_id}
+                  onChange={(val) => setScheduleData({ ...scheduleData, derslik_id: val })}
+                  options={dersliklerList.map(d => ({ value: d.id, label: d.ad }))}
+                  placeholder="-- Derslik Seçin (Opsiyonel) --"
+                  searchPlaceholder="Derslik ara..."
+                />
               </div>
 
               {/* İsteğe bağlı Ders Programı Atama Checkbox */}

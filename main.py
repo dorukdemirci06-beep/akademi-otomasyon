@@ -169,6 +169,8 @@ def ensure_schema_columns():
             conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS ogrenci_meslek VARCHAR;"))
             conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS veli_meslek VARCHAR;"))
             conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS dogum_tarihi VARCHAR;"))
+            conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS ogretmen_adi VARCHAR;"))
+            conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS derslik_id INTEGER;"))
             conn.commit()
     except Exception as e:
         app_logger.warning(f"Startup schema check warning: {e}")
@@ -591,6 +593,7 @@ def create_sinif(
     bitis_saati: Optional[str] = Query(None),
     ders_adi: Optional[str] = Query(None),
     ogretmen_adi: Optional[str] = Query(None),
+    derslik_id: Optional[int] = Query(None),
     renk: Optional[str] = Query("indigo"),
     db: Session = Depends(get_db),
     current_user: models.Kullanici = Depends(get_current_user)
@@ -608,18 +611,36 @@ def create_sinif(
             bitis_saati=bitis_saati,
             ders_adi=ders_adi,
             ogretmen_adi=ogretmen_adi,
+            derslik_id=derslik_id,
             renk=renk or "indigo"
         )
+
+    if sinif.gun and sinif.baslangic_saati and sinif.bitis_saati and sinif.derslik_id:
+        conflict = db.query(models.DersProgrami).filter(
+            models.DersProgrami.derslik_id == sinif.derslik_id,
+            models.DersProgrami.gun == sinif.gun.strip(),
+            models.DersProgrami.baslangic_saati < sinif.bitis_saati.strip(),
+            models.DersProgrami.bitis_saati > sinif.baslangic_saati.strip()
+        ).first()
+        if conflict:
+            conflict_sinif = conflict.sinif.sinif_adi if conflict.sinif else "Bilinmeyen Sınıf"
+            raise HTTPException(
+                status_code=400,
+                detail=f"Çakışma! Bu derslik {conflict.gun} günü {conflict.baslangic_saati}-{conflict.bitis_saati} saatleri arasında '{conflict_sinif}' sınıfına ayrılmıştır."
+            )
 
     db_sinif = models.Sinif(
         sinif_adi=sinif.sinif_adi.strip(),
         kapasite=sinif.kapasite or 20,
+        ogretmen_adi=sinif.ogretmen_adi.strip() if sinif.ogretmen_adi and sinif.ogretmen_adi.strip() else None,
+        derslik_id=sinif.derslik_id,
         akademi_adi=current_user.akademi_adi or "Test1"
     )
     db.add(db_sinif)
     db.commit()
     db.refresh(db_sinif)
 
+    derslik_adi = db_sinif.derslik.ad if db_sinif.derslik else None
     ders_programi_list = []
 
     # Eğer sınıf oluşturulurken gün ve saat atandıysa otomatik ders programı kaydı oluştur
@@ -630,7 +651,8 @@ def create_sinif(
             baslangic_saati=sinif.baslangic_saati.strip(),
             bitis_saati=sinif.bitis_saati.strip(),
             ders_adi=sinif.ders_adi.strip() if sinif.ders_adi else db_sinif.sinif_adi,
-            ogretmen_adi=sinif.ogretmen_adi.strip() if sinif.ogretmen_adi else None,
+            ogretmen_adi=sinif.ogretmen_adi.strip() if sinif.ogretmen_adi and sinif.ogretmen_adi.strip() else None,
+            derslik_id=sinif.derslik_id,
             renk=sinif.renk or "indigo"
         )
         db.add(yeni_ders)
@@ -645,6 +667,8 @@ def create_sinif(
             bitis_saati=yeni_ders.bitis_saati,
             ders_adi=yeni_ders.ders_adi,
             ogretmen_adi=yeni_ders.ogretmen_adi,
+            derslik_id=yeni_ders.derslik_id,
+            derslik_adi=derslik_adi,
             renk=yeni_ders.renk,
             sinif_adi=db_sinif.sinif_adi
         ))
@@ -653,6 +677,9 @@ def create_sinif(
         id=db_sinif.id,
         sinif_adi=db_sinif.sinif_adi,
         kapasite=db_sinif.kapasite,
+        ogretmen_adi=db_sinif.ogretmen_adi,
+        derslik_id=db_sinif.derslik_id,
+        derslik_adi=derslik_adi,
         ogrenci_sayisi=0,
         ders_programi=ders_programi_list
     )
@@ -678,6 +705,7 @@ def get_siniflar(
         program_items = db.query(models.DersProgrami).filter(models.DersProgrami.sinif_id == s.id).all()
         prog_list = []
         for p in program_items:
+            p_derslik_adi = p.derslik.ad if p.derslik else None
             prog_list.append(schemas.DersProgramiResponse(
                 id=p.id,
                 sinif_id=p.sinif_id,
@@ -686,14 +714,20 @@ def get_siniflar(
                 bitis_saati=p.bitis_saati,
                 ders_adi=p.ders_adi,
                 ogretmen_adi=p.ogretmen_adi,
+                derslik_id=p.derslik_id,
+                derslik_adi=p_derslik_adi,
                 renk=p.renk or "indigo",
                 sinif_adi=s.sinif_adi
             ))
 
+        s_derslik_adi = s.derslik.ad if s.derslik else None
         res.append(schemas.SinifResponse(
             id=s.id,
             sinif_adi=s.sinif_adi,
             kapasite=s.kapasite,
+            ogretmen_adi=s.ogretmen_adi,
+            derslik_id=s.derslik_id,
+            derslik_adi=s_derslik_adi,
             ogrenci_sayisi=count,
             ders_programi=prog_list
         ))
@@ -748,9 +782,10 @@ def delete_sinif(
     if not sinif:
         raise HTTPException(status_code=404, detail="Sınıf bulunamadı.")
 
-    # İlişkili OgrenciSinif ve Yoklama kayıtlarını sil
+    # İlişkili OgrenciSinif, Yoklama ve DersProgrami kayıtlarını sil
     db.query(models.OgrenciSinif).filter(models.OgrenciSinif.sinif_id == sinif_id).delete()
     db.query(models.Yoklama).filter(models.Yoklama.sinif_id == sinif_id).delete()
+    db.query(models.DersProgrami).filter(models.DersProgrami.sinif_id == sinif_id).delete()
 
     db.delete(sinif)
     db.commit()
@@ -2124,6 +2159,8 @@ def delete_derslik(
     if current_user.akademi_adi and derslik.akademi_adi and derslik.akademi_adi != current_user.akademi_adi:
         raise HTTPException(status_code=403, detail="Bu dersliği silme yetkiniz yok.")
         
+    db.query(models.DersProgrami).filter(models.DersProgrami.derslik_id == derslik_id).update({models.DersProgrami.derslik_id: None})
+    db.query(models.Sinif).filter(models.Sinif.derslik_id == derslik_id).update({models.Sinif.derslik_id: None})
     db.delete(derslik)
     db.commit()
     return {"mesaj": "Derslik başarıyla silindi."}
@@ -2257,6 +2294,11 @@ def create_ders_programi(
     db.commit()
     db.refresh(yeni_ders)
 
+    if item.ogretmen_adi and item.ogretmen_adi.strip() and not sinif.ogretmen_adi:
+        sinif.ogretmen_adi = item.ogretmen_adi.strip()
+    if item.derslik_id and not sinif.derslik_id:
+        sinif.derslik_id = item.derslik_id
+    db.commit()
     derslik_adi = db.query(models.Derslik).filter(models.Derslik.id == yeni_ders.derslik_id).first().ad if yeni_ders.derslik_id else None
 
     return schemas.DersProgramiResponse(

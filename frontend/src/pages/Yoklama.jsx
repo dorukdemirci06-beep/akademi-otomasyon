@@ -113,13 +113,22 @@ const Yoklama = () => {
 
   const handleSinifChangeForNewDers = (val) => {
     let defaultTeacher = newDersForm.ogretmen_adi;
+    let defaultDerslik = newDersForm.derslik_id;
     if (val) {
+      const selectedSinifObj = siniflar.find(s => s.id && s.id.toString() === val.toString());
       const classSchedules = dersProgrami.filter(dp => dp.sinif_id && dp.sinif_id.toString() === val.toString());
-      if (classSchedules.length > 0 && classSchedules[0].ogretmen_adi) {
+      if (selectedSinifObj?.ogretmen_adi) {
+        defaultTeacher = selectedSinifObj.ogretmen_adi;
+      } else if (classSchedules.length > 0 && classSchedules[0].ogretmen_adi) {
         defaultTeacher = classSchedules[0].ogretmen_adi;
       }
+      if (selectedSinifObj?.derslik_id) {
+        defaultDerslik = selectedSinifObj.derslik_id;
+      } else if (classSchedules.length > 0 && classSchedules[0].derslik_id) {
+        defaultDerslik = classSchedules[0].derslik_id;
+      }
     }
-    setNewDersForm(prev => ({ ...prev, sinif_id: val, ogretmen_adi: defaultTeacher }));
+    setNewDersForm(prev => ({ ...prev, sinif_id: val, ogretmen_adi: defaultTeacher, derslik_id: defaultDerslik }));
   };
 
  // Confirm Modal State

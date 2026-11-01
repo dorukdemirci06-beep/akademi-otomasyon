@@ -81,12 +81,15 @@ class Sinif(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     sinif_adi = Column(String, nullable=False, index=True)
+    ogretmen_adi = Column(String, nullable=True)
+    derslik_id = Column(Integer, ForeignKey("derslikler.id"), nullable=True)
     kapasite = Column(Integer, default=20)
     akademi_adi = Column(String, nullable=True, default="Test1", index=True)
 
     # İlişkiler
     ogrenciler = relationship("OgrenciSinif", back_populates="sinif")
     yoklamalar = relationship("Yoklama", back_populates="sinif")
+    derslik = relationship("Derslik")
 
 class OgrenciSinif(Base):
     __tablename__ = "ogrenci_sinif"

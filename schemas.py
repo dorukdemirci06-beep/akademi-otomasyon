@@ -6,6 +6,8 @@ from datetime import datetime
 # ==================== SINIF SCHEMAS ====================
 class SinifBase(BaseModel):
     sinif_adi: str
+    ogretmen_adi: Optional[str] = None
+    derslik_id: Optional[int] = None
     kapasite: int = 20
 
 class SinifCreate(SinifBase):
@@ -20,6 +22,7 @@ class SinifResponse(SinifBase):
     id: int
     ogrenci_sayisi: Optional[int] = 0
     ders_programi: Optional[List['DersProgramiResponse']] = []
+    derslik_adi: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

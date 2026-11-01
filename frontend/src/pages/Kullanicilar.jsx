@@ -1108,9 +1108,11 @@ const Kullanicilar = () => {
 
  if (tName && Array.isArray(siniflar)) {
  siniflar.forEach(s => {
+ let matchedInSchedule = false;
  if (s.ders_programi && Array.isArray(s.ders_programi)) {
  s.ders_programi.forEach(dp => {
  if (dp.ogretmen_adi && dp.ogretmen_adi.toLowerCase().trim() === tName) {
+ matchedInSchedule = true;
  const key = `${s.sinif_adi}_${dp.gun || ''}_${dp.baslangic_saati || ''}`;
  if (!seen.has(key)) {
  seen.add(key);
@@ -1123,6 +1125,18 @@ const Kullanicilar = () => {
  }
  }
  });
+ }
+ if (!matchedInSchedule && s.ogretmen_adi && s.ogretmen_adi.toLowerCase().trim() === tName) {
+ const key = `${s.sinif_adi}__`;
+ if (!seen.has(key)) {
+ seen.add(key);
+ teacherLessons.push({
+ sinif_adi: s.sinif_adi,
+ ders_adi: s.sinif_adi,
+ gun: null,
+ saat: null
+ });
+ }
  }
  });
  }

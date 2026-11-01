@@ -179,18 +179,12 @@ const Dashboard = () => {
  const payload = { sinif_adi: yeniSinifAdi.trim() };
  const teacherName = scheduleData.ogretmen_adi ? scheduleData.ogretmen_adi.trim() : null;
 
+ payload.ogretmen_adi = teacherName;
  if (addSchedule && scheduleData.gun && scheduleData.baslangic_saati && scheduleData.bitis_saati) {
  payload.gun = scheduleData.gun;
  payload.baslangic_saati = scheduleData.baslangic_saati;
  payload.bitis_saati = scheduleData.bitis_saati;
- payload.ogretmen_adi = teacherName;
  payload.renk = scheduleData.renk;
- } else if (teacherName) {
- payload.gun = 'Pazartesi';
- payload.baslangic_saati = '10:00';
- payload.bitis_saati = '11:30';
- payload.ogretmen_adi = teacherName;
- payload.renk = 'indigo';
  }
 
  await createSinif(payload);
