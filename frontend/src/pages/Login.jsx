@@ -320,27 +320,30 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
       return;
     }
 
+    const createdAkademiName = kurulumForm.akademi_adi.trim();
+    const createdUsername = kurulumForm.kullanici_adi.trim();
+    const createdPassword = kurulumForm.sifre.trim();
+
     try {
       setKurulumLoading(true);
       setKurulumMsg({ type: '', text: '' });
       await kurAkademi({
-        akademi_adi: kurulumForm.akademi_adi.trim(),
+        akademi_adi: createdAkademiName,
         ad_soyad: kurulumForm.ad_soyad.trim() || undefined,
-        kullanici_adi: kurulumForm.kullanici_adi.trim(),
-        sifre: kurulumForm.sifre.trim(),
+        kullanici_adi: createdUsername,
+        sifre: createdPassword,
       });
 
-      // Güncel akademiler listesini yeniden çek (önbelleği atla)
-      const akRes = await getAkademiler(true);
-      if (akRes.data && akRes.data.length > 0) {
-        setAkademiler(akRes.data);
+      // Güncel akademiler listesini yeniden çek (liste yenileme hatası kurulum başarısını etkilemesin)
+      try {
+        const akRes = await getAkademiler(true);
+        if (akRes.data && akRes.data.length > 0) {
+          setAkademiler(akRes.data);
+        }
+        await fetchAkademilerDetayli(true);
+      } catch (refreshErr) {
+        console.warn('Akademi listesi yenilenirken gecikme:', refreshErr);
       }
-      await fetchAkademilerDetayli(true);
-
-      // Yeni oluşturulan akademiyi ve kullanıcı bilgilerini forma otomatik doldur
-      const createdAkademiName = kurulumForm.akademi_adi.trim();
-      const createdUsername = kurulumForm.kullanici_adi.trim();
-      const createdPassword = kurulumForm.sifre.trim();
 
       setSelectedAkademi(createdAkademiName);
       setKullaniciAdi(createdUsername);
@@ -356,6 +359,25 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
 
     } catch (err) {
       console.error('Kurulum hatası:', err);
+      // Eğer zaman aşımı/ağ hatası aldıysa fakat sunucu arka planda akademiyi oluşturduysa kontrol et
+      if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
+        try {
+          const checkRes = await getAkademilerDetayli(true);
+          if (checkRes.data && checkRes.data.some(a => a.name.toLowerCase() === createdAkademiName.toLowerCase())) {
+            setAkademilerDetayli(checkRes.data);
+            setSelectedAkademi(createdAkademiName);
+            setKurulumMsg({ type: 'success', text: 'Akademi ve yönetici hesabı başarıyla oluşturuldu!' });
+            setTimeout(() => {
+              setPanelTab('list');
+              setKurulumForm({ akademi_adi: '', ad_soyad: '', kullanici_adi: '', sifre: '' });
+              setKurulumMsg({ type: '', text: '' });
+            }, 1000);
+            return;
+          }
+        } catch (_) {
+          // ignore secondary check failure
+        }
+      }
       let detail = 'Kurulum başarısız oldu.';
       if (err.code === 'ECONNABORTED' || err.message === 'Network Error') {
         detail = 'Sunucuya bağlanılamadı (Zaman Aşımı). Lütfen arka plan servislerinin çalıştığından emin olun.';

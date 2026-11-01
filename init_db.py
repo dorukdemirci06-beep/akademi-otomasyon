@@ -70,17 +70,13 @@ def seed_initial_user():
     logger.info("Baslangic verileri kontrol ediliyor...")
     try:
         db = SessionLocal()
-        test1 = db.query(models.Akademi).filter(models.Akademi.name == "Test1").first()
-        if not test1:
+        if db.query(models.Akademi).count() == 0:
             test1 = models.Akademi(name="Test1")
             db.add(test1)
             db.commit()
 
-        test2 = db.query(models.Akademi).filter(models.Akademi.name == "Test2").first()
-        if not test2:
-            test2 = models.Akademi(name="Test2")
-            db.add(test2)
-            db.commit()
+        first_ak = db.query(models.Akademi).first()
+        default_ak_name = first_ak.name if first_ak else "Test1"
 
         admin_user = db.query(models.Kullanici).filter(models.Kullanici.kullanici_adi == "doruk").first()
         if not admin_user:
@@ -89,14 +85,14 @@ def seed_initial_user():
                 sifre=hash_password("Dd150106!"),
                 rol="Yönetici",
                 ad_soyad="Doruk (Yönetici)",
-                akademi_adi="Test1"
+                akademi_adi=default_ak_name
             )
             db.add(admin_user)
             db.commit()
-            logger.info("Ilk yonetici kullanicisi (doruk / Dd150106! - Test1) olusturuldu.")
+            logger.info(f"Ilk yonetici kullanicisi (doruk / Dd150106! - {default_ak_name}) olusturuldu.")
         else:
             if not admin_user.akademi_adi:
-                admin_user.akademi_adi = "Test1"
+                admin_user.akademi_adi = default_ak_name
             if not (admin_user.sifre.startswith("$2b$") or admin_user.sifre.startswith("$2a$")):
                 admin_user.sifre = hash_password("Dd150106!")
             db.commit()

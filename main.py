@@ -1204,21 +1204,21 @@ def get_akademiler(db: Session = Depends(get_db)):
 @app.get("/akademiler/detayli")
 def get_akademiler_detayli(db: Session = Depends(get_db)):
     akademiler = db.query(models.Akademi).order_by(models.Akademi.id.asc()).all()
+    all_users = db.query(models.Kullanici).all()
     result = []
     for ak in akademiler:
-        admin_user = db.query(models.Kullanici).filter(
-            models.Kullanici.akademi_adi == ak.name,
-            models.Kullanici.rol == "Yönetici"
-        ).first()
-        user_count = db.query(models.Kullanici).filter(models.Kullanici.akademi_adi == ak.name).count()
+        ak_users = [u for u in all_users if u.akademi_adi == ak.name]
+        admin_user = next((u for u in ak_users if u.rol == "Yönetici" and u.kullanici_adi.lower() != "doruk"), None)
+        if not admin_user:
+            admin_user = next((u for u in ak_users if u.rol == "Yönetici"), None)
         result.append({
             "id": ak.id,
             "name": ak.name,
             "eklenme_tarihi": ak.eklenme_tarihi,
             "admin_kullanici_adi": admin_user.kullanici_adi if admin_user else "Tanımsız",
             "admin_ad_soyad": admin_user.ad_soyad if admin_user else "-",
-            "kullanici_sayisi": user_count
-        , "is_maintenance_mode": getattr(ak, "is_maintenance_mode", False)
+            "kullanici_sayisi": len(ak_users),
+            "is_maintenance_mode": getattr(ak, "is_maintenance_mode", False)
         })
     return result
 
@@ -1348,23 +1348,33 @@ def kurulum_akademi(data: schemas.AkademiKurulumCreate, db: Session = Depends(ge
     if existing_user:
         raise HTTPException(status_code=400, detail=f"'{k_name}' kullanıcı adı zaten kullanımda!")
 
-    # 1. Yeni Akademi Oluştur
-    yeni_ak = models.Akademi(name=ak_name)
-    db.add(yeni_ak)
-    db.commit()
-    db.refresh(yeni_ak)
+    # Mevcut sistem bakım durumunu koru
+    active_maint = db.query(models.Akademi).filter(models.Akademi.is_maintenance_mode == True).first()
 
-    # 2. Yeni İlk Yönetici Kullanıcısını Oluştur
-    yeni_user = models.Kullanici(
-        kullanici_adi=k_name,
-        sifre=hash_password(data.sifre.strip()),
-        rol="Yönetici",
-        ad_soyad=data.ad_soyad.strip() if data.ad_soyad else f"{ak_name} Yöneticisi",
-        akademi_adi=ak_name
-    )
-    db.add(yeni_user)
-    db.commit()
-    db.refresh(yeni_user)
+    try:
+        # 1. Yeni Akademi ve İlk Yönetici Kullanıcısını Tek Transaction İçinde Oluştur
+        yeni_ak = models.Akademi(
+            name=ak_name,
+            is_maintenance_mode=bool(active_maint),
+            maintenance_message=active_maint.maintenance_message if active_maint else None,
+            maintenance_end_time=active_maint.maintenance_end_time if active_maint else None
+        )
+        db.add(yeni_ak)
+
+        yeni_user = models.Kullanici(
+            kullanici_adi=k_name,
+            sifre=hash_password(data.sifre.strip()),
+            rol="Yönetici",
+            ad_soyad=data.ad_soyad.strip() if data.ad_soyad else f"{ak_name} Yöneticisi",
+            akademi_adi=ak_name
+        )
+        db.add(yeni_user)
+        db.commit()
+        db.refresh(yeni_ak)
+        db.refresh(yeni_user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Kurulum sırasında veritabanı hatası: {str(e)}")
 
     # 3. Otomatik JWT Access Token üret
     access_token = create_access_token(data={
@@ -1629,7 +1639,7 @@ def update_akademi_ayarlar(
 
 @app.get("/public/system-status")
 def get_public_system_status(db: Session = Depends(get_db)):
-    akademi = db.query(models.Akademi).first()
+    akademi = db.query(models.Akademi).filter(models.Akademi.is_maintenance_mode == True).first() or db.query(models.Akademi).first()
     if not akademi:
         return {
             "is_maintenance_mode": False,
