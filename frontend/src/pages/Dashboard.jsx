@@ -328,20 +328,8 @@ const Dashboard = () => {
  >
  <div className="flex justify-between items-center">
  <div>
- <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider group-hover:text-[#2eb82e] transition">ÖĞRENCİ SAYISI</p>
- <div className="flex items-center gap-3 mt-2 flex-wrap">
- <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">{loading ? '...' : ogrenciCount}</h3>
- {!loading && (
- <div className="flex items-center gap-1.5 text-xs font-bold">
- <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
- {aktifOgrenciCount} Aktif
- </span>
- <span className="px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/25">
- {pasifOgrenciCount} Pasif
- </span>
- </div>
- )}
- </div>
+ <p className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider group-hover:text-[#2eb82e] transition">AKTİF ÖĞRENCİ</p>
+ <h3 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 mt-2">{loading ? '...' : aktifOgrenciCount}</h3>
  </div>
  <div className="w-12 h-12 rounded-full -transparent text-[#2eb82e] flex items-center justify-center shrink-0 bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm">
  <Users className="w-6 h-6" />
