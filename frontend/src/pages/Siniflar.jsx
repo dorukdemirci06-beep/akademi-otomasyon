@@ -415,6 +415,8 @@ const Siniflar = () => {
  <thead>
  <tr className="border-b text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
  <th className="py-3 px-4">SINIF / BRANŞ ADI</th>
+ <th className="py-3 px-4">ÖĞRETMEN</th>
+ <th className="py-3 px-4">DERSLİK</th>
  <th className="py-3 px-4">TÜM ATANAN DERS SAATLERİ</th>
  <th className="py-3 px-4">KAYITLI ÖĞRENCİ</th>
  <th className="py-3 px-4 text-right">İŞLEMLER</th>
@@ -423,31 +425,55 @@ const Siniflar = () => {
  <tbody className="divide-y divide-slate-200 dark:divide-slate-700/60 text-sm">
  {siniflarLoading ? (
  <tr>
- <td colSpan="5" className="text-center py-6 text-slate-400">Sınıflar yükleniyor...</td>
+ <td colSpan="6" className="text-center py-6 text-slate-400">Sınıflar yükleniyor...</td>
  </tr>
  ) : siniflarList.length === 0 ? (
  <tr>
- <td colSpan="5" className="text-center py-6 text-slate-400">Henüz kayıtlı sınıf yok.</td>
+ <td colSpan="6" className="text-center py-6 text-slate-400">Henüz kayıtlı sınıf yok.</td>
  </tr>
  ) : (
- siniflarList.map((s) => (
+ siniflarList.map((s) => {
+ const uniqueTeachers = Array.from(new Set([
+   s.ogretmen_adi,
+   ...(s.ders_programi || []).map(dp => dp.ogretmen_adi)
+ ].filter(Boolean)));
+ const fallbackDerslikName = s.derslik_adi || (s.derslik_id ? dersliklerList.find(d => Number(d.id) === Number(s.derslik_id))?.ad : null);
+ const uniqueDerslikler = Array.from(new Set([
+   fallbackDerslikName,
+   ...(s.ders_programi || []).map(dp => dp.derslik_adi || (dp.derslik_id ? dersliklerList.find(d => Number(d.id) === Number(dp.derslik_id))?.ad : null))
+ ].filter(Boolean)));
+ return (
  <tr key={s.id} className="hover: dark:hover: transition">
  <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-100">
- <div className="flex flex-wrap items-center gap-1.5">
  <span className="-transparent px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap inline-block bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
  {s.sinif_adi}
  </span>
- {(s.ogretmen_adi || s.ders_programi?.[0]?.ogretmen_adi) && (
- <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
- {s.ogretmen_adi || s.ders_programi[0].ogretmen_adi}
- </span>
+ </td>
+ <td className="py-3.5 px-4">
+ {uniqueTeachers.length === 0 ? (
+   <span className="text-xs text-slate-400 dark:text-slate-500 italic">Atanmadı</span>
+ ) : (
+   <div className="flex flex-wrap gap-1">
+     {uniqueTeachers.map((t, i) => (
+       <span key={i} className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 whitespace-nowrap">
+         {t}
+       </span>
+     ))}
+   </div>
  )}
- {(s.derslik_adi || s.ders_programi?.[0]?.derslik_adi) && (
- <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
- {s.derslik_adi || s.ders_programi[0].derslik_adi}
- </span>
+ </td>
+ <td className="py-3.5 px-4">
+ {uniqueDerslikler.length === 0 ? (
+   <span className="text-xs text-slate-400 dark:text-slate-500 italic">Atanmadı</span>
+ ) : (
+   <div className="flex flex-wrap gap-1">
+     {uniqueDerslikler.map((d, i) => (
+       <span key={i} className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/50 whitespace-nowrap">
+         {d}
+       </span>
+     ))}
+   </div>
  )}
- </div>
  </td>
  <td className="py-3.5 px-4">
  {!s.ders_programi || s.ders_programi.length === 0 ? (
@@ -493,7 +519,8 @@ const Siniflar = () => {
  </button>
  </td>
  </tr>
- ))
+ );
+ })
  )}
  </tbody>
  </table>
@@ -506,25 +533,33 @@ const Siniflar = () => {
   ) : siniflarList.length === 0 ? (
   <div className="text-center py-6 text-slate-400">Henüz kayıtlı sınıf yok.</div>
   ) : (
-  siniflarList.map((s) => (
+  siniflarList.map((s) => {
+  const uniqueTeachers = Array.from(new Set([
+    s.ogretmen_adi,
+    ...(s.ders_programi || []).map(dp => dp.ogretmen_adi)
+  ].filter(Boolean)));
+  const fallbackDerslikName = s.derslik_adi || (s.derslik_id ? dersliklerList.find(d => Number(d.id) === Number(s.derslik_id))?.ad : null);
+  const uniqueDerslikler = Array.from(new Set([
+    fallbackDerslikName,
+    ...(s.ders_programi || []).map(dp => dp.derslik_adi || (dp.derslik_id ? dersliklerList.find(d => Number(d.id) === Number(dp.derslik_id))?.ad : null))
+  ].filter(Boolean)));
+  return (
   <div key={s.id} className="neo-card p-4 rounded-xl border border-slate-100 dark:border-slate-800 space-y-3 bg-white dark:bg-[#15181e] shadow-sm">
       <div className="flex flex-wrap items-center gap-1.5 border-b pb-2 border-slate-100 dark:border-slate-800/60">
         <span className="-transparent px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap inline-block bg-[#0284c7] hover:bg-[#026aa3] transition-colors text-white border-transparent shadow-sm">
         {s.sinif_adi}
         </span>
-        {(s.ogretmen_adi || s.ders_programi?.[0]?.ogretmen_adi) && (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-            {s.ogretmen_adi || s.ders_programi[0].ogretmen_adi}
-          </span>
-        )}
-        {(s.derslik_adi || s.ders_programi?.[0]?.derslik_adi) && (
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
-            {s.derslik_adi || s.ders_programi[0].derslik_adi}
-          </span>
-        )}
       </div>
       
-      <div className="flex flex-col gap-2.5 text-xs text-slate-600 dark:text-slate-300 mt-1">
+      <div className="flex flex-col gap-2 text-xs text-slate-600 dark:text-slate-300 mt-1">
+         <div className="flex items-center justify-between">
+           <span className="font-semibold text-slate-500">Öğretmen:</span>
+           <span className="font-bold text-slate-800 dark:text-slate-200">{uniqueTeachers.length > 0 ? uniqueTeachers.join(', ') : 'Atanmadı'}</span>
+         </div>
+         <div className="flex items-center justify-between">
+           <span className="font-semibold text-slate-500">Derslik:</span>
+           <span className="font-bold text-emerald-600 dark:text-emerald-400">{uniqueDerslikler.length > 0 ? uniqueDerslikler.join(', ') : 'Atanmadı'}</span>
+         </div>
          <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
            <Users className="w-4 h-4 text-[#2eb82e]" /> {s.ogrenci_sayisi || 0} Kayıtlı Öğrenci
          </div>
@@ -566,7 +601,8 @@ const Siniflar = () => {
          </button>
       </div>
   </div>
-  ))
+  );
+  })
   )}
   </div>
  </div>

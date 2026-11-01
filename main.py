@@ -171,6 +171,7 @@ def ensure_schema_columns():
             conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS dogum_tarihi VARCHAR;"))
             conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS ogretmen_adi VARCHAR;"))
             conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS derslik_id INTEGER;"))
+            conn.execute(text("UPDATE odemeler SET akademi_adi = ogrenciler.akademi_adi FROM ogrenciler WHERE odemeler.ogrenci_id = ogrenciler.id AND odemeler.akademi_adi IS DISTINCT FROM ogrenciler.akademi_adi;"))
             conn.commit()
     except Exception as e:
         app_logger.warning(f"Startup schema check warning: {e}")
@@ -798,9 +799,14 @@ def get_odemeler(
     db: Session = Depends(get_db),
     current_user: models.Kullanici = Depends(get_current_user)
 ):
-    query = db.query(models.Odeme)
+    query = db.query(models.Odeme).outerjoin(models.Odeme.ogrenci)
     if current_user.akademi_adi:
-        query = query.filter(models.Odeme.akademi_adi == current_user.akademi_adi)
+        query = query.filter(
+            or_(
+                models.Ogrenci.akademi_adi == current_user.akademi_adi,
+                models.Odeme.akademi_adi == current_user.akademi_adi
+            )
+        )
     return query.order_by(models.Odeme.tarih.desc()).all()
 
 
@@ -809,9 +815,14 @@ def get_odemeler_list(
     db: Session = Depends(get_db),
     current_user: models.Kullanici = Depends(get_current_user)
 ):
-    query = db.query(models.Odeme)
+    query = db.query(models.Odeme).outerjoin(models.Odeme.ogrenci)
     if current_user.akademi_adi:
-        query = query.filter(models.Odeme.akademi_adi == current_user.akademi_adi)
+        query = query.filter(
+            or_(
+                models.Ogrenci.akademi_adi == current_user.akademi_adi,
+                models.Odeme.akademi_adi == current_user.akademi_adi
+            )
+        )
     return query.order_by(models.Odeme.tarih.desc()).all()
 
 
@@ -852,6 +863,8 @@ def create_odeme(
     ogrenci = db.query(models.Ogrenci).filter(models.Ogrenci.id == odeme.ogrenci_id).first()
     if not ogrenci:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Öğrenci bulunamadı.")
+
+    hedef_akademi = ogrenci.akademi_adi or current_user.akademi_adi or "Test1"
 
     def parse_date_str(d_str):
         if not d_str or not d_str.strip():
@@ -897,7 +910,8 @@ def create_odeme(
                     taksit_sayisi=taksit_adedi,
                     taksit_no=1,
                     aciklama=cur_aciklama,
-                    sinif_adi=odeme.sinif_adi
+                    sinif_adi=odeme.sinif_adi,
+                    akademi_adi=hedef_akademi
                 )
                 db.add(ilk_odeme)
                 if cur_durum == "Ödendi":
@@ -915,7 +929,8 @@ def create_odeme(
                     taksit_sayisi=taksit_adedi,
                     taksit_no=i + 1,
                     aciklama=f"{i + 1}. Taksit ({i + 1}/{taksit_adedi})",
-                    sinif_adi=odeme.sinif_adi
+                    sinif_adi=odeme.sinif_adi,
+                    akademi_adi=hedef_akademi
                 )
                 db.add(gelelcekk_odeme)
 
@@ -933,7 +948,8 @@ def create_odeme(
             taksit_sayisi=1,
             taksit_no=1,
             aciklama=cur_aciklama,
-            sinif_adi=odeme.sinif_adi
+            sinif_adi=odeme.sinif_adi,
+            akademi_adi=hedef_akademi
         )
         db.add(ilk_odeme)
         if (odeme.durum or "Ödendi") == "Ödendi":
@@ -952,7 +968,8 @@ def create_odeme(
             taksit_sayisi=1,
             taksit_no=2,
             aciklama="4 Hafta Sonraki Ödeme (Alacak)",
-            sinif_adi=odeme.sinif_adi
+            sinif_adi=odeme.sinif_adi,
+            akademi_adi=hedef_akademi
         )
         db.add(gelecek_alacak)
 
@@ -970,7 +987,8 @@ def create_odeme(
             taksit_sayisi=1,
             taksit_no=1,
             aciklama=cur_aciklama,
-            sinif_adi=odeme.sinif_adi
+            sinif_adi=odeme.sinif_adi,
+            akademi_adi=hedef_akademi
         )
         db.add(ilk_odeme)
         if (odeme.durum or "Ödendi") == "Ödendi":
@@ -983,9 +1001,12 @@ def create_odeme(
             target_sinif = db.query(models.Sinif).filter(models.Sinif.id == odeme.sinif_id).first()
         elif odeme.sinif_adi and odeme.sinif_adi.strip():
             s_name = odeme.sinif_adi.strip()
-            target_sinif = db.query(models.Sinif).filter(models.Sinif.sinif_adi == s_name).first()
+            target_sinif = db.query(models.Sinif).filter(
+                models.Sinif.sinif_adi == s_name,
+                models.Sinif.akademi_adi == hedef_akademi
+            ).first()
             if not target_sinif:
-                target_sinif = models.Sinif(sinif_adi=s_name, kapasite=20)
+                target_sinif = models.Sinif(sinif_adi=s_name, kapasite=20, akademi_adi=hedef_akademi)
                 db.add(target_sinif)
                 db.commit()
                 db.refresh(target_sinif)
@@ -1074,12 +1095,14 @@ def odeme_tahsil_et(
                 tutar=odeme.tutar,
                 tarih=yeni_tarih,
                 odeme_yontemi=odeme.odeme_yontemi,
+                odeme_turu=odeme.odeme_turu or "Kurs Ücreti",
                 durum="Bekliyor",
                 odeme_periyodu="Aylık",
                 taksit_sayisi=1,
                 taksit_no=yeni_taksit_no,
                 aciklama="4 Hafta Sonraki Ödeme (Alacak)",
-                sinif_adi=odeme.sinif_adi
+                sinif_adi=odeme.sinif_adi,
+                akademi_adi=(ogrenci.akademi_adi if ogrenci else None) or odeme.akademi_adi or current_user.akademi_adi or "Test1"
             )
             db.add(yeni_gelecek_alacak)
 

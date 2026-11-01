@@ -70,7 +70,7 @@ const Finans = () => {
 
  // Öğrenci Detay Modalı State
  const [selectedOgrenci, setSelectedOgrenci] = useState(null);
- const [modalTab, setModalTab] = useState('bekleyenler'); // 'bekleyenler' | 'odenenler'
+ const [modalTab, setModalTab] = useState('tumu'); // 'tumu' | 'bekleyenler' | 'odenenler'
  
  // Modal içi hızlı tahsilat dialog state
  const [tahsilatModalOdeme, setTahsilatModalOdeme] = useState(null);
@@ -134,8 +134,8 @@ const Finans = () => {
  try {
  setLoading(true);
  const [ogrenciRes, odemeRes] = await Promise.all([
- getOgrenciler(),
- getOdemeler().catch(() => ({ data: [] }))
+ getOgrenciler(undefined, true),
+ getOdemeler(true).catch(() => ({ data: [] }))
  ]);
  const rawOgrenciler = ogrenciRes.data || [];
  const odemelerList = odemeRes.data || [];
@@ -257,7 +257,7 @@ const Finans = () => {
  aciklama: '',
  });
  setOgrenciSiniflari([]);
- setModalTab('bekleyenler');
+ setModalTab('tumu');
  await fetchOgrencilerVeOdemeler(targetStudentId);
  } catch (err) {
  const detail = err.response?.data?.detail || 'Ödeme işlemi başarısız.';
@@ -387,24 +387,19 @@ const Finans = () => {
  
  const filteredOdemelerForKasa = odemeler.filter(p => {
    if (p.durum !== 'Ödendi') return false;
-   if (!p.tarih) return false;
-   const pDate = new Date(p.tarih);
-   pDate.setHours(0, 0, 0, 0);
+   if (!p.tarih) return !(kasaStartDate || kasaEndDate);
+   const pDateStr = typeof p.tarih === 'string' ? p.tarih.slice(0, 10) : new Date(p.tarih).toISOString().slice(0, 10);
 
-   if (kasaStartDate) {
-     const start = new Date(kasaStartDate);
-     start.setHours(0, 0, 0, 0);
-     if (pDate < start) return false;
-   }
-   if (kasaEndDate) {
-     const end = new Date(kasaEndDate);
-     end.setHours(23, 59, 59, 999);
-     if (pDate > end) return false;
-   }
+   if (kasaStartDate && pDateStr < kasaStartDate) return false;
+   if (kasaEndDate && pDateStr > kasaEndDate) return false;
    return true;
  });
 
- const totalKasa = filteredOdemelerForKasa.reduce((acc, curr) => acc + (curr.tutar || 0), 0);
+ const totalKasaFromOdemeler = filteredOdemelerForKasa.reduce((acc, curr) => acc + (Number(curr.tutar) || 0), 0);
+ const totalStudentBakiye = ogrenciler.reduce((acc, o) => acc + (Number(o.bakiye) || 0), 0);
+ const totalKasa = (kasaStartDate || kasaEndDate)
+   ? totalKasaFromOdemeler
+   : Math.max(totalKasaFromOdemeler, totalStudentBakiye);
 
  const tutarNum = parseFloat(odemeData.tutar) || 0;
  const taksitNum = parseInt(odemeData.taksit_sayisi) || 1;
@@ -558,7 +553,11 @@ const Finans = () => {
      )}
    </div>
 
-   <div className="px-4 py-2 rounded-full flex items-center gap-3 bg-gradient-to-r from-sky-500 to-sky-600 transition-colors text-white border-transparent shadow-sm">
+   <div
+     onClick={() => setActiveMainTab(activeMainTab === 'tahsilatlar' ? 'ogrenciler' : 'tahsilatlar')}
+     title="Tahsilat geçmişini görüntülemek için tıklayın"
+     className="px-4 py-2 rounded-full flex items-center gap-3 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 transition-colors text-white border-transparent shadow-sm cursor-pointer"
+   >
      <div className="text-right">
        <span className="block text-[10px] font-bold uppercase text-sky-50/90">
          {(kasaStartDate || kasaEndDate) ? 'Filtrelenmiş Kasa' : 'Toplam Cari Kasa'}
@@ -1292,10 +1291,21 @@ const Finans = () => {
  </div>
 
  {/* Modal Tabs Header */}
- <div className="flex border-b px-5">
+ <div className="flex flex-wrap border-b px-5 gap-1">
+ <button
+ onClick={() => setModalTab('tumu')}
+ className={`py-3 px-4 font-bold text-xs border-b-2 flex items-center gap-2 transition cursor-pointer ${
+ modalTab === 'tumu'
+ ? 'border-indigo-500 text-indigo-500'
+ : 'border-transparent text-slate-400 hover:text-slate-200'
+ }`}
+ >
+ <FileText className="w-4 h-4" />
+ <span>Tüm Ödemeler & Taksitler ({selectedStudentPayments.length})</span>
+ </button>
  <button
  onClick={() => setModalTab('bekleyenler')}
- className={`py-3 px-4 font-bold text-xs border-b-2 flex items-center gap-2 transition ${
+ className={`py-3 px-4 font-bold text-xs border-b-2 flex items-center gap-2 transition cursor-pointer ${
  modalTab === 'bekleyenler'
  ? 'border-[#0284c7] text-[#0284c7]'
  : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -1306,7 +1316,7 @@ const Finans = () => {
  </button>
  <button
  onClick={() => setModalTab('odenenler')}
- className={`py-3 px-4 font-bold text-xs border-b-2 flex items-center gap-2 transition ${
+ className={`py-3 px-4 font-bold text-xs border-b-2 flex items-center gap-2 transition cursor-pointer ${
  modalTab === 'odenenler'
  ? 'border-[#2eb82e] text-[#2eb82e]'
  : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -1390,8 +1400,14 @@ const Finans = () => {
  )}
 
  {/* TAB 1: ALINACAK TAKSİTLER & GELECEK ÖDEMELER */}
- {modalTab === 'bekleyenler' && (
- <div>
+ {(modalTab === 'tumu' || modalTab === 'bekleyenler') && (
+ <div className="space-y-2">
+ {modalTab === 'tumu' && (
+ <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#0284c7] flex items-center gap-1.5 px-1">
+ <Clock className="w-3.5 h-3.5" />
+ <span>Alınacak Taksitler & Gelecek Ödemeler ({studentBekleyenler.length})</span>
+ </h4>
+ )}
  {studentBekleyenler.length === 0 ? (
  <div className="text-center py-10 neo-card space-y-2">
  <CheckCircle className="w-8 h-8 text-emerald-400 mx-auto" />
@@ -1483,8 +1499,14 @@ const Finans = () => {
  )}
 
  {/* TAB 2: ŞİMDİYE KADAR ALINAN ÖDEMELER */}
- {modalTab === 'odenenler' && (
- <div>
+ {(modalTab === 'tumu' || modalTab === 'odenenler') && (
+ <div className="space-y-2">
+ {modalTab === 'tumu' && (
+ <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#2eb82e] flex items-center gap-1.5 px-1 pt-2">
+ <CheckCircle className="w-3.5 h-3.5" />
+ <span>Şimdiye Kadar Alınan Ödemeler ({studentOdenenler.length})</span>
+ </h4>
+ )}
  {studentOdenenler.length === 0 ? (
  <div className="text-center py-10 neo-card space-y-2">
  <Clock className="w-8 h-8 text-slate-500 mx-auto" />

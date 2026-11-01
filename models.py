@@ -91,6 +91,10 @@ class Sinif(Base):
     yoklamalar = relationship("Yoklama", back_populates="sinif")
     derslik = relationship("Derslik")
 
+    @property
+    def derslik_adi(self):
+        return self.derslik.ad if self.derslik else None
+
 class OgrenciSinif(Base):
     __tablename__ = "ogrenci_sinif"
 

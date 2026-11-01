@@ -236,7 +236,7 @@ export const getSinifOgrencileri = (id, bypass = false) => withCache(`/siniflar/
 
 // Finans & Ders Kayıt Endpointleri (CACHED)
 export const getOdemeler = (bypass = false) => withCache('/odemeler-list/', () => API.get('/odemeler-list/'), bypass);
-export const createOdeme = (data) => API.post('/odemeler/', data, { params: data });
+export const createOdeme = (data) => API.post('/odemeler/', data);
 export const odemeTahsilEt = (id, data) => API.put(`/odemeler/${id}/odendi`, data);
 export const updateOdeme = (id, data) => API.put(`/odemeler/${id}`, data);
 export const deleteOdeme = (id) => API.delete(`/odemeler/${id}`);

@@ -50,6 +50,7 @@ def auto_migrate():
             conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS aciklama VARCHAR;"))
             conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS sinif_adi VARCHAR;"))
             conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
+            conn.execute(text("UPDATE odemeler SET akademi_adi = ogrenciler.akademi_adi FROM ogrenciler WHERE odemeler.ogrenci_id = ogrenciler.id AND odemeler.akademi_adi IS DISTINCT FROM ogrenciler.akademi_adi;"))
             
             conn.execute(text("ALTER TABLE yoklamalar ADD COLUMN IF NOT EXISTS aciklama VARCHAR;"))
             conn.execute(text("ALTER TABLE yoklamalar ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
