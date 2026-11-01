@@ -79,7 +79,7 @@ def create_database_dump(db: Session) -> str:
     model_classes = [
         models.Akademi, models.Kullanici, models.Ogrenci, models.Sinif, models.OgrenciSinif,
         models.Odeme, models.Yoklama, models.DersProgrami, models.OnKayit, models.Derslik,
-        models.Ogretmen, models.Personel, models.Degerlendirme
+        models.Ogretmen, models.Personel, models.Degerlendirme, models.SezonArsivi
     ]
     
     for model in model_classes:
@@ -343,24 +343,23 @@ def backup_all_to_sheets(raise_on_error: bool = False):
 
             logger.info("Yedekleme Tamamlandı! Tüm tablolar başarıyla Google Sheets'e aktarıldı.")
             
-            # --- Veritabanı Yedeği (.zip) yükleme işlemi ---
-            drive_folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
-            if drive_folder_id:
-                logger.info("Tam veritabanı yedeği oluşturuluyor ve Google Drive'a yükleniyor...")
-                try:
+            # --- Tam Veritabanı JSON/ZIP Yedeği (.zip) oluşturma ve Drive yükleme işlemi ---
+            try:
+                zip_path = create_database_dump(db)
+                drive_folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
+                if drive_folder_id and os.path.exists(zip_path):
+                    logger.info("Tam veritabanı yedeği Google Drive klasörüne yükleniyor...")
                     drive_service = build('drive', 'v3', credentials=credentials)
-                    zip_path = create_database_dump(db)
-                    if os.path.exists(zip_path):
-                        filename = os.path.basename(zip_path)
-                        file_metadata = {
-                            'name': filename,
-                            'parents': [drive_folder_id]
-                        }
-                        media = MediaFileUpload(zip_path, mimetype='application/zip', resumable=True)
-                        uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-                        logger.info(f"Veritabanı yedeği ({filename}) başarıyla Google Drive'a yüklendi. Dosya ID: {uploaded_file.get('id')}")
-                except Exception as e:
-                    logger.error(f"Google Drive'a veritabanı yedeği yüklenirken hata oluştu: {e}")
+                    filename = os.path.basename(zip_path)
+                    file_metadata = {
+                        'name': filename,
+                        'parents': [drive_folder_id]
+                    }
+                    media = MediaFileUpload(zip_path, mimetype='application/zip', resumable=True)
+                    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+                    logger.info(f"Veritabanı yedeği ({filename}) başarıyla Google Drive'a yüklendi. Dosya ID: {uploaded_file.get('id')}")
+            except Exception as e:
+                logger.error(f"Tam veritabanı ZIP yedeği oluşturulurken/yüklenirken hata oluştu: {e}")
             
         finally:
             db.close()
