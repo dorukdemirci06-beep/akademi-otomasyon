@@ -163,7 +163,11 @@ const OnKayit = () => {
  }, [siniflar, kayitlar]);
 
  const openEditModal = (item) => {
- const currentBrans = (item.ilgilenilen_brans || '').trim();
+ const rawBrans = (item.ilgilenilen_brans || '').trim();
+ const matchedOpt = bransSelectOptions.find(
+   opt => opt.value !== 'DIGER_MANUEL' && String(opt.value).trim().toLowerCase() === rawBrans.toLowerCase()
+ );
+ const currentBrans = matchedOpt ? matchedOpt.value : rawBrans;
  setIsEditCustomBrans(false);
  setEditCustomBransText('');
  setEditFormData({ ...item, ilgilenilen_brans: currentBrans });
