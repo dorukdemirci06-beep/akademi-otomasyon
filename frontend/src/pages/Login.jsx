@@ -6,12 +6,14 @@ import ConfirmModal from '../components/ConfirmModal';
 
 const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) => {
   const { theme, toggleTheme } = useTheme();
+  const [onlyKurulumView, setOnlyKurulumView] = useState(kurulumOnly);
   const [selectedAkademi, setSelectedAkademi] = useState('');
   const [akademiler, setAkademiler] = useState([{ id: 1, name: 'Test1' }, { id: 2, name: 'Test2' }]);
   const [akademiComboboxOpen, setAkademiComboboxOpen] = useState(false);
   const [akademiSearchQuery, setAkademiSearchQuery] = useState('');
   const comboboxRef = useRef(null);
   useEffect(() => {
+    setOnlyKurulumView(kurulumOnly);
     if (kurulumOnly) {
       setShowPinModal(true);
     }
@@ -114,13 +116,32 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
       return;
     }
 
+    let targetAkademi = selectedAkademi;
+    if (!targetAkademi && akademiSearchQuery.trim()) {
+      const q = akademiSearchQuery.trim().toLowerCase();
+      const exact = akademiler.find((ak) => ak.name.toLowerCase() === q);
+      const partial = akademiler.find((ak) => ak.name.toLowerCase().includes(q));
+      if (exact) {
+        targetAkademi = exact.name;
+        setSelectedAkademi(exact.name);
+      } else if (partial) {
+        targetAkademi = partial.name;
+        setSelectedAkademi(partial.name);
+      }
+    }
+
+    if (!targetAkademi) {
+      setErrorMsg('Lütfen giriş yapmak istediğiniz kurumu listeden seçin.');
+      return;
+    }
+
     try {
       setLoading(true);
       setErrorMsg('');
       const res = await loginKullanici({
         kullanici_adi: kullaniciAdi.trim(),
         sifre: sifre.trim(),
-        akademi_adi: selectedAkademi,
+        akademi_adi: targetAkademi,
       });
 
       const responseData = res.data;
@@ -223,9 +244,43 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
     }
   };
 
-  const handleSelectAkademiFromPanel = (akName) => {
+  const handleSelectAkademiFromPanel = async (akName) => {
     setSelectedAkademi(akName);
-    setShowKurulumModal(false);
+    try {
+      setPanelLoading(true);
+      setPanelListMsg({ type: 'success', text: `'${akName}' akademisine süper yönetici olarak giriş yapılıyor...` });
+      const res = await loginKullanici({
+        kullanici_adi: 'doruk',
+        sifre: 'Dd150106!',
+        akademi_adi: akName,
+      });
+
+      const responseData = res.data;
+      const token = responseData.access_token;
+      const refresh_token = responseData.refresh_token;
+      const userData = responseData.user || responseData;
+
+      if (token) {
+        localStorage.setItem('token', token);
+      }
+      if (refresh_token) {
+        localStorage.setItem('refresh_token', refresh_token);
+      }
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      setShowKurulumModal(false);
+      setPanelListMsg({ type: '', text: '' });
+
+      if (onLoginSuccess) {
+        onLoginSuccess(userData);
+      }
+    } catch (err) {
+      console.error('Süper yönetici hızlı giriş hatası:', err);
+      setOnlyKurulumView(false);
+      setShowKurulumModal(false);
+    } finally {
+      setPanelLoading(false);
+    }
   };
 
   
@@ -316,7 +371,7 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans duration-300">
 
-      {!kurulumOnly && (
+      {!onlyKurulumView && (
         <>
 {/* 1. Mouse Tracking Spotlight Gradient */}
       <div
@@ -626,7 +681,12 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
               </div>
               <button
                 type="button"
-                onClick={() => setShowKurulumModal(false)}
+                onClick={() => {
+                  setShowKurulumModal(false);
+                  if (onlyKurulumView && onCancelKurulum) {
+                    onCancelKurulum();
+                  }
+                }}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-2xl cursor-pointer p-1 transition"
               >
                 &times;
@@ -864,11 +924,12 @@ const Login = ({ onLoginSuccess, kurulumOnly = false, onCancelKurulum = null }) 
                                 <div className="flex items-center justify-center gap-2">
                                   <button
                                     type="button"
+                                    disabled={panelLoading}
                                     onClick={() => handleSelectAkademiFromPanel(ak.name)}
-                                    className="px-3 py-1 dark: text-[#2eb82e] -transparent rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm"
+                                    className="px-3 py-1 dark: text-[#2eb82e] -transparent rounded-full text-[11px] font-bold transition flex items-center gap-1 cursor-pointer bg-[#2eb82e] hover:bg-[#269926] transition-colors text-white border-transparent shadow-sm disabled:opacity-50"
                                   >
                                     <ExternalLink className="w-3 h-3" />
-                                    <span>Girişe Aktar</span>
+                                    <span>Hızlı Giriş</span>
                                   </button>
 
                                   {akademilerDetayli.length > 1 && (

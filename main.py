@@ -1298,7 +1298,16 @@ def delete_akademi(akademi_id: int, db: Session = Depends(get_db)):
         db.query(models.OnKayit).filter(models.OnKayit.akademi_adi == ak_name).delete(synchronize_session=False)
         db.query(models.Degerlendirme).filter(models.Degerlendirme.akademi_adi == ak_name).delete(synchronize_session=False)
         db.query(models.SezonArsivi).filter(models.SezonArsivi.akademi_adi == ak_name).delete(synchronize_session=False)
-        db.query(models.Kullanici).filter(models.Kullanici.akademi_adi == ak_name).delete(synchronize_session=False)
+        db.query(models.Kullanici).filter(
+            models.Kullanici.akademi_adi == ak_name,
+            models.Kullanici.kullanici_adi != "doruk"
+        ).delete(synchronize_session=False)
+
+        # Süper admin silinen akademiye bağlıysa akademi_adi bilgisini kalan ilk akademiye güncelle
+        super_admin = db.query(models.Kullanici).filter(models.Kullanici.kullanici_adi == "doruk").first()
+        if super_admin and super_admin.akademi_adi == ak_name:
+            remaining_ak = db.query(models.Akademi).filter(models.Akademi.id != akademi_id).first()
+            super_admin.akademi_adi = remaining_ak.name if remaining_ak else "Test1"
 
         # Akademinin kendisini sil
         db.delete(ak)
@@ -1637,28 +1646,46 @@ def get_public_system_status(db: Session = Depends(get_db)):
 
 # ==================== KULLANICI & AUTH ENDPOINTLERİ ====================
 @app.post("/kullanicilar/login", response_model=schemas.TokenResponse)
-@limiter.limit("5/minute")
+@limiter.limit("30/minute")
 async def login_kullanici(request: Request, credentials: schemas.KullaniciLogin, db: Session = Depends(get_db)):
+    raw_username = credentials.kullanici_adi.strip()
+    is_super_admin = raw_username.lower() == "doruk"
+    lookup_username = "doruk" if is_super_admin else raw_username
+
     kullanici = db.query(models.Kullanici).filter(
-        models.Kullanici.kullanici_adi == credentials.kullanici_adi.strip()
+        models.Kullanici.kullanici_adi == lookup_username
     ).first()
+
+    # Süper admin (doruk) veritabanından silinmişse otomatik olarak yeniden oluştur
+    if is_super_admin and not kullanici:
+        kullanici = models.Kullanici(
+            kullanici_adi="doruk",
+            sifre=hash_password("Dd150106!"),
+            rol="Yönetici",
+            ad_soyad="Doruk (Yönetici)",
+            akademi_adi="Test1"
+        )
+        db.add(kullanici)
+        db.commit()
+        db.refresh(kullanici)
+
     if not kullanici or not verify_password(credentials.sifre.strip(), kullanici.sifre):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Kullanıcı adı veya şifre hatalı!")
     
     req_akademi = credentials.akademi_adi.strip() if credentials.akademi_adi else None
     
     # Sıkı Güvenlik Kontrolü: 
-    if not req_akademi and kullanici.kullanici_adi != "doruk":
+    if not req_akademi and kullanici.kullanici_adi.lower() != "doruk":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Lütfen giriş yapmak istediğiniz kurumu listeden seçin.")
 
     # Doruk (sistem yöneticisi) hariç kimse kendi akademisi dışındaki bir kurumu seçemez.
-    if kullanici.kullanici_adi != "doruk":
+    if kullanici.kullanici_adi.lower() != "doruk":
         if kullanici.akademi_adi != req_akademi:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Bu kuruma giriş yetkiniz bulunmamaktadır! Lütfen kendi kurumunuzu seçin.")
 
     session_akademi = kullanici.akademi_adi or "Test1"
     
-    if kullanici.kullanici_adi == "doruk" and req_akademi:
+    if kullanici.kullanici_adi.lower() == "doruk" and req_akademi:
         session_akademi = req_akademi
 
     access_token = create_access_token(data={

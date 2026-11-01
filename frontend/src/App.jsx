@@ -62,12 +62,15 @@ function App() {
     localStorage.removeItem("token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
+    setBypassMaintenance(false);
     setCurrentUser(null);
   };
 
   if (maintenanceChecking) return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2eb82e]"></div></div>;
 
-  if (maintenanceInfo && !bypassMaintenance) {
+  const isSuperAdmin = (currentUser?.kullanici_adi || "").toLowerCase() === "doruk";
+
+  if (maintenanceInfo && !bypassMaintenance && !isSuperAdmin) {
     return (
       <ThemeProvider>
         <Bakimdayiz maintenanceInfo={maintenanceInfo} onLoginSuccess={(user) => { setCurrentUser(user); setBypassMaintenance(true); }} />

@@ -7,6 +7,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true
+      },
       includeAssets: ['icon-192x192.png', 'icon-512x512.png'],
       manifest: {
         name: 'KUYO Akademi Otomasyonu',
