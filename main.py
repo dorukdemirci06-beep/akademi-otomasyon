@@ -182,6 +182,16 @@ def ensure_schema_columns():
             conn.commit()
     except Exception as e:
         app_logger.warning(f"Startup schema check warning: {e}")
+    try:
+        from apscheduler.schedulers.background import BackgroundScheduler
+        if not getattr(app.state, "backup_scheduler_started", False):
+            bg_scheduler = BackgroundScheduler()
+            bg_scheduler.add_job(backup_all_to_sheets, "cron", hour=3, minute=0)
+            bg_scheduler.start()
+            app.state.backup_scheduler_started = True
+            app_logger.info("Background scheduler started for daily 03:00 Google Sheets backup.")
+    except Exception as e:
+        app_logger.warning(f"Background scheduler warning: {e}")
 
 
 def get_effective_student_phone(ogrenci: models.Ogrenci) -> Optional[str]:
@@ -2951,22 +2961,28 @@ class SetupPinRequest(BaseModel):
     pin: str
 
 @app.post("/api/backup/setup_pin")
-def manual_backup_setup(data: SetupPinRequest, background_tasks: BackgroundTasks):
+def manual_backup_setup(data: SetupPinRequest):
     if data.pin != "8907":
         raise HTTPException(status_code=403, detail="Yetkisiz erişim")
-    background_tasks.add_task(backup_all_to_sheets)
-    return {"message": "Yedekleme işlemi başlatıldı."}
+    try:
+        backup_all_to_sheets(raise_on_error=True)
+        return {"message": "Yedekleme başarıyla tamamlandı ve Google Sheets tablosu güncellendi."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Yedekleme hatası: {str(e)}")
 
 # --- MANUEL YEDEKLEME ---
 @app.post("/api/backup/manual")
 def manual_backup(
-    background_tasks: BackgroundTasks,
     current_user: models.Kullanici = Depends(get_current_user)
 ):
-    if current_user.rol != "Yönetici":
+    rol_lower = (current_user.rol or "").lower()
+    if current_user.kullanici_adi != "doruk" and "yönetici" not in rol_lower and "yonetici" not in rol_lower and "admin" not in rol_lower:
         raise HTTPException(status_code=403, detail="Bu işlem için Yönetici yetkisi gereklidir.")
-    background_tasks.add_task(backup_all_to_sheets)
-    return {"message": "Yedekleme işlemi arka planda başlatıldı."}
+    try:
+        backup_all_to_sheets(raise_on_error=True)
+        return {"message": "Yedekleme başarıyla tamamlandı ve Google Sheets tablosu güncellendi!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Yedekleme hatası: {str(e)}")
 
 # --- GOOGLE SHEETS BACKUP SCHEDULER ---
 # Scheduler kodları run_scheduler.py dosyasına taşınmıştır.

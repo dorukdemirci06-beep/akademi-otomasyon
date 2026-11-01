@@ -169,10 +169,10 @@ export default function Ayarlar({ showToast, user }) {
   const handleManualBackup = async () => {
     setLoading(true);
     try {
-      await triggerManualBackup();
-      showToast('Yedekleme işlemi arka planda başlatıldı. Birkaç dakika içinde Sheets üzerinde görebilirsiniz.', 'success');
+      const res = await triggerManualBackup();
+      showToast(res.data?.message || 'Yedekleme başarıyla tamamlandı ve Google Sheets tablosu güncellendi!', 'success');
     } catch (err) {
-      showToast('Yedekleme başlatılırken hata oluştu.', 'error');
+      showToast(err.response?.data?.detail || 'Yedekleme sırasında hata oluştu.', 'error');
     } finally {
       setLoading(false);
     }
