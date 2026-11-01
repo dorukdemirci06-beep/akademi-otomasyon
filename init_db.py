@@ -51,6 +51,13 @@ def auto_migrate():
             conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS sinif_adi VARCHAR;"))
             conn.execute(text("ALTER TABLE odemeler ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))
             conn.execute(text("UPDATE odemeler SET akademi_adi = ogrenciler.akademi_adi FROM ogrenciler WHERE odemeler.ogrenci_id = ogrenciler.id AND odemeler.akademi_adi IS DISTINCT FROM ogrenciler.akademi_adi;"))
+            conn.execute(text("""
+                INSERT INTO odemeler (ogrenci_id, tutar, tarih, odeme_yontemi, odeme_turu, durum, odeme_periyodu, taksit_sayisi, taksit_no, aciklama, akademi_adi)
+                SELECT o.id, o.bakiye, COALESCE(o.kayit_tarihi, NOW()), 'Nakit', 'Kurs Ücreti', 'Ödendi', 'Aylık', 1, 1, 'Kurs Ücreti Tahsilatı', COALESCE(o.akademi_adi, 'Test1')
+                FROM ogrenciler o
+                WHERE o.bakiye > 0
+                  AND NOT EXISTS (SELECT 1 FROM odemeler od WHERE od.ogrenci_id = o.id);
+            """))
             
             conn.execute(text("ALTER TABLE yoklamalar ADD COLUMN IF NOT EXISTS aciklama VARCHAR;"))
             conn.execute(text("ALTER TABLE yoklamalar ADD COLUMN IF NOT EXISTS akademi_adi VARCHAR DEFAULT 'Test1';"))

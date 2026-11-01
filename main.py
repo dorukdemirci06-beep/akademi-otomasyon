@@ -172,9 +172,30 @@ def ensure_schema_columns():
             conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS ogretmen_adi VARCHAR;"))
             conn.execute(text("ALTER TABLE siniflar ADD COLUMN IF NOT EXISTS derslik_id INTEGER;"))
             conn.execute(text("UPDATE odemeler SET akademi_adi = ogrenciler.akademi_adi FROM ogrenciler WHERE odemeler.ogrenci_id = ogrenciler.id AND odemeler.akademi_adi IS DISTINCT FROM ogrenciler.akademi_adi;"))
+            conn.execute(text("""
+                INSERT INTO odemeler (ogrenci_id, tutar, tarih, odeme_yontemi, odeme_turu, durum, odeme_periyodu, taksit_sayisi, taksit_no, aciklama, akademi_adi)
+                SELECT o.id, o.bakiye, COALESCE(o.kayit_tarihi, NOW()), 'Nakit', 'Kurs Ücreti', 'Ödendi', 'Aylık', 1, 1, 'Kurs Ücreti Tahsilatı', COALESCE(o.akademi_adi, 'Test1')
+                FROM ogrenciler o
+                WHERE o.bakiye > 0
+                  AND NOT EXISTS (SELECT 1 FROM odemeler od WHERE od.ogrenci_id = o.id);
+            """))
             conn.commit()
     except Exception as e:
         app_logger.warning(f"Startup schema check warning: {e}")
+
+
+def get_effective_student_phone(ogrenci: models.Ogrenci) -> Optional[str]:
+    if not ogrenci:
+        return None
+    birincil = (getattr(ogrenci, "birincil_veli", None) or "Kendisi").strip()
+    if birincil == "Anne" and ogrenci.anne_telefon and ogrenci.anne_telefon.strip():
+        return ogrenci.anne_telefon.strip()
+    if birincil == "Baba" and ogrenci.baba_telefon and ogrenci.baba_telefon.strip():
+        return ogrenci.baba_telefon.strip()
+    for tel in (ogrenci.telefon, ogrenci.anne_telefon, ogrenci.baba_telefon):
+        if tel and tel.strip():
+            return tel.strip()
+    return None
 
 dist_path = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 assets_path = os.path.join(dist_path, "assets")
@@ -315,7 +336,8 @@ def create_ogrenci(
             db.rollback()
 
     # 2. Kurumun "msg_kayit" şablonu varsa ve açıksa whatsapp mesajı gönder
-    if yeni_ogrenci.telefon:
+    iletisim_tel = get_effective_student_phone(yeni_ogrenci)
+    if iletisim_tel:
         akademi_record = db.query(models.Akademi).filter(models.Akademi.name == (current_user.akademi_adi or "Test1")).first()
         if akademi_record and akademi_record.msg_kayit and akademi_record.is_msg_kayit_active:
             try:
@@ -327,7 +349,7 @@ def create_ogrenci(
                 )
                 background_tasks.add_task(
                     send_whatsapp_message, 
-                    yeni_ogrenci.telefon, 
+                    iletisim_tel, 
                     mesaj,
                     akademi_record.whatsapp_provider,
                     akademi_record.whatsapp_api_key,
@@ -355,11 +377,6 @@ def update_ogrenci(
         raise HTTPException(status_code=404, detail="Öğrenci bulunamadı")
 
     update_data = ogrenci_update.model_dump(exclude_unset=True)
-    
-
-            
-
-
     for key, value in update_data.items():
         setattr(ogrenci, key, value)
         
@@ -384,26 +401,6 @@ def get_ogrenciler(
         query = query.filter(models.Ogrenci.durum == durum)
     ogrenciler = query.all()
     return [schemas.OgrenciResponse.model_validate(o) for o in ogrenciler]
-
-
-@app.put("/ogrenciler/{ogrenci_id}", response_model=schemas.OgrenciResponse)
-def update_ogrenci(
-    ogrenci_id: int,
-    ogrenci_data: schemas.OgrenciUpdate,
-    db: Session = Depends(get_db),
-    current_user: models.Kullanici = Depends(get_current_user)
-):
-    ogrenci = db.query(models.Ogrenci).filter(models.Ogrenci.id == ogrenci_id).first()
-    if not ogrenci or (ogrenci.akademi_adi != current_user.akademi_adi):
-        raise HTTPException(status_code=404, detail="Öğrenci bulunamadı")
-    
-    update_data = ogrenci_data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(ogrenci, key, value)
-        
-    db.commit()
-    db.refresh(ogrenci)
-    return ogrenci
 
 
 @app.put("/ogrenciler/{ogrenci_id}/durum", response_model=schemas.OgrenciResponse)
@@ -1528,7 +1525,6 @@ def get_pending_automations(
 
     aktif_ogrenciler = db.query(models.Ogrenci).filter(
         models.Ogrenci.durum == "Aktif",
-        models.Ogrenci.telefon != None,
         models.Ogrenci.akademi_adi == current_user.akademi_adi
     ).all()
 
@@ -1536,6 +1532,9 @@ def get_pending_automations(
     
     # 1. Doğum Günü ve Özel Gün
     for ogrenci in aktif_ogrenciler:
+        iletisim_tel = get_effective_student_phone(ogrenci)
+        if not iletisim_tel:
+            continue
         if ogrenci.dogum_tarihi and akademi.msg_dogum_gunu and akademi.is_msg_dogum_gunu_active:
             try:
                 dt_parts = ogrenci.dogum_tarihi.split("-")
@@ -1546,7 +1545,7 @@ def get_pending_automations(
                         pending_messages.append({
                             "id": ogrenci.id,
                             "isim": f"{ogrenci.isim} {ogrenci.soyisim}",
-                            "phone": ogrenci.telefon,
+                            "phone": iletisim_tel,
                             "message": d_mesaj,
                             "tur": "dogum_gunu"
                         })
@@ -1559,7 +1558,7 @@ def get_pending_automations(
                 pending_messages.append({
                     "id": ogrenci.id,
                     "isim": f"{ogrenci.isim} {ogrenci.soyisim}",
-                    "phone": ogrenci.telefon,
+                    "phone": iletisim_tel,
                     "message": o_mesaj,
                     "tur": "ozel_gun"
                 })
@@ -1583,7 +1582,8 @@ def get_pending_automations(
             continue
             
         ogrenci = db.query(models.Ogrenci).filter(models.Ogrenci.id == odeme.ogrenci_id).first()
-        if not ogrenci or not ogrenci.telefon or ogrenci.durum != "Aktif":
+        iletisim_tel = get_effective_student_phone(ogrenci) if ogrenci else None
+        if not ogrenci or not iletisim_tel or ogrenci.durum != "Aktif":
             continue
             
         try:
@@ -1597,7 +1597,7 @@ def get_pending_automations(
             pending_messages.append({
                 "id": ogrenci.id,
                 "isim": f"{ogrenci.isim} {ogrenci.soyisim}",
-                "phone": ogrenci.telefon,
+                "phone": iletisim_tel,
                 "message": mesaj,
                 "tur": "odeme_hatirlatma"
             })
@@ -1618,7 +1618,8 @@ def get_pending_automations(
         ogrenci_siniflar = db.query(models.OgrenciSinif).filter(models.OgrenciSinif.sinif_id == ders.sinif_id).all()
         for os_relation in ogrenci_siniflar:
             ogrenci = os_relation.ogrenci
-            if ogrenci and ogrenci.telefon and ogrenci.durum == "Aktif":
+            iletisim_tel = get_effective_student_phone(ogrenci) if ogrenci else None
+            if ogrenci and iletisim_tel and ogrenci.durum == "Aktif":
                 ders_adi = ders.ders_adi or "Ders"
                 if akademi.msg_ders_hatirlatma and akademi.is_msg_ders_hatirlatma_active:
                     try:
@@ -1632,7 +1633,7 @@ def get_pending_automations(
                         pending_messages.append({
                             "id": ogrenci.id,
                             "isim": f"{ogrenci.isim} {ogrenci.soyisim}",
-                            "phone": ogrenci.telefon,
+                            "phone": iletisim_tel,
                             "message": mesaj,
                             "tur": "ders_hatirlatma"
                         })
@@ -2859,10 +2860,21 @@ def sezon_sonu_devri(
             } for od in odemeler
         ], 
         "siniflar": [
-            {"id": s.id, "sinif_adi": s.sinif_adi} for s in siniflar
+            {
+                "id": s.id,
+                "sinif_adi": s.sinif_adi,
+                "kapasite": getattr(s, "kapasite", 20),
+                "ogretmen_adi": getattr(s, "ogretmen_adi", None),
+                "derslik_id": getattr(s, "derslik_id", None),
+                "derslik_adi": getattr(s.derslik, "ad", None) if getattr(s, "derslik", None) else None,
+            } for s in siniflar
         ],
         "ogrenci_siniflar": [
-            {"ogrenci_id": osin.ogrenci_id, "sinif_id": osin.sinif_id} for osin in ogrenci_siniflar
+            {
+                "ogrenci_id": osin.ogrenci_id,
+                "sinif_id": osin.sinif_id,
+                "kalan_ders_hakki": getattr(osin, "kalan_ders_hakki", 0),
+            } for osin in ogrenci_siniflar
         ],
         "yoklamalar": [
             {
@@ -2963,24 +2975,29 @@ from datetime import datetime
 
 def safe_parse_date(date_str):
     if not date_str or str(date_str) == "None":
-        return None
+        return datetime.now()
+    s = str(date_str).strip()
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s.split(".")[0], fmt)
+        except Exception:
+            pass
     try:
-        # e.g. "2024-03-24"
-        return datetime.strptime(str(date_str).split(" ")[0], "%Y-%m-%d").date()
+        return datetime.strptime(s.split(" ")[0], "%Y-%m-%d")
     except Exception:
-        return None
+        return datetime.now()
 
 def safe_parse_time(time_str):
     if not time_str or str(time_str) == "None":
-        return None
+        return "09:00"
     try:
-        # e.g. "12:30:00" or "12:30"
-        time_part = str(time_str).split(" ")[0]
-        if len(time_part.split(":")) == 2:
-            time_part += ":00"
-        return datetime.strptime(time_part, "%H:%M:%S").time()
+        time_part = str(time_str).strip().split(" ")[0]
+        parts = time_part.split(":")
+        if len(parts) >= 2:
+            return f"{int(parts[0]):02d}:{int(parts[1]):02d}"
+        return time_part
     except Exception:
-        return None
+        return "09:00"
 
 @app.post("/api/arsiv/geri-al/{arsiv_id}")
 def sezon_geri_al(
@@ -3026,13 +3043,23 @@ def sezon_geri_al(
     for mo in mevcut_ogrenciler:
         if mo.id in ogrenci_bakiye_map:
             mo.bakiye = ogrenci_bakiye_map[mo.id]
+
+    mevcut_derslikler = db.query(models.Derslik).filter(models.Derslik.akademi_adi == akademi_adi).all()
+    derslik_map = {d.ad: d.id for d in mevcut_derslikler}
+    derslik_ids_set = {d.id for d in mevcut_derslikler}
             
     # 3. Sınıfları oluştur ve ID mapping yap
     sinif_id_map = {} # old_id -> new_id
     for s_data in dump_data.get("siniflar", []):
+        s_derslik_id = s_data.get("derslik_id")
+        if s_derslik_id not in derslik_ids_set:
+            s_derslik_id = derslik_map.get(s_data.get("derslik_adi")) if s_data.get("derslik_adi") else None
         yeni_sinif = models.Sinif(
             akademi_adi=akademi_adi,
-            sinif_adi=s_data["sinif_adi"]
+            sinif_adi=s_data["sinif_adi"],
+            kapasite=s_data.get("kapasite", 20),
+            ogretmen_adi=s_data.get("ogretmen_adi"),
+            derslik_id=s_derslik_id
         )
         db.add(yeni_sinif)
         db.flush() # ID'yi alabilmek için
@@ -3043,7 +3070,8 @@ def sezon_geri_al(
         if os_data["sinif_id"] in sinif_id_map:
             yeni_os = models.OgrenciSinif(
                 ogrenci_id=os_data["ogrenci_id"],
-                sinif_id=sinif_id_map[os_data["sinif_id"]]
+                sinif_id=sinif_id_map[os_data["sinif_id"]],
+                kalan_ders_hakki=os_data.get("kalan_ders_hakki", 0)
             )
             db.add(yeni_os)
             
@@ -3079,15 +3107,12 @@ def sezon_geri_al(
             db.add(yeni_y)
             
     # 7. Ders programlarını yükle
-    mevcut_derslikler = db.query(models.Derslik).filter(models.Derslik.akademi_adi == akademi_adi).all()
-    derslik_map = {d.ad: d.id for d in mevcut_derslikler}
-
     for dp_data in dump_data.get("ders_programlari", []):
         if dp_data["sinif_id"] in sinif_id_map:
             # Derslik ID'sini isminden veya direkt id'den bul (gelecekteki devirler için derslik_id'yi de destekler)
             d_id = dp_data.get("derslik_id")
-            if not d_id and dp_data.get("derslik_adi"):
-                d_id = derslik_map.get(dp_data.get("derslik_adi"))
+            if d_id not in derslik_ids_set:
+                d_id = derslik_map.get(dp_data.get("derslik_adi")) if dp_data.get("derslik_adi") else None
 
             yeni_dp = models.DersProgrami(
                 sinif_id=sinif_id_map[dp_data["sinif_id"]],
