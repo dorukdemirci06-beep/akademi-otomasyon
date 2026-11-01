@@ -231,6 +231,7 @@ const OnKayit = () => {
  sinif_adi: '',
  bakiye: 0.0,
  dogum_tarihi: '',
+ birincil_veli: 'Kendisi',
  anne_isim: '',
  anne_tc: '',
  anne_telefon: '',
@@ -1459,6 +1460,30 @@ const OnKayit = () => {
  </div>
  </div>
 
+ </div>
+
+ {/* 3. İletişim Kurulacak Kişi / Birincil Veli */}
+ <div className="p-4 neo-card rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+ <h3 className="text-[13px] font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-1.5">
+ <MessageCircle className="w-3.5 h-3.5 text-[#2eb82e]" />
+ <span>3. İletişim Kurulacak Kişi (Birincil Veli)</span>
+ </h3>
+ <div className="flex bg-slate-100/80 dark:bg-slate-900/40 p-1 rounded-full w-fit gap-0.5">
+ {['Kendisi', 'Anne', 'Baba'].map(option => (
+ <button
+ key={option}
+ type="button"
+ onClick={() => handleConvertInputChange({ target: { name: 'birincil_veli', value: option } })}
+ className={`px-6 py-1.5 rounded-lg text-[13px] font-bold transition-all duration-200 cursor-pointer ${
+ (convertFormData.birincil_veli || 'Kendisi') === option 
+ ? 'bg-white dark:bg-slate-800 text-[#2eb82e] shadow-sm ring-1 ring-slate-200/50 dark:ring-slate-700/50' 
+ : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/30'
+ }`}
+ >
+ {option}
+ </button>
+ ))}
+ </div>
  </div>
 
  {/* Modal Buttons */}
