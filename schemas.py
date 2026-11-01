@@ -76,6 +76,8 @@ class OgrenciUpdate(BaseModel):
     telefon: Optional[str] = None
     eposta: Optional[str] = None
     adres: Optional[str] = None
+    dogum_tarihi: Optional[str] = None
+    durum: Optional[str] = None
     
     anne_isim: Optional[str] = None
     anne_tc: Optional[str] = None

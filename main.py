@@ -216,10 +216,14 @@ def create_ogrenci(
     baba_meslek = ogrenci.baba_meslek.strip() if ogrenci.baba_meslek and ogrenci.baba_meslek.strip() else None
 
     # Sınıf kontrolü (seçilen var olan sınıfı veritabanında bul)
+    aktif_akademi = current_user.akademi_adi or "Test1"
     sinif_adi = ogrenci.sinif_adi.strip() if ogrenci.sinif_adi and ogrenci.sinif_adi.strip() else None
     db_sinif = None
     if sinif_adi:
-        db_sinif = db.query(models.Sinif).filter(models.Sinif.sinif_adi == sinif_adi).first()
+        db_sinif = db.query(models.Sinif).filter(
+            models.Sinif.sinif_adi == sinif_adi,
+            models.Sinif.akademi_adi == aktif_akademi
+        ).first()
 
 
     # Yeni öğrenci nesnesini oluştur ve ekle
@@ -240,10 +244,11 @@ def create_ogrenci(
         baba_telefon=baba_telefon,
         baba_eposta=baba_eposta,
         baba_meslek=baba_meslek,
+        birincil_veli=ogrenci.birincil_veli or "Kendisi",
         dogum_tarihi=dogum_tarihi,
         bakiye=ogrenci.bakiye,
         durum=ogrenci.durum or "Aktif",
-        akademi_adi=current_user.akademi_adi or "Test1"
+        akademi_adi=aktif_akademi
     )
     db.add(yeni_ogrenci)
     try:
@@ -483,9 +488,13 @@ def kaydet_ogrenci_sinif(
             raise HTTPException(status_code=404, detail="Belirtilen sınıf ID bulunamadı.")
     elif data.sinif_adi and data.sinif_adi.strip():
         sinif_name = data.sinif_adi.strip()
-        db_sinif = db.query(models.Sinif).filter(models.Sinif.sinif_adi == sinif_name).first()
+        aktif_akademi = current_user.akademi_adi or ogrenci.akademi_adi or "Test1"
+        db_sinif = db.query(models.Sinif).filter(
+            models.Sinif.sinif_adi == sinif_name,
+            models.Sinif.akademi_adi == aktif_akademi
+        ).first()
         if not db_sinif:
-            db_sinif = models.Sinif(sinif_adi=sinif_name, kapasite=20)
+            db_sinif = models.Sinif(sinif_adi=sinif_name, kapasite=20, akademi_adi=aktif_akademi)
             db.add(db_sinif)
             db.commit()
             db.refresh(db_sinif)
@@ -1112,12 +1121,13 @@ def create_on_kayit(
     yeni_kayit = models.OnKayit(
         ogrenci_adi=on_kayit.ogrenci_adi.strip(),
         ogrenci_soyadi=on_kayit.ogrenci_soyadi.strip(),
-        veli_adi=on_kayit.veli_adi.strip() if on_kayit.veli_adi else None,
-        veli_soyadi=on_kayit.veli_soyadi.strip() if on_kayit.veli_soyadi else None,
-        veli_meslek=on_kayit.veli_meslek.strip() if on_kayit.veli_meslek else None,
-        telefon=on_kayit.telefon.strip() if on_kayit.telefon else None,
-        ilgilenilen_brans=on_kayit.ilgilenilen_brans.strip() if on_kayit.ilgilenilen_brans else None,
-        notlar=on_kayit.notlar.strip() if on_kayit.notlar else None,
+        veli_adi=on_kayit.veli_adi.strip() if on_kayit.veli_adi and on_kayit.veli_adi.strip() else None,
+        veli_soyadi=on_kayit.veli_soyadi.strip() if on_kayit.veli_soyadi and on_kayit.veli_soyadi.strip() else None,
+        veli_meslek=on_kayit.veli_meslek.strip() if on_kayit.veli_meslek and on_kayit.veli_meslek.strip() else None,
+        telefon=on_kayit.telefon.strip() if on_kayit.telefon and on_kayit.telefon.strip() else None,
+        ilgilenilen_brans=on_kayit.ilgilenilen_brans.strip() if on_kayit.ilgilenilen_brans and on_kayit.ilgilenilen_brans.strip() else None,
+        notlar=on_kayit.notlar.strip() if on_kayit.notlar and on_kayit.notlar.strip() else None,
+        dogum_tarihi=on_kayit.dogum_tarihi.strip() if on_kayit.dogum_tarihi and on_kayit.dogum_tarihi.strip() else None,
         durum=on_kayit.durum if on_kayit.durum else "Aranacak",
         akademi_adi=current_user.akademi_adi or "Test1"
     )
@@ -1134,31 +1144,14 @@ def update_on_kayit(
     current_user: models.Kullanici = Depends(get_current_user)
 ):
     kayit = db.query(models.OnKayit).filter(models.OnKayit.id == kayit_id).first()
-    if not kayit or (kayit.akademi_adi != current_user.akademi_adi):
+    if not kayit or (current_user.akademi_adi and kayit.akademi_adi != current_user.akademi_adi):
         raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
     
     update_data = on_kayit_data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
-        setattr(kayit, key, value)
-        
-    db.commit()
-    db.refresh(kayit)
-    return kayit
-
-
-@app.put("/on-kayitlar/{kayit_id}", response_model=schemas.OnKayitResponse)
-def update_on_kayit(
-    kayit_id: int,
-    on_kayit_data: schemas.OnKayitUpdate,
-    db: Session = Depends(get_db),
-    current_user: models.Kullanici = Depends(get_current_user)
-):
-    kayit = db.query(models.OnKayit).filter(models.OnKayit.id == kayit_id).first()
-    if not kayit or (kayit.akademi_adi != current_user.akademi_adi):
-        raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
-    
-    update_data = on_kayit_data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
+        if isinstance(value, str):
+            cleaned = value.strip()
+            value = cleaned if (cleaned or key in ("ogrenci_adi", "ogrenci_soyadi", "durum")) else None
         setattr(kayit, key, value)
         
     db.commit()
@@ -1173,7 +1166,7 @@ def update_on_kayit_durum(
     current_user: models.Kullanici = Depends(get_current_user)
 ):
     kayit = db.query(models.OnKayit).filter(models.OnKayit.id == kayit_id).first()
-    if not kayit:
+    if not kayit or (current_user.akademi_adi and kayit.akademi_adi != current_user.akademi_adi):
         raise HTTPException(status_code=404, detail="Ön kayıt bulunamadı.")
     
     kayit.durum = durum_data.durum
@@ -1189,7 +1182,7 @@ def delete_on_kayit(
     current_user: models.Kullanici = Depends(get_current_user)
 ):
     kayit = db.query(models.OnKayit).filter(models.OnKayit.id == kayit_id).first()
-    if not kayit:
+    if not kayit or (current_user.akademi_adi and kayit.akademi_adi != current_user.akademi_adi):
         raise HTTPException(status_code=404, detail="Ön kayıt bulunamadı.")
     db.delete(kayit)
     db.commit()

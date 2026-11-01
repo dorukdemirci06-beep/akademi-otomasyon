@@ -365,6 +365,10 @@ const OnKayit = () => {
  const veliTamIsim = `${item.veli_adi || ''} ${item.veli_soyadi || ''}`.trim();
  const defaultVeliTuru = 'anne'; // Varsayılan olarak anne seçili gelsin
  setVeliTuru(defaultVeliTuru);
+ const rawBrans = (item.ilgilenilen_brans || '').trim();
+ const matchedSinif = siniflar.find(
+   s => (s.sinif_adi || '').trim().toLowerCase() === rawBrans.toLowerCase()
+ );
 
  setConvertFormData({
  isim: item.ogrenci_adi || '',
@@ -373,9 +377,10 @@ const OnKayit = () => {
  telefon: item.telefon || '',
  eposta: '',
  adres: '',
- sinif_adi: item.ilgilenilen_brans || '',
+ sinif_adi: matchedSinif ? matchedSinif.sinif_adi : '',
  bakiye: 0.0,
  dogum_tarihi: item.dogum_tarihi || '',
+ birincil_veli: veliTamIsim ? 'Anne' : 'Kendisi',
  // Veli türü Anne ise anneye işleyelim
  anne_isim: veliTamIsim,
  anne_tc: '',
@@ -403,6 +408,7 @@ const OnKayit = () => {
  if (yeniTuru === 'anne') {
  setConvertFormData((prev) => ({
  ...prev,
+ birincil_veli: 'Anne',
  anne_isim: prev.anne_isim || veliTamIsim,
  anne_telefon: prev.anne_telefon || tel,
  anne_meslek: prev.anne_meslek || meslek,
@@ -414,6 +420,7 @@ const OnKayit = () => {
  } else {
  setConvertFormData((prev) => ({
  ...prev,
+ birincil_veli: 'Baba',
  baba_isim: prev.baba_isim || veliTamIsim,
  baba_telefon: prev.baba_telefon || tel,
  baba_meslek: prev.baba_meslek || meslek,
@@ -902,8 +909,13 @@ const OnKayit = () => {
 
  {/* Veli */}
  <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
- {item.veli_adi || item.veli_soyadi ? (
- <span>{item.veli_adi} {item.veli_soyadi}</span>
+ {item.veli_adi || item.veli_soyadi || item.veli_meslek ? (
+ <div>
+ <div>{item.veli_adi || item.veli_soyadi ? `${item.veli_adi || ''} ${item.veli_soyadi || ''}`.trim() : '-'}</div>
+ {item.veli_meslek && (
+ <div className="text-[10px] text-slate-500 font-medium mt-0.5">{item.veli_meslek}</div>
+ )}
+ </div>
  ) : (
  <span className="text-slate-500 italic text-xs">-</span>
  )}
@@ -1470,6 +1482,10 @@ const OnKayit = () => {
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İletişim Telefonu</label>
  <input type="text" name="telefon" value={editFormData.telefon || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Veli Mesleği</label>
+ <input type="text" name="veli_meslek" value={editFormData.veli_meslek || ''} onChange={handleEditInputChange} placeholder="Örn: Öğretmen / Mühendis" className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div className={isEditCustomBrans ? "md:col-span-2" : ""}>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İlgilenilen Branş</label>

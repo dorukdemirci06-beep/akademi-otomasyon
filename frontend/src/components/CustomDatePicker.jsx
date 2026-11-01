@@ -264,6 +264,11 @@ const CustomDatePicker = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   setViewDate(new Date(viewYear, idx, 1));
+                  if (selectedDate) {
+                    const maxDay = new Date(viewYear, idx + 1, 0).getDate();
+                    const clampedDay = Math.min(selectedDate.getDate(), maxDay);
+                    onChange(formatDateToYYYYMMDD(new Date(viewYear, idx, clampedDay)));
+                  }
                   setOpenDropdown(null);
                 }}
                 className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-emerald-500/20 ${viewMonth === idx ? 'active-month text-emerald-400 font-bold bg-emerald-500/10' : 'text-slate-300'}`}
@@ -295,6 +300,11 @@ const CustomDatePicker = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   setViewDate(new Date(yil, viewMonth, 1));
+                  if (selectedDate) {
+                    const maxDay = new Date(yil, viewMonth + 1, 0).getDate();
+                    const clampedDay = Math.min(selectedDate.getDate(), maxDay);
+                    onChange(formatDateToYYYYMMDD(new Date(yil, viewMonth, clampedDay)));
+                  }
                   setOpenDropdown(null);
                 }}
                 className={`w-full text-left px-4 py-2 text-sm transition-colors hover:bg-emerald-500/20 ${viewYear === yil ? 'active-year text-emerald-400 font-bold bg-emerald-500/10' : 'text-slate-300'}`}
