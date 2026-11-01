@@ -86,6 +86,7 @@ const OnKayit = () => {
  const [formData, setFormData] = useState({
  ogrenci_adi: '',
  ogrenci_soyadi: '',
+ ogrenci_meslek: '',
  veli_adi: '',
  veli_soyadi: '',
  veli_meslek: '',
@@ -223,6 +224,7 @@ const OnKayit = () => {
  isim: '',
  soyisim: '',
  tc: '',
+ meslek: '',
  telefon: '',
  eposta: '',
  adres: '',
@@ -298,6 +300,7 @@ const OnKayit = () => {
  setFormData({
  ogrenci_adi: '',
  ogrenci_soyadi: '',
+ ogrenci_meslek: '',
  veli_adi: '',
  veli_soyadi: '',
  veli_meslek: '',
@@ -374,6 +377,7 @@ const OnKayit = () => {
  isim: item.ogrenci_adi || '',
  soyisim: item.ogrenci_soyadi || '',
  tc: '',
+ meslek: item.ogrenci_meslek || '',
  telefon: item.telefon || '',
  eposta: '',
  adres: '',
@@ -474,8 +478,10 @@ const OnKayit = () => {
  !search ||
  k.ogrenci_adi?.toLowerCase().includes(search) ||
  k.ogrenci_soyadi?.toLowerCase().includes(search) ||
+ k.ogrenci_meslek?.toLowerCase().includes(search) ||
  k.veli_adi?.toLowerCase().includes(search) ||
  k.veli_soyadi?.toLowerCase().includes(search) ||
+ k.veli_meslek?.toLowerCase().includes(search) ||
  k.telefon?.toLowerCase().includes(search) ||
  k.ilgilenilen_brans?.toLowerCase().includes(search);
 
@@ -665,6 +671,22 @@ const OnKayit = () => {
    onChange={(val) => handleInputChange({ target: { name: 'dogum_tarihi', value: val } })}
    placeholder="Doğum tarihi seçin"
  />
+ </div>
+
+ {/* Öğrenci Mesleği (Yetişkin ise) */}
+ <div>
+ <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Öğrenci Mesleği (Yetişkin ise)</label>
+ <div className="relative">
+ <User className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+ <input
+ type="text"
+ name="ogrenci_meslek"
+ value={formData.ogrenci_meslek}
+ onChange={handleInputChange}
+ placeholder="Örn: Mimar, Üniversite Öğr..."
+ className="w-full rounded-full pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-[#2eb82e] focus:ring-1 focus:ring-[#2eb82e] transition-all neo-input"
+ />
+ </div>
  </div>
 
  {/* Telefon */}
@@ -874,6 +896,7 @@ const OnKayit = () => {
  <tr className="border-b text-[11px] font-bold text-slate-400 tracking-wider">
  <th className="py-3 px-4 rounded-l-xl">ÖĞRENCİ BİLGİSİ</th>
  <th className="py-3 px-4">VELİ BİLGİSİ</th>
+ <th className="py-3 px-4">MESLEK (ÖĞRENCİ / VELİ)</th>
  <th className="py-3 px-4">İLETİŞİM</th>
  <th className="py-3 px-4">İLGİLENİLEN BRANŞ</th>
  <th className="py-3 px-4">NOTLAR</th>
@@ -903,17 +926,33 @@ const OnKayit = () => {
  Doğum: {new Date(item.dogum_tarihi).toLocaleDateString('tr-TR')}
  </div>
  )}
+ {item.ogrenci_meslek && (
+ <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+ Meslek: {item.ogrenci_meslek}
+ </div>
+ )}
  </div>
  </div>
  </td>
 
  {/* Veli */}
  <td className="py-3.5 px-4 text-slate-700 dark:text-slate-300">
- {item.veli_adi || item.veli_soyadi || item.veli_meslek ? (
- <div>
- <div>{item.veli_adi || item.veli_soyadi ? `${item.veli_adi || ''} ${item.veli_soyadi || ''}`.trim() : '-'}</div>
+ {item.veli_adi || item.veli_soyadi ? (
+ <div>{`${item.veli_adi || ''} ${item.veli_soyadi || ''}`.trim()}</div>
+ ) : (
+ <span className="text-slate-500 italic text-xs">-</span>
+ )}
+ </td>
+
+ {/* Meslek (Öğrenci / Veli) */}
+ <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300">
+ {item.ogrenci_meslek || item.veli_meslek ? (
+ <div className="space-y-0.5">
+ {item.ogrenci_meslek && (
+ <div><span className="font-semibold text-emerald-600 dark:text-emerald-400">Öğrenci:</span> {item.ogrenci_meslek}</div>
+ )}
  {item.veli_meslek && (
- <div className="text-[10px] text-slate-500 font-medium mt-0.5">{item.veli_meslek}</div>
+ <div><span className="font-semibold text-sky-600 dark:text-sky-400">Veli:</span> {item.veli_meslek}</div>
  )}
  </div>
  ) : (
@@ -1033,10 +1072,22 @@ const OnKayit = () => {
  <span>{new Date(item.dogum_tarihi).toLocaleDateString('tr-TR')}</span>
  </div>
  )}
+             {item.ogrenci_meslek && (
+               <div className="flex justify-between items-center">
+                 <span className="font-semibold">Öğrenci Mesleği:</span>
+                 <span>{item.ogrenci_meslek}</span>
+               </div>
+             )}
              <div className="flex justify-between items-center">
                 <span className="font-semibold">Veli:</span>
                 <span>{item.veli_adi || item.veli_soyadi ? `${item.veli_adi} ${item.veli_soyadi}` : '-'}</span>
              </div>
+             {item.veli_meslek && (
+               <div className="flex justify-between items-center">
+                 <span className="font-semibold">Veli Mesleği:</span>
+                 <span>{item.veli_meslek}</span>
+               </div>
+             )}
              <div className="flex justify-between items-center">
                 <span className="font-semibold">Telefon:</span>
                 <div className="flex items-center gap-2">
@@ -1176,12 +1227,23 @@ const OnKayit = () => {
  />
  </div>
  
- <div className="sm:col-span-2">
+ <div>
  <CustomDatePicker
    label="Doğum Tarihi"
    value={convertFormData.dogum_tarihi}
    onChange={(val) => handleConvertInputChange({ target: { name: 'dogum_tarihi', value: val } })}
    placeholder="Doğum tarihi seçin"
+ />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Öğrenci Mesleği (Yetişkin ise)</label>
+ <input
+ type="text"
+ name="meslek"
+ value={convertFormData.meslek || ''}
+ onChange={handleConvertInputChange}
+ placeholder="Örn: Mimar, Üniversite Öğr..."
+ className="w-full px-3 py-2 neo-input w-full rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 focus:border-[#2eb82e] outline-none"
  />
  </div>
 
@@ -1464,10 +1526,6 @@ const OnKayit = () => {
  <input type="text" name="ogrenci_soyadi" value={editFormData.ogrenci_soyadi} onChange={handleEditInputChange} required className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div>
- <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Veli Adı</label>
- <input type="text" name="veli_adi" value={editFormData.veli_adi || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
- </div>
- <div>
  <CustomDatePicker
    label="Doğum Tarihi"
    value={editFormData.dogum_tarihi}
@@ -1476,16 +1534,24 @@ const OnKayit = () => {
  />
  </div>
  <div>
+ <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Öğrenci Mesleği (Yetişkin ise)</label>
+ <input type="text" name="ogrenci_meslek" value={editFormData.ogrenci_meslek || ''} onChange={handleEditInputChange} placeholder="Örn: Mimar, Üniversite Öğr..." className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Veli Adı</label>
+ <input type="text" name="veli_adi" value={editFormData.veli_adi || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ </div>
+ <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Veli Soyadı</label>
  <input type="text" name="veli_soyadi" value={editFormData.veli_soyadi || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div>
- <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İletişim Telefonu</label>
- <input type="text" name="telefon" value={editFormData.telefon || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
- </div>
- <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Veli Mesleği</label>
  <input type="text" name="veli_meslek" value={editFormData.veli_meslek || ''} onChange={handleEditInputChange} placeholder="Örn: Öğretmen / Mühendis" className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İletişim Telefonu</label>
+ <input type="text" name="telefon" value={editFormData.telefon || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
  <div className={isEditCustomBrans ? "md:col-span-2" : ""}>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İlgilenilen Branş</label>

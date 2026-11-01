@@ -31,6 +31,7 @@ class Ogrenci(Base):
     baba_meslek = Column(String, nullable=True)
     
     birincil_veli = Column(String, nullable=True, default="Kendisi")
+    meslek = Column(String, nullable=True) # Yetişkin öğrenci mesleği
     
     dogum_tarihi = Column(String, nullable=True) # YYYY-MM-DD
 
@@ -159,6 +160,7 @@ class OnKayit(Base):
     id = Column(Integer, primary_key=True, index=True)
     ogrenci_adi = Column(String, nullable=False)
     ogrenci_soyadi = Column(String, nullable=False)
+    ogrenci_meslek = Column(String, nullable=True)
     veli_adi = Column(String, nullable=True)
     veli_soyadi = Column(String, nullable=True)
     veli_meslek = Column(String, nullable=True)
@@ -268,4 +270,4 @@ class SezonArsivi(Base):
     akademi_adi = Column(String, nullable=False, index=True)
     sezon_adi = Column(String, nullable=False) # Örn: "2023-2024"
     veri_dump = Column(String, nullable=False) # JSON payload
-    olusturulma_tarihi = Column(DateTime, default=datetime.utcnow)
+    olusturulma_tarihi = Column(DateTime, default=datetime.utcnow)

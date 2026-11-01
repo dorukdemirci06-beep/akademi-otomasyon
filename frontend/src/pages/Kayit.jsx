@@ -85,6 +85,7 @@ const Kayit = () => {
  soyisim: '',
  tc: '',
  dogum_tarihi: '',
+ meslek: '',
  telefon: '',
  eposta: '',
  adres: '',
@@ -174,7 +175,7 @@ const Kayit = () => {
  setIsEditing(false);
  setEditId(null);
  setFormData({
- isim: '', soyisim: '', tc: '', dogum_tarihi: '', telefon: '', eposta: '', adres: '',
+ isim: '', soyisim: '', tc: '', dogum_tarihi: '', meslek: '', telefon: '', eposta: '', adres: '',
  sinif_adi: '',
     bakiye: 0.0,
     birincil_veli: 'Kendisi', anne_isim: '', anne_tc: '', anne_telefon: '',
@@ -188,7 +189,7 @@ const Kayit = () => {
  setIsEditing(false);
  setEditId(null);
  setFormData({
- isim: '', soyisim: '', tc: '', dogum_tarihi: '', telefon: '', eposta: '', adres: '',
+ isim: '', soyisim: '', tc: '', dogum_tarihi: '', meslek: '', telefon: '', eposta: '', adres: '',
  sinif_adi: '',
     bakiye: 0.0,
     birincil_veli: 'Kendisi', anne_isim: '', anne_tc: '', anne_telefon: '',
@@ -205,7 +206,7 @@ const Kayit = () => {
  const handleEditOgrenci = (ogrenci) => {
  setFormData({
  isim: ogrenci.isim || '', soyisim: ogrenci.soyisim || '', tc: ogrenci.tc || '', dogum_tarihi: ogrenci.dogum_tarihi || '',
- telefon: ogrenci.telefon || '', eposta: ogrenci.eposta || '', adres: ogrenci.adres || '',
+ meslek: ogrenci.meslek || '', telefon: ogrenci.telefon || '', eposta: ogrenci.eposta || '', adres: ogrenci.adres || '',
  sinif_adi: ogrenci.sinif_adi || '',
       birincil_veli: ogrenci.birincil_veli || 'Kendisi', bakiye: ogrenci.bakiye || 0.0, 
  anne_isim: ogrenci.anne_isim || '', anne_tc: ogrenci.anne_tc || '', anne_telefon: ogrenci.anne_telefon || '',
@@ -331,7 +332,7 @@ const Kayit = () => {
  setIsEditing(false);
  setEditId(null);
  setFormData({
- isim: '', soyisim: '', tc: '', dogum_tarihi: '', telefon: '', eposta: '', adres: '',
+ isim: '', soyisim: '', tc: '', dogum_tarihi: '', meslek: '', telefon: '', eposta: '', adres: '',
  sinif_adi: '',
     bakiye: 0.0,
     birincil_veli: 'Kendisi', anne_isim: '', anne_tc: '', anne_telefon: '',
@@ -618,6 +619,7 @@ const Kayit = () => {
  <div className="space-y-1 text-slate-700 dark:text-slate-300">
  <div><strong className="text-slate-800 dark:text-slate-200">TC Kimlik:</strong> {o.tc || '-'}</div>
  <div><strong className="text-slate-800 dark:text-slate-200">Doğum Tarihi:</strong> {o.dogum_tarihi ? new Date(o.dogum_tarihi).toLocaleDateString('tr-TR') : '-'}</div>
+ <div><strong className="text-slate-800 dark:text-slate-200">Meslek:</strong> {o.meslek || '-'}</div>
  <div><strong className="text-slate-800 dark:text-slate-200">E-Posta:</strong> {o.eposta || '-'}</div>
  <div><strong className="text-slate-800 dark:text-slate-200">Telefon:</strong> {o.telefon || '-'}</div>
  <div><strong className="text-slate-800 dark:text-slate-200">Adres:</strong> {o.adres || '-'}</div>
@@ -776,6 +778,7 @@ const Kayit = () => {
                  <strong className="text-emerald-600 block border-b pb-1">Genel Bilgiler</strong>
                  <div className="flex justify-between"><span>TC:</span> <span className="font-bold">{o.tc || '-'}</span></div>
                  <div className="flex justify-between"><span>Doğum T:</span> <span className="font-bold">{o.dogum_tarihi ? new Date(o.dogum_tarihi).toLocaleDateString('tr-TR') : '-'}</span></div>
+                 <div className="flex justify-between"><span>Meslek:</span> <span className="font-bold">{o.meslek || '-'}</span></div>
                  <div className="flex justify-between"><span>E-Posta:</span> <span className="font-bold">{o.eposta || '-'}</span></div>
                </div>
 
@@ -872,6 +875,10 @@ const Kayit = () => {
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">E-Posta</label>
  <input type="text" name="eposta" value={formData.eposta} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="ahmet@gmail.com" />
+ </div>
+ <div>
+ <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Öğrenci Mesleği (Yetişkin ise)</label>
+ <input type="text" name="meslek" value={formData.meslek || ''} onChange={handleInputChange} className="neo-input w-full px-3 py-2 rounded-full text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-[#2eb82e] outline-none" placeholder="Örn: Mimar, Üniversite Öğr..." />
  </div>
  <div>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Branş / Sınıf Seçin</label>

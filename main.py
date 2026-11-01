@@ -157,10 +157,46 @@ def get_current_user(
     return user
 
 
+from fastapi.responses import FileResponse
+
+@app.on_event("startup")
+def ensure_schema_columns():
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS meslek VARCHAR;"))
+            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS dogum_tarihi VARCHAR;"))
+            conn.execute(text("ALTER TABLE ogrenciler ADD COLUMN IF NOT EXISTS birincil_veli VARCHAR DEFAULT 'Kendisi';"))
+            conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS ogrenci_meslek VARCHAR;"))
+            conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS veli_meslek VARCHAR;"))
+            conn.execute(text("ALTER TABLE on_kayitlar ADD COLUMN IF NOT EXISTS dogum_tarihi VARCHAR;"))
+            conn.commit()
+    except Exception as e:
+        app_logger.warning(f"Startup schema check warning: {e}")
+
 dist_path = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 assets_path = os.path.join(dist_path, "assets")
 if os.path.exists(assets_path):
     app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
+
+@app.get("/sw.js")
+@app.get("/registerSW.js")
+@app.get("/manifest.webmanifest")
+@app.get("/manifest.json")
+@app.get("/icon-192x192.png")
+@app.get("/icon-512x512.png")
+def serve_pwa_root_files(request: Request):
+    filename = request.url.path.lstrip("/")
+    file_path = os.path.join(dist_path, filename)
+    if os.path.exists(file_path):
+        return FileResponse(file_path, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+    raise HTTPException(status_code=404, detail="File not found")
+
+@app.get("/workbox-{rest:path}")
+def serve_workbox_file(rest: str):
+    file_path = os.path.join(dist_path, f"workbox-{rest}")
+    if os.path.exists(file_path):
+        return FileResponse(file_path, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
+    raise HTTPException(status_code=404, detail="File not found")
 
 @app.get("/")
 @app.get("/login", response_class=HTMLResponse)
@@ -178,7 +214,7 @@ def get_dashboard():
     dist_index = os.path.join(dist_path, "index.html")
     if os.path.exists(dist_index):
         with open(dist_index, "r", encoding="utf-8") as f:
-            return HTMLResponse(f.read())
+            return HTMLResponse(f.read(), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
     dashboard_path = os.path.join(os.path.dirname(__file__), "dashboard.html")
     if os.path.exists(dashboard_path):
         with open(dashboard_path, "r", encoding="utf-8") as f:
@@ -200,6 +236,7 @@ def create_ogrenci(
     eposta = ogrenci.eposta.strip() if ogrenci.eposta and ogrenci.eposta.strip() else None
     tc = ogrenci.tc.strip() if ogrenci.tc and ogrenci.tc.strip() else None
     adres = ogrenci.adres.strip() if ogrenci.adres and ogrenci.adres.strip() else None
+    meslek = ogrenci.meslek.strip() if getattr(ogrenci, "meslek", None) and ogrenci.meslek.strip() else None
 
     anne_isim = ogrenci.anne_isim.strip() if ogrenci.anne_isim and ogrenci.anne_isim.strip() else None
     anne_tc = ogrenci.anne_tc.strip() if ogrenci.anne_tc and ogrenci.anne_tc.strip() else None
@@ -234,6 +271,7 @@ def create_ogrenci(
         telefon=telefon,
         eposta=eposta,
         adres=adres,
+        meslek=meslek,
         anne_isim=anne_isim,
         anne_tc=anne_tc,
         anne_telefon=anne_telefon,
@@ -1121,6 +1159,7 @@ def create_on_kayit(
     yeni_kayit = models.OnKayit(
         ogrenci_adi=on_kayit.ogrenci_adi.strip(),
         ogrenci_soyadi=on_kayit.ogrenci_soyadi.strip(),
+        ogrenci_meslek=on_kayit.ogrenci_meslek.strip() if on_kayit.ogrenci_meslek and on_kayit.ogrenci_meslek.strip() else None,
         veli_adi=on_kayit.veli_adi.strip() if on_kayit.veli_adi and on_kayit.veli_adi.strip() else None,
         veli_soyadi=on_kayit.veli_soyadi.strip() if on_kayit.veli_soyadi and on_kayit.veli_soyadi.strip() else None,
         veli_meslek=on_kayit.veli_meslek.strip() if on_kayit.veli_meslek and on_kayit.veli_meslek.strip() else None,

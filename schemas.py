@@ -49,6 +49,7 @@ class OgrenciBase(BaseModel):
     telefon: Optional[str] = None
     eposta: Optional[str] = None
     adres: Optional[str] = None
+    meslek: Optional[str] = None
     dogum_tarihi: Optional[str] = None
     durum: Optional[str] = "Aktif"
     
@@ -76,6 +77,7 @@ class OgrenciUpdate(BaseModel):
     telefon: Optional[str] = None
     eposta: Optional[str] = None
     adres: Optional[str] = None
+    meslek: Optional[str] = None
     dogum_tarihi: Optional[str] = None
     durum: Optional[str] = None
     
@@ -157,6 +159,7 @@ class OdemeUpdate(BaseModel):
 class OnKayitBase(BaseModel):
     ogrenci_adi: str
     ogrenci_soyadi: str
+    ogrenci_meslek: Optional[str] = None
     veli_adi: Optional[str] = None
     veli_soyadi: Optional[str] = None
     veli_meslek: Optional[str] = None
@@ -175,6 +178,7 @@ class OnKayitDurumUpdate(BaseModel):
 class OnKayitUpdate(BaseModel):
     ogrenci_adi: Optional[str] = None
     ogrenci_soyadi: Optional[str] = None
+    ogrenci_meslek: Optional[str] = None
     veli_adi: Optional[str] = None
     veli_soyadi: Optional[str] = None
     veli_meslek: Optional[str] = None
