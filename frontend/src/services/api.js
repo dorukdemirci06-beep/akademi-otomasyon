@@ -132,12 +132,18 @@ export const clearCache = () => {
 };
 
 const withCache = async (cacheKey, fetchPromiseCreator, bypassCache = false) => {
-  if (!bypassCache && cache[cacheKey] && Date.now() - cache[cacheKey].timestamp < CACHE_DURATION) {
+  let activeAkademi = 'global';
+  try {
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    if (u && u.akademi_adi) activeAkademi = u.akademi_adi;
+  } catch (_) {}
+  const scopedKey = `${activeAkademi}::${cacheKey}`;
+  if (!bypassCache && cache[scopedKey] && Date.now() - cache[scopedKey].timestamp < CACHE_DURATION) {
     // Hafızada var ve süresi dolmamışsa anında döndür
-    return { data: cache[cacheKey].data, fromCache: true };
+    return { data: cache[scopedKey].data, fromCache: true };
   }
   const res = await fetchPromiseCreator();
-  cache[cacheKey] = { data: res.data, timestamp: Date.now() };
+  cache[scopedKey] = { data: res.data, timestamp: Date.now() };
   return res;
 };
 

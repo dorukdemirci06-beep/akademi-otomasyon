@@ -142,10 +142,48 @@ const OnKayit = () => {
  // Düzenleme Modalı State
  const [showEditModal, setShowEditModal] = useState(false);
  const [editFormData, setEditFormData] = useState(null);
+ const [isEditCustomBrans, setIsEditCustomBrans] = useState(false);
+ const [editCustomBransText, setEditCustomBransText] = useState('');
+
+ // Aktif akademiye ait sınıflar + aktif akademideki önceki ön kayıtlarda girilmiş branşlar
+ const bransSelectOptions = React.useMemo(() => {
+   const sinifNameSet = new Set(siniflar.map(s => (s.sinif_adi || '').trim().toLowerCase()));
+   const customBransMap = new Map();
+   kayitlar.forEach(k => {
+     const b = (k.ilgilenilen_brans || '').trim();
+     if (b && !sinifNameSet.has(b.toLowerCase()) && !customBransMap.has(b.toLowerCase())) {
+       customBransMap.set(b.toLowerCase(), b);
+     }
+   });
+   return [
+     ...siniflar.map(s => ({ value: s.sinif_adi, label: `${s.sinif_adi} (Kapasite: ${s.kapasite})` })),
+     ...Array.from(customBransMap.values()).map(b => ({ value: b, label: b })),
+     { value: 'DIGER_MANUEL', label: '➕ DİĞER (Manuel Gir)' }
+   ];
+ }, [siniflar, kayitlar]);
 
  const openEditModal = (item) => {
- setEditFormData({ ...item });
+ const currentBrans = (item.ilgilenilen_brans || '').trim();
+ setIsEditCustomBrans(false);
+ setEditCustomBransText('');
+ setEditFormData({ ...item, ilgilenilen_brans: currentBrans });
  setShowEditModal(true);
+ };
+
+ const handleEditBransSelectChange = (val) => {
+ if (val === 'DIGER_MANUEL') {
+ setIsEditCustomBrans(true);
+ setEditFormData((prev) => ({ ...prev, ilgilenilen_brans: editCustomBransText }));
+ } else {
+ setIsEditCustomBrans(false);
+ setEditFormData((prev) => ({ ...prev, ilgilenilen_brans: val }));
+ }
+ };
+
+ const handleEditCustomBransTextChange = (e) => {
+ const text = e.target.value;
+ setEditCustomBransText(text);
+ setEditFormData((prev) => ({ ...prev, ilgilenilen_brans: text }));
  };
 
  const handleEditInputChange = (e) => {
@@ -692,11 +730,8 @@ const OnKayit = () => {
  <SearchableSelect
  value={isCustomBrans ? 'DIGER_MANUEL' : formData.ilgilenilen_brans}
  onChange={handleBransSelectChange}
- options={[
-   ...siniflar.map(s => ({ value: s.sinif_adi, label: `${s.sinif_adi} (Kapasite: ${s.kapasite})` })),
-   { value: 'DIGER_MANUEL', label: '➕ DİĞER (Manuel Gir)' }
- ]}
- placeholder="-- Mevcut Sınıflardan Seçiniz --"
+ options={bransSelectOptions}
+ placeholder="-- Mevcut Sınıf / Branş Seçiniz --"
  searchPlaceholder="Branş ara..."
  icon={BookOpen}
  />
@@ -707,6 +742,7 @@ const OnKayit = () => {
  <Sparkles className="w-4 h-4 absolute left-3.5 top-3 text-amber-400" />
  <input
  type="text"
+ autoComplete="off"
  value={customBransText}
  onChange={handleCustomBransTextChange}
  placeholder="İlgilenilen özel branşı giriniz (Örn: Gitar, Resim...)"
@@ -1431,9 +1467,34 @@ const OnKayit = () => {
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İletişim Telefonu</label>
  <input type="text" name="telefon" value={editFormData.telefon || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
  </div>
- <div>
+ <div className={isEditCustomBrans ? "md:col-span-2" : ""}>
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">İlgilenilen Branş</label>
- <input type="text" name="ilgilenilen_brans" value={editFormData.ilgilenilen_brans || ''} onChange={handleEditInputChange} className="w-full rounded-full px-3 py-2 text-sm text-slate-900 dark:text-slate-100 neo-input" />
+ <div className="flex flex-col sm:flex-row gap-2">
+   <div className="relative flex-1">
+     <SearchableSelect
+       value={isEditCustomBrans ? 'DIGER_MANUEL' : (editFormData.ilgilenilen_brans || '')}
+       onChange={handleEditBransSelectChange}
+       options={bransSelectOptions}
+       placeholder="-- Mevcut Sınıf / Branş Seçiniz --"
+       searchPlaceholder="Branş ara..."
+       icon={BookOpen}
+     />
+   </div>
+   {isEditCustomBrans && (
+     <div className="relative animate-scale-in flex-1">
+       <Sparkles className="w-4 h-4 absolute left-3.5 top-3 text-amber-400" />
+       <input
+         type="text"
+         autoComplete="off"
+         value={editCustomBransText}
+         onChange={handleEditCustomBransTextChange}
+         placeholder="Yeni branş adını yazınız..."
+         required
+         className="w-full border-amber-500/60 rounded-full pl-10 pr-4 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-400 neo-input"
+       />
+     </div>
+   )}
+ </div>
  </div>
  <div className="md:col-span-2">
  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Kayıt Notu</label>

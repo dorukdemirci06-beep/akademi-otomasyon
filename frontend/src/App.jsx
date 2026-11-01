@@ -18,7 +18,7 @@ import Ayarlar from "./pages/Ayarlar";
 import GecmisSezonlar from "./pages/GecmisSezonlar";
 import Kilavuz from "./pages/Kilavuz";
 
-import { getPublicSystemStatus } from './services/api';
+import { getPublicSystemStatus, clearCache } from './services/api';
 import Bakimdayiz from './pages/Bakimdayiz';
 import { useEffect } from 'react';
 import { ThemeProvider } from "./context/ThemeContext";
@@ -59,6 +59,7 @@ function App() {
   }, []);
 
   const handleLogout = () => {
+    clearCache();
     localStorage.removeItem("token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
